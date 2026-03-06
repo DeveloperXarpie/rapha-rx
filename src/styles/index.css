@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-app-bg text-body-text font-sans;
+    font-size: 16px;
+  }
+
+  /* Text size overrides applied to <html> */
+  .text-size-normal { font-size: 100%; }
+  .text-size-large  { font-size: 112.5%; }
+  .text-size-xlarge { font-size: 125%; }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-blue text-white font-semibold rounded-2xl px-8 py-4 min-h-[80px] text-btn
+           hover:bg-blue-700 active:scale-95 transition-all duration-150 cursor-pointer
+           flex items-center justify-center;
+  }
+  .btn-secondary {
+    @apply bg-card-bg text-primary-blue font-semibold rounded-2xl px-8 py-4 min-h-[80px] text-btn
+           border-2 border-primary-blue hover:bg-hover-state active:scale-95 transition-all duration-150
+           cursor-pointer flex items-center justify-center;
+  }
+  .btn-ghost {
+    @apply text-primary-blue font-semibold rounded-2xl px-6 py-3 min-h-[56px] text-btn
+           hover:bg-hover-state active:scale-95 transition-all duration-150 cursor-pointer
+           flex items-center justify-center;
+  }
+  .card {
+    @apply bg-card-bg rounded-3xl shadow-sm p-card-pad;
+  }
+}
