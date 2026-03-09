@@ -22,9 +22,9 @@ function getGreeting(): string {
 }
 
 const GAME_BY_CATEGORY: Record<string, string[]> = {
-  memory:    ['remember-match', 'shopping-list-recall', 'sequence-repeat'],
-  attention: ['spot-focus', 'target-tap', 'focus-filter'],
-  executive: ['morning-routine-quest', 'recipe-builder', 'garden-planner'],
+  memory:    ['remember-match'],
+  attention: ['spot-focus'],
+  executive: ['morning-routine-quest'],
 };
 
 function pickGame(category: string): string {
@@ -37,7 +37,6 @@ export default function HomeScreen() {
   const navigate = useNavigate();
   const profile    = useAppStore((s) => s.activeProfile);
   const session    = useAppStore((s) => s.currentSession);
-  const settings   = useAppStore((s) => s.settings);
   const startSession       = useAppStore((s) => s.startSession);
   const setCurrentGame     = useAppStore((s) => s.setCurrentGame);
 
@@ -97,11 +96,7 @@ export default function HomeScreen() {
         <h2 className="text-h1 font-bold text-body-text mb-2">
           {t(getGreeting())}, {firstName}!
         </h2>
-        <p className="text-h3 text-caption-text">
-          {settings.difficultyOverride !== 'auto'
-            ? t('home.difficulty.current', { level: t(`level.${settings.difficultyOverride}`) })
-            : ''}
-        </p>
+        <p className="text-h3 text-caption-text">{t('home.subtitle', "Let's train your brain today!")}</p>
       </div>
 
       {/* Resume banner */}
@@ -155,7 +150,7 @@ export default function HomeScreen() {
           onClick={() => navigate('/app/settings')}
           className="text-body-md text-caption-text underline"
         >
-          {t('home.difficulty.change')}
+          {t('nav.settings', 'Settings')}
         </button>
       </div>
     </div>

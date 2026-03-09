@@ -11,8 +11,8 @@ interface ShoppingListParams {
 
 export const levels: LevelConfig[] = [
   {
-    id: 'easy',
-    labelKey: 'level.easy',
+    id: 'level_1',
+    labelKey: 'level.1',
     params: {
       itemCount: 4,
       studyDurationMs: 30000,
@@ -23,8 +23,8 @@ export const levels: LevelConfig[] = [
     } satisfies ShoppingListParams,
   },
   {
-    id: 'medium',
-    labelKey: 'level.medium',
+    id: 'level_3',
+    labelKey: 'level.3',
     params: {
       itemCount: 5,
       studyDurationMs: 25000,
@@ -35,8 +35,8 @@ export const levels: LevelConfig[] = [
     } satisfies ShoppingListParams,
   },
   {
-    id: 'hard',
-    labelKey: 'level.hard',
+    id: 'level_5',
+    labelKey: 'level.5',
     params: {
       itemCount: 7,
       studyDurationMs: 20000,

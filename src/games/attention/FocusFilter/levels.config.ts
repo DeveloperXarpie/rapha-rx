@@ -9,8 +9,8 @@ interface FocusFilterParams {
 
 export const levels: LevelConfig[] = [
   {
-    id: 'easy',
-    labelKey: 'level.easy',
+    id: 'level_1',
+    labelKey: 'level.1',
     params: {
       questionCount: 4,
       outlierType: 'obvious',
@@ -19,8 +19,8 @@ export const levels: LevelConfig[] = [
     } satisfies FocusFilterParams,
   },
   {
-    id: 'medium',
-    labelKey: 'level.medium',
+    id: 'level_3',
+    labelKey: 'level.3',
     params: {
       questionCount: 5,
       outlierType: 'subtle',
@@ -29,8 +29,8 @@ export const levels: LevelConfig[] = [
     } satisfies FocusFilterParams,
   },
   {
-    id: 'hard',
-    labelKey: 'level.hard',
+    id: 'level_5',
+    labelKey: 'level.5',
     params: {
       questionCount: 7,
       outlierType: 'overlapping_category',

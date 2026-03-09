@@ -27,18 +27,18 @@ interface GameShellProps {
 }
 
 const CATEGORY_LABEL_KEYS: Record<string, string> = {
-  memory:    'game.category.memory',
+  memory: 'game.category.memory',
   attention: 'game.category.attention',
   executive: 'game.category.executive',
 };
 
 const CATEGORY_BADGE_VARIANTS: Record<string, 'blue' | 'green' | 'purple'> = {
-  memory:    'blue',
+  memory: 'blue',
   attention: 'green',
   executive: 'purple',
 };
 
-const ROTATION_THRESHOLD_SECONDS = 10 * 60; // 10 minutes
+const ROTATION_THRESHOLD_SECONDS = 1 * 20; // 1 minutes
 
 export default function GameShell({
   gameId,

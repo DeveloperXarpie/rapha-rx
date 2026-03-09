@@ -11,8 +11,8 @@ interface GardenPlannerParams {
 
 export const levels: LevelConfig[] = [
   {
-    id: 'easy',
-    labelKey: 'level.easy',
+    id: 'level_1',
+    labelKey: 'level.1',
     params: {
       gridSize: 3,
       plantCount: 3,
@@ -23,8 +23,8 @@ export const levels: LevelConfig[] = [
     } satisfies GardenPlannerParams,
   },
   {
-    id: 'medium',
-    labelKey: 'level.medium',
+    id: 'level_3',
+    labelKey: 'level.3',
     params: {
       gridSize: 3,
       plantCount: 4,
@@ -35,8 +35,8 @@ export const levels: LevelConfig[] = [
     } satisfies GardenPlannerParams,
   },
   {
-    id: 'hard',
-    labelKey: 'level.hard',
+    id: 'level_5',
+    labelKey: 'level.5',
     params: {
       gridSize: 4,
       plantCount: 5,

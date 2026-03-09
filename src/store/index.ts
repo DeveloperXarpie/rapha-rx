@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { UserProfile, SessionState } from '../lib/db';
 import { upsertSessionState, upsertUserProfile } from '../lib/db';
-import type { Language, TextSize, DifficultyOverride } from '../styles/tokens';
+import type { Language, TextSize } from '../styles/tokens';
 
 function todayISO(): string {
   return new Date().toISOString().split('T')[0];
@@ -14,7 +14,6 @@ export interface UserSettings {
   language: Language;
   textSize: TextSize;
   soundEnabled: boolean;
-  difficultyOverride: DifficultyOverride;
 }
 
 export interface CurrentSession {
@@ -65,7 +64,6 @@ const defaultSettings: UserSettings = {
   language: 'en',
   textSize: 'normal',
   soundEnabled: true,
-  difficultyOverride: 'auto',
 };
 
 // Helper — persist session to Dexie (called from actions, not part of interface)
@@ -100,7 +98,6 @@ export const useAppStore = create<AppState>()(
             language: profile.language ?? 'en',
             textSize: profile.textSize ?? 'normal',
             soundEnabled: profile.soundEnabled ?? true,
-            difficultyOverride: profile.difficultyOverride ?? 'auto',
           },
         });
       },
@@ -192,7 +189,6 @@ export const useAppStore = create<AppState>()(
             language: updated.language,
             textSize: updated.textSize,
             soundEnabled: updated.soundEnabled,
-            difficultyOverride: updated.difficultyOverride,
           };
           set({ activeProfile: updatedProfile });
           upsertUserProfile(updatedProfile).catch(() => {});

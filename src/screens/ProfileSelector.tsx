@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getProfilesByCareHome, upsertUserProfile } from '../lib/db';
 import { doc, setDoc } from 'firebase/firestore';
-import { db as firestoreDb } from '../lib/firebase';
+import { db as firestoreDb, ensureAnonymousAuth } from '../lib/firebase';
 import { useAppStore } from '../store';
 import { track, setUserProperties } from '../lib/analytics';
 import { Avatar } from '../components/ui/Avatar';
@@ -34,13 +34,15 @@ export default function ProfileSelector() {
   }, [careHomeId]);
 
   async function handleSelect(profile: UserProfile) {
+    await ensureAnonymousAuth();
     const updated: UserProfile = { ...profile, lastSeenAt: Date.now() };
     await upsertUserProfile(updated);
 
     try {
-      await setDoc(doc(firestoreDb, 'users', profile.userId), { lastSeenAt: Date.now() }, { merge: true });
-    } catch {
-      // Offline
+      await setDoc(doc(firestoreDb, 'users', profile.userId), updated);
+      console.log('[Firebase] Profile synced to Firestore:', profile.userId);
+    } catch (err) {
+      console.error('[Firebase] Firestore write failed:', err);
     }
 
     setActiveProfile(updated);

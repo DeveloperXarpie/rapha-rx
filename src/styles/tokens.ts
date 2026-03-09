@@ -35,6 +35,5 @@ export const FONT_FAMILY = "'Inter', 'Noto Sans Devanagari', 'Noto Sans Kannada'
 
 export type Language = 'en' | 'hi' | 'kn';
 export type TextSize = 'normal' | 'large' | 'xlarge';
-export type DifficultyLevel = 'easy' | 'medium' | 'hard';
-export type DifficultyOverride = 'easy' | 'medium' | 'hard' | 'auto';
+export type DifficultyLevel = 'level_1' | 'level_2' | 'level_3' | 'level_4' | 'level_5';
 export type GameCategory = 'memory' | 'attention' | 'executive';

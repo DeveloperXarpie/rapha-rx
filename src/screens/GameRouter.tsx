@@ -1,7 +1,7 @@
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store';
 import { getCurrentLevel } from '../lib/adaptiveDifficulty';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import GameShell, { type LevelResult } from '../components/GameShell';
 import type { LevelConfig } from '../games/types';
 import type { GameCategory } from '../styles/tokens';
@@ -55,21 +55,26 @@ const GAME_REGISTRY: Record<string, GameEntry> = {
 
 export default function GameRouter() {
   const { gameId } = useParams<{ gameId: string }>();
+  const navigate = useNavigate();
   const profile = useAppStore((s) => s.activeProfile);
   const setCurrentGame = useAppStore((s) => s.setCurrentGame);
 
-  const [levelId, setLevelId] = useState<'easy' | 'medium' | 'hard'>('easy');
+  const [levelId, setLevelId] = useState<'level_1' | 'level_2' | 'level_3' | 'level_4' | 'level_5'>('level_1');
   const [loading, setLoading] = useState(true);
+  // Incrementing this key forces a full remount of GameShell + game component between rounds
+  const [gameKey, setGameKey] = useState(0);
 
   const entry = gameId ? GAME_REGISTRY[gameId] : undefined;
 
-  useEffect(() => {
+  const refreshLevel = useCallback(async () => {
     if (!gameId || !profile) return;
-    getCurrentLevel(profile.userId, gameId).then((l) => {
-      setLevelId(l);
-      setLoading(false);
-    });
+    const l = await getCurrentLevel(profile.userId, gameId);
+    setLevelId(l);
   }, [gameId, profile]);
+
+  useEffect(() => {
+    refreshLevel().then(() => setLoading(false));
+  }, [refreshLevel]);
 
   useEffect(() => {
     if (gameId) setCurrentGame(gameId);
@@ -85,21 +90,26 @@ export default function GameRouter() {
   const levelConfig = entry.levels.find((l) => l.id === levelId) ?? entry.levels[0];
   const GameComponent = entry.component;
 
-  function handleLevelComplete(result: LevelResult) {
-    // After level complete in GameShell, navigate back to home
-    // (GameShell handles rotation logic itself)
-    // GameRouter just resets to home if not rotating
+  async function handleLevelComplete() {
+    // Re-fetch adaptive difficulty level (may have changed after completion)
+    await refreshLevel();
+    // Start a fresh round of the same game by remounting via key change.
+    // GameShell already handled rotation before calling this (if 10 min elapsed,
+    // triggerRotation() navigates away and this is never reached).
+    setGameKey((k) => k + 1);
   }
 
   return (
     <GameShell
+      key={gameKey}
       gameId={gameId!}
       gameCategory={entry.category}
       levelConfig={levelConfig}
       onLevelComplete={handleLevelComplete}
-      onExit={() => {}}
+      onExit={() => navigate('/app/home')}
     >
       <GameComponent
+        key={gameKey}
         levelConfig={levelConfig}
         onLevelComplete={handleLevelComplete}
       />

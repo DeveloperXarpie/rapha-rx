@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
 import { collection, setDoc, doc, getDocs, query, where } from 'firebase/firestore';
-import { db as firestoreDb } from '../lib/firebase';
+import { db as firestoreDb, ensureAnonymousAuth } from '../lib/firebase';
 import { upsertUserProfile, getProfilesByCareHome } from '../lib/db';
 import { useAppStore } from '../store';
 import { track, setUserProperties } from '../lib/analytics';
@@ -79,14 +79,15 @@ export default function SignupFlow() {
   }
 
   async function createProfile(care: string, nick: string | undefined) {
+    await ensureAnonymousAuth();
+
     const profile: UserProfile = {
       userId: uuidv4(),
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      nickname: nick,
+      nickname: nick ?? null,
       careHomeId: care,
       language: 'en',
-      difficultyOverride: 'auto',
       createdAt: Date.now(),
       lastSeenAt: Date.now(),
       soundEnabled: true,
@@ -98,8 +99,9 @@ export default function SignupFlow() {
     // Sync to Firestore
     try {
       await setDoc(doc(firestoreDb, 'users', profile.userId), profile);
-    } catch {
-      // Offline — will sync later
+      console.log('[Firebase] Profile written to Firestore:', profile.userId);
+    } catch (err) {
+      console.error('[Firebase] Firestore write failed:', err);
     }
 
     setActiveProfile(profile);

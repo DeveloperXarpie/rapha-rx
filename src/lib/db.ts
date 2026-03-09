@@ -1,15 +1,14 @@
 import Dexie from 'dexie';
 import type { Table } from 'dexie';
-import type { Language, DifficultyOverride } from '../styles/tokens';
+import type { Language, DifficultyLevel } from '../styles/tokens';
 
 export interface UserProfile {
   userId: string;           // UUID
   firstName: string;
   lastName: string;
-  nickname?: string;
+  nickname?: string | null;
   careHomeId: string;
   language: Language;
-  difficultyOverride: DifficultyOverride;
   createdAt: number;
   lastSeenAt?: number;
   soundEnabled: boolean;
@@ -33,7 +32,7 @@ export interface GameProgress {
   id?: number;
   userId: string;
   gameId: string;
-  currentLevelId: 'easy' | 'medium' | 'hard';
+  currentLevelId: DifficultyLevel;
   consecutiveCompletions: number;
   consecutiveIncompletes: number;
   hasBeenPromptedForLevel: boolean;

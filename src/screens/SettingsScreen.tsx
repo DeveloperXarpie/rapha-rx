@@ -4,7 +4,7 @@ import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
 import { Toggle } from '../components/ui/Toggle';
 import pkg from '../../package.json';
-import type { DifficultyOverride, Language, TextSize } from '../styles/tokens';
+import type { Language, TextSize } from '../styles/tokens';
 
 const CARE_HOME_NAMES: Record<string, string> = {
   'asha-indiranagar':     'Asha Care Home, Indiranagar',
@@ -44,13 +44,6 @@ export default function SettingsScreen() {
     { code: 'large',  key: 'settings.textSize.large'  },
     { code: 'xlarge', key: 'settings.textSize.xlarge' },
   ];
-  const DIFFICULTIES: { code: DifficultyOverride; key: string }[] = [
-    { code: 'easy',   key: 'settings.difficulty.easy'   },
-    { code: 'medium', key: 'settings.difficulty.medium' },
-    { code: 'hard',   key: 'settings.difficulty.hard'   },
-    { code: 'auto',   key: 'settings.difficulty.auto'   },
-  ];
-
   function handleSwitchProfile() {
     clearProfile();
     navigate('/');
@@ -58,7 +51,16 @@ export default function SettingsScreen() {
 
   return (
     <div className="flex-1 flex flex-col p-6 max-w-2xl mx-auto w-full gap-8">
-      <h2 className="text-h1 font-bold text-body-text">{t('settings.title')}</h2>
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="min-h-[48px] min-w-[48px] flex items-center justify-center rounded-2xl border-2 border-gray-200 text-body-text hover:border-primary-blue hover:text-primary-blue transition-colors"
+          aria-label={t('btn.back', 'Back')}
+        >
+          ←
+        </button>
+        <h2 className="text-h1 font-bold text-body-text">{t('settings.title')}</h2>
+      </div>
 
       {/* ── My Preferences ──────────────────────────────────── */}
       <section className="bg-card-bg rounded-3xl p-6 shadow-sm space-y-6">
@@ -113,30 +115,6 @@ export default function SettingsScreen() {
           onChange={(v) => changeSetting('soundEnabled', v)}
           ariaLabel={t('settings.sound')}
         />
-      </section>
-
-      {/* ── Game Difficulty ──────────────────────────────────── */}
-      <section className="bg-card-bg rounded-3xl p-6 shadow-sm space-y-4">
-        <h3 className="text-h2 font-semibold text-body-text">{t('settings.difficulty')}</h3>
-        <div className="flex flex-col gap-4">
-          {DIFFICULTIES.map(({ code, key }) => (
-            <button
-              key={code}
-              onClick={() => changeSetting('difficultyOverride', code)}
-              className={`min-h-[80px] w-full px-6 py-4 rounded-2xl text-h3 font-semibold border-2 transition-colors text-left flex items-center gap-4
-                ${settings.difficultyOverride === code
-                  ? 'bg-hover-state border-primary-blue text-primary-blue'
-                  : 'bg-card-bg border-gray-200 text-body-text hover:border-primary-blue'
-                }`}
-              aria-pressed={settings.difficultyOverride === code}
-            >
-              {settings.difficultyOverride === code && (
-                <span className="text-emerald-green text-2xl">✓</span>
-              )}
-              {t(key)}
-            </button>
-          ))}
-        </div>
       </section>
 
       {/* ── My Profile ──────────────────────────────────── */}

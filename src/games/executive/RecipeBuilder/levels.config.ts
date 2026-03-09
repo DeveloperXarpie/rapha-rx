@@ -15,8 +15,8 @@ interface RecipeBuilderParams {
 
 export const levels: LevelConfig[] = [
   {
-    id: 'easy',
-    labelKey: 'level.easy',
+    id: 'level_1',
+    labelKey: 'level.1',
     params: {
       stepCount: 4,
       ingredientDecisionEnabled: false,
@@ -26,8 +26,8 @@ export const levels: LevelConfig[] = [
     } satisfies RecipeBuilderParams,
   },
   {
-    id: 'medium',
-    labelKey: 'level.medium',
+    id: 'level_3',
+    labelKey: 'level.3',
     params: {
       stepCount: 5,
       ingredientDecisionEnabled: true,
@@ -37,8 +37,8 @@ export const levels: LevelConfig[] = [
     } satisfies RecipeBuilderParams,
   },
   {
-    id: 'hard',
-    labelKey: 'level.hard',
+    id: 'level_5',
+    labelKey: 'level.5',
     params: {
       stepCount: 7,
       ingredientDecisionEnabled: true,

@@ -13,8 +13,8 @@ interface TargetTapParams {
 
 export const levels: LevelConfig[] = [
   {
-    id: 'easy',
-    labelKey: 'level.easy',
+    id: 'level_1',
+    labelKey: 'level.1',
     params: {
       gridRows: 2,
       gridCols: 4,
@@ -27,8 +27,8 @@ export const levels: LevelConfig[] = [
     } satisfies TargetTapParams,
   },
   {
-    id: 'medium',
-    labelKey: 'level.medium',
+    id: 'level_3',
+    labelKey: 'level.3',
     params: {
       gridRows: 3,
       gridCols: 4,
@@ -41,8 +41,8 @@ export const levels: LevelConfig[] = [
     } satisfies TargetTapParams,
   },
   {
-    id: 'hard',
-    labelKey: 'level.hard',
+    id: 'level_5',
+    labelKey: 'level.5',
     params: {
       gridRows: 4,
       gridCols: 4,

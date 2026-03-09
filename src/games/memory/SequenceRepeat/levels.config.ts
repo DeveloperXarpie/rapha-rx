@@ -10,8 +10,8 @@ interface SequenceRepeatParams {
 
 export const levels: LevelConfig[] = [
   {
-    id: 'easy',
-    labelKey: 'level.easy',
+    id: 'level_1',
+    labelKey: 'level.1',
     params: {
       startingLength: 2,
       colourCount: 3,
@@ -21,8 +21,8 @@ export const levels: LevelConfig[] = [
     } satisfies SequenceRepeatParams,
   },
   {
-    id: 'medium',
-    labelKey: 'level.medium',
+    id: 'level_3',
+    labelKey: 'level.3',
     params: {
       startingLength: 3,
       colourCount: 4,
@@ -32,8 +32,8 @@ export const levels: LevelConfig[] = [
     } satisfies SequenceRepeatParams,
   },
   {
-    id: 'hard',
-    labelKey: 'level.hard',
+    id: 'level_5',
+    labelKey: 'level.5',
     params: {
       startingLength: 4,
       colourCount: 4,
