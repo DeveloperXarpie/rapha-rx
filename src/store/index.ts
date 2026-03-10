@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { UserProfile, SessionState } from '../lib/db';
-import { upsertSessionState, upsertUserProfile } from '../lib/db';
+import { upsertSessionState, upsertUserProfile, getSessionState } from '../lib/db';
 import type { Language, TextSize } from '../styles/tokens';
 
 function todayISO(): string {
@@ -91,7 +91,7 @@ export const useAppStore = create<AppState>()(
       // User slice
       activeProfile: null,
 
-      setActiveProfile: (profile) => {
+      setActiveProfile: async (profile) => {
         set({ activeProfile: profile });
         set({
           settings: {
@@ -100,6 +100,15 @@ export const useAppStore = create<AppState>()(
             soundEnabled: profile.soundEnabled ?? true,
           },
         });
+
+        const today = todayISO();
+        const existingSession = await getSessionState(profile.userId, today);
+        if (existingSession) {
+          const { id, userId, ...sessionData } = existingSession as any;
+          set({ currentSession: sessionData });
+        } else {
+          set({ currentSession: { ...defaultSession, date: today } });
+        }
       },
 
       clearProfile: () => {

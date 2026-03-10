@@ -1,14 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
+import { getTodayDifficulty, scoreToLevel } from '../lib/dynamicDifficulty';
 import { Button } from '../components/ui/Button';
 
-const CATEGORY_INFO: Record<string, { icon: string; labelKey: string }> = {
-  memory:    { icon: '🧠', labelKey: 'game.category.memory' },
-  attention: { icon: '🎯', labelKey: 'game.category.attention' },
-  executive: { icon: '🗂️', labelKey: 'game.category.executive' },
+const CATEGORY_INFO: Record<string, { icon: string; labelKey: string; gameId: string }> = {
+  memory:    { icon: '🧠', labelKey: 'game.category.memory',    gameId: 'remember-match' },
+  attention: { icon: '🎯', labelKey: 'game.category.attention',  gameId: 'spot-focus' },
+  executive: { icon: '🗂️', labelKey: 'game.category.executive', gameId: 'morning-routine-quest' },
 };
 
 export default function SessionSummary() {
@@ -19,6 +20,22 @@ export default function SessionSummary() {
   const firedRef = useRef(false);
 
   const firstName = profile?.nickname ?? profile?.firstName ?? '';
+
+  // Fetch difficulty levels for each category
+  const [difficultyLevels, setDifficultyLevels] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!profile) return;
+    async function fetchLevels() {
+      const levels: Record<string, number> = {};
+      for (const [cat, info] of Object.entries(CATEGORY_INFO)) {
+        const state = await getTodayDifficulty(profile!.userId, info.gameId);
+        levels[cat] = scoreToLevel(state.peakScore || state.score);
+      }
+      setDifficultyLevels(levels);
+    }
+    fetchLevels();
+  }, [profile]);
 
   useEffect(() => {
     if (firedRef.current) return;
@@ -40,13 +57,14 @@ export default function SessionSummary() {
       </h2>
       <p className="text-h3 text-caption-text mb-10">{t('summary.completed')}</p>
 
-      {/* Categories completed */}
+      {/* Categories completed with difficulty levels */}
       <div className="w-full mb-10">
         <p className="text-body-md font-semibold text-caption-text mb-5">{t('summary.categories.title')}</p>
         <div className="flex flex-col gap-4">
           {['memory', 'attention', 'executive'].map((cat) => {
             const info = CATEGORY_INFO[cat];
             const done = session.categoriesCompleted.includes(cat);
+            const level = difficultyLevels[cat];
             return (
               <div
                 key={cat}
@@ -55,8 +73,15 @@ export default function SessionSummary() {
                 }`}
               >
                 <span className="text-4xl">{info.icon}</span>
-                <p className="text-h3 font-semibold text-body-text">{t(info.labelKey)}</p>
-                {done && <span className="ml-auto text-emerald-green text-3xl">✓</span>}
+                <div className="flex-1 text-left">
+                  <p className="text-h3 font-semibold text-body-text">{t(info.labelKey)}</p>
+                  {level !== undefined && done && (
+                    <p className="text-body-md text-accent-purple font-semibold mt-1">
+                      🌟 {t('summary.levelReached', `You reached Level ${level}!`, { level })}
+                    </p>
+                  )}
+                </div>
+                {done && <span className="text-emerald-green text-3xl">✓</span>}
               </div>
             );
           })}

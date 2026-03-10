@@ -38,6 +38,16 @@ export interface GameProgress {
   hasBeenPromptedForLevel: boolean;
 }
 
+export interface DifficultyState {
+  id?: number;
+  userId: string;
+  gameId: string;
+  date: string;              // ISO YYYY-MM-DD — resets daily
+  score: number;             // 0.0 → 1.0
+  peakScore: number;         // highest score reached this day
+  roundsPlayed: number;
+}
+
 export interface PendingEvent {
   id?: number;
   eventName: string;
@@ -49,6 +59,7 @@ class BrainTrainingDB extends Dexie {
   userProfile!: Table<UserProfile, string>;
   sessionState!: Table<SessionState, number>;
   gameProgress!: Table<GameProgress, number>;
+  difficultyState!: Table<DifficultyState, number>;
   pendingEvents!: Table<PendingEvent, number>;
 
   constructor() {
@@ -57,6 +68,13 @@ class BrainTrainingDB extends Dexie {
       userProfile:  'userId, careHomeId, createdAt',
       sessionState: '++id, userId, date, [userId+date]',
       gameProgress: '++id, userId, gameId, [userId+gameId]',
+      pendingEvents:'++id, queuedAt',
+    });
+    this.version(2).stores({
+      userProfile:  'userId, careHomeId, createdAt',
+      sessionState: '++id, userId, date, [userId+date]',
+      gameProgress: '++id, userId, gameId, [userId+gameId]',
+      difficultyState: '++id, userId, gameId, date, [userId+gameId], [userId+gameId+date]',
       pendingEvents:'++id, queuedAt',
     });
   }
@@ -97,6 +115,39 @@ export async function upsertGameProgress(progress: GameProgress): Promise<void> 
   } else {
     await appDb.gameProgress.add(progress);
   }
+}
+
+export async function getDifficultyState(userId: string, gameId: string, date: string): Promise<DifficultyState | undefined> {
+  return appDb.difficultyState.where('[userId+gameId+date]').equals([userId, gameId, date]).first();
+}
+
+export async function getYesterdayDifficultyState(userId: string, gameId: string): Promise<DifficultyState | undefined> {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const dateStr = yesterday.toISOString().split('T')[0];
+  return getDifficultyState(userId, gameId, dateStr);
+}
+
+export async function upsertDifficultyState(state: DifficultyState): Promise<void> {
+  const existing = await getDifficultyState(state.userId, state.gameId, state.date);
+  if (existing?.id) {
+    await appDb.difficultyState.update(existing.id, state);
+  } else {
+    await appDb.difficultyState.add(state);
+  }
+}
+
+export async function getLastCompletedSession(userId: string): Promise<SessionState | undefined> {
+  const today = new Date().toISOString().split('T')[0];
+  const sessions = await appDb.sessionState
+    .where('userId')
+    .equals(userId)
+    .toArray();
+  // Filter to completed sessions (all 3 categories done) before today, sort by date descending
+  const completed = sessions
+    .filter((s) => s.categoriesCompleted.length >= 3 && s.date < today)
+    .sort((a, b) => b.date.localeCompare(a.date));
+  return completed[0];
 }
 
 export async function getProfilesByCareHome(careHomeId: string): Promise<UserProfile[]> {

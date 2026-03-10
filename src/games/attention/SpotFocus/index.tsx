@@ -4,228 +4,19 @@ import { Button } from '../../../components/ui/Button';
 import { useGamePhase } from '../../../hooks/useGamePhase';
 import type { LevelConfig } from '../../types';
 import type { LevelResult } from '../../../components/GameShell';
+import type { GeneratedScene, SceneCell } from '../../../lib/contentGenerators/spotFocus';
 
 interface Props {
   levelConfig: LevelConfig;
   onLevelComplete: (result: LevelResult) => void;
-}
-
-interface SceneCell {
-  id: string;
-  display: string;
-  label: string;
-  isDifference?: true;
-}
-
-interface Scene {
-  label: string;
-  originalRows: SceneCell[][];
-  modifiedRows: SceneCell[][];
-}
-
-// ── EASY SCENES ───────────────────────────────────────────────────────────────
-
-const KITCHEN_A: Scene = {
-  label: 'Kitchen',
-  originalRows: [
-    [ {id:'window', display:'🪟', label:'Window'}, {id:'jar', display:'🫙', label:'Pickle jar'}, {id:'kettle', display:'🫖', label:'Tea kettle'} ],
-    [ {id:'pot', display:'🫕', label:'Cooking pot'}, {id:'cooker', display:'🍲', label:'Pressure cooker'}, {id:'spoon', display:'🥄', label:'Serving spoon'} ],
-    [ {id:'tomato', display:'🍅🍅', label:'Tomatoes'}, {id:'curry', display:'🌿', label:'Curry leaves'}, {id:'stove', display:'🔥', label:'Gas stove'} ],
-  ],
-  modifiedRows: [
-    [ {id:'window', display:'🪟', label:'Window'}, {id:'jar', display:'🫙', label:'Pickle jar'}, {id:'kettle', display:'☕', label:'Coffee cup', isDifference:true} ],
-    [ {id:'pot', display:'', label:'Empty space', isDifference:true}, {id:'cooker', display:'🍲', label:'Pressure cooker'}, {id:'spoon', display:'🥄', label:'Serving spoon'} ],
-    [ {id:'tomato', display:'🍅🍅🍅', label:'Tomatoes', isDifference:true}, {id:'curry', display:'🌿', label:'Curry leaves'}, {id:'stove', display:'🔥', label:'Gas stove'} ],
-  ],
-};
-
-const KITCHEN_B: Scene = {
-  label: 'Kitchen',
-  originalRows: [
-    [ {id:'lamp', display:'💡', label:'Light'}, {id:'bowl', display:'🥣', label:'Bowl'}, {id:'ladle', display:'🥄', label:'Ladle'} ],
-    [ {id:'dal', display:'🫘', label:'Dal pot'}, {id:'cooker2', display:'🍲', label:'Pressure cooker'}, {id:'oil', display:'🫙', label:'Oil jar'} ],
-    [ {id:'onion', display:'🧅🧅', label:'Onions'}, {id:'lime', display:'🍋', label:'Lime'}, {id:'salt', display:'🧂', label:'Salt'} ],
-  ],
-  modifiedRows: [
-    [ {id:'lamp', display:'💡', label:'Light'}, {id:'bowl', display:'🪣', label:'Bucket', isDifference:true}, {id:'ladle', display:'🥄', label:'Ladle'} ],
-    [ {id:'dal', display:'🫘', label:'Dal pot'}, {id:'cooker2', display:'🍲', label:'Pressure cooker'}, {id:'oil', display:'', label:'Empty', isDifference:true} ],
-    [ {id:'onion', display:'🧅🧅🧅', label:'Onions', isDifference:true}, {id:'lime', display:'🍋', label:'Lime'}, {id:'salt', display:'🧂', label:'Salt'} ],
-  ],
-};
-
-const EASY_SCENES = [KITCHEN_A, KITCHEN_B];
-
-// ── MEDIUM SCENES ─────────────────────────────────────────────────────────────
-
-const GARDEN_A: Scene = {
-  label: 'Garden',
-  originalRows: [
-    [
-      {id:'tulsi', display:'🌿', label:'Tulsi'},
-      {id:'neem', display:'🌳', label:'Neem tree'},
-      {id:'marigold', display:'🌺', label:'Marigold'},
-      {id:'hibiscus', display:'🌸', label:'Hibiscus'},
-    ],
-    [
-      {id:'pot1', display:'🪴', label:'Pot'},
-      {id:'watering', display:'🚿', label:'Watering can'},
-      {id:'bench', display:'🪑', label:'Bench'},
-      {id:'jasmine', display:'🌼', label:'Jasmine'},
-    ],
-    [
-      {id:'soil', display:'🟫', label:'Soil patch'},
-      {id:'butterfly', display:'🦋', label:'Butterfly'},
-      {id:'sparrow', display:'🐦', label:'Sparrow'},
-      {id:'sun', display:'☀️', label:'Sunny patch'},
-    ],
-  ],
-  modifiedRows: [
-    [
-      {id:'tulsi', display:'🌿', label:'Tulsi'},
-      {id:'neem', display:'🌳', label:'Neem tree'},
-      {id:'marigold', display:'🌻', label:'Sunflower', isDifference:true},
-      {id:'hibiscus', display:'🌸', label:'Hibiscus'},
-    ],
-    [
-      {id:'pot1', display:'', label:'Empty', isDifference:true},
-      {id:'watering', display:'🪣', label:'Bucket', isDifference:true},
-      {id:'bench', display:'🪑', label:'Bench'},
-      {id:'jasmine', display:'🌼', label:'Jasmine'},
-    ],
-    [
-      {id:'soil', display:'🟫', label:'Soil patch'},
-      {id:'butterfly', display:'🐛', label:'Caterpillar', isDifference:true},
-      {id:'sparrow', display:'🐦', label:'Sparrow'},
-      {id:'sun', display:'🌧️', label:'Rain cloud', isDifference:true},
-    ],
-  ],
-};
-
-const GARDEN_B: Scene = {
-  label: 'Garden',
-  originalRows: [
-    [
-      {id:'aloe', display:'🌵', label:'Aloe vera'},
-      {id:'rose', display:'🌹', label:'Rose'},
-      {id:'curry', display:'🌿', label:'Curry leaf'},
-      {id:'mango', display:'🥭', label:'Mango tree'},
-    ],
-    [
-      {id:'rake', display:'🧹', label:'Rake'},
-      {id:'bucket', display:'🪣', label:'Bucket'},
-      {id:'seeds', display:'🌱', label:'Seedlings'},
-      {id:'crow', display:'🐦‍⬛', label:'Crow'},
-    ],
-    [
-      {id:'path', display:'🟤', label:'Garden path'},
-      {id:'wall', display:'🧱', label:'Wall'},
-      {id:'tap', display:'🚰', label:'Garden tap'},
-      {id:'coconut', display:'🥥', label:'Coconut tree'},
-    ],
-  ],
-  modifiedRows: [
-    [
-      {id:'aloe', display:'🌵', label:'Aloe vera'},
-      {id:'rose', display:'🌷', label:'Tulip', isDifference:true},
-      {id:'curry', display:'🌿', label:'Curry leaf'},
-      {id:'mango', display:'🥭', label:'Mango tree'},
-    ],
-    [
-      {id:'rake', display:'🧹', label:'Rake'},
-      {id:'bucket', display:'🪣', label:'Bucket'},
-      {id:'seeds', display:'🌱🌱', label:'More seedlings', isDifference:true},
-      {id:'crow', display:'', label:'Empty', isDifference:true},
-    ],
-    [
-      {id:'path', display:'🟤', label:'Garden path'},
-      {id:'wall', display:'🧱', label:'Wall'},
-      {id:'tap', display:'🚿', label:'Shower tap', isDifference:true},
-      {id:'coconut', display:'🍌', label:'Banana tree', isDifference:true},
-    ],
-  ],
-};
-
-const MEDIUM_SCENES = [GARDEN_A, GARDEN_B];
-
-// ── HARD SCENES ───────────────────────────────────────────────────────────────
-
-const LIVING_ROOM_A: Scene = {
-  label: 'Living Room',
-  originalRows: [
-    [
-      {id:'clock', display:'🕰️', label:'Clock'},
-      {id:'photo', display:'🖼️', label:'Photo frame'},
-      {id:'window2', display:'🪟', label:'Window'},
-      {id:'fan', display:'💨', label:'Ceiling fan'},
-    ],
-    [
-      {id:'sofa', display:'🛋️', label:'Sofa'},
-      {id:'lamp2', display:'💡', label:'Floor lamp'},
-      {id:'table', display:'🪵', label:'Coffee table'},
-      {id:'plant', display:'🌿', label:'Indoor plant'},
-    ],
-    [
-      {id:'remote', display:'📱', label:'Remote'},
-      {id:'cup2', display:'☕', label:'Tea cup'},
-      {id:'book', display:'📚', label:'Books'},
-      {id:'cat', display:'🐈', label:'Cat'},
-    ],
-    [
-      {id:'mat', display:'🟩', label:'Doormat'},
-      {id:'shoes', display:'👟', label:'Shoes'},
-      {id:'bag', display:'👜', label:'Bag'},
-      {id:'umbrella', display:'☂️', label:'Umbrella'},
-    ],
-  ],
-  modifiedRows: [
-    [
-      {id:'clock', display:'⏰', label:'Alarm clock', isDifference:true},
-      {id:'photo', display:'🖼️', label:'Photo frame'},
-      {id:'window2', display:'🚪', label:'Door', isDifference:true},
-      {id:'fan', display:'💨', label:'Ceiling fan'},
-    ],
-    [
-      {id:'sofa', display:'🛋️', label:'Sofa'},
-      {id:'lamp2', display:'', label:'Empty', isDifference:true},
-      {id:'table', display:'🪵', label:'Coffee table'},
-      {id:'plant', display:'🌵', label:'Cactus', isDifference:true},
-    ],
-    [
-      {id:'remote', display:'📺', label:'TV remote', isDifference:true},
-      {id:'cup2', display:'☕', label:'Tea cup'},
-      {id:'book', display:'📖', label:'Single book', isDifference:true},
-      {id:'cat', display:'🐈', label:'Cat'},
-    ],
-    [
-      {id:'mat', display:'🟩', label:'Doormat'},
-      {id:'shoes', display:'👟👟', label:'Pair of shoes', isDifference:true},
-      {id:'bag', display:'👜', label:'Bag'},
-      {id:'umbrella', display:'', label:'Empty', isDifference:true},
-    ],
-  ],
-};
-
-const HARD_SCENES = [LIVING_ROOM_A];
-
-// ── PHASE TYPE ────────────────────────────────────────────────────────────────
-
-// ── Scene picker (avoids consecutive repeats) ────────────────────────────────
-const lastSceneIndex: Record<string, number> = {};
-
-function pickScene(pool: Scene[], difficultyId: string): Scene {
-  if (pool.length === 1) return pool[0];
-  const last = lastSceneIndex[difficultyId] ?? -1;
-  let idx: number;
-  do { idx = Math.floor(Math.random() * pool.length); } while (idx === last);
-  lastSceneIndex[difficultyId] = idx;
-  return pool[idx];
+  generatedContent?: GeneratedScene;
 }
 
 type Phase = 'scene_intro' | 'find_differences' | 'completion';
 
 // ── COMPONENT ─────────────────────────────────────────────────────────────────
 
-export default function SpotFocus({ levelConfig, onLevelComplete }: Props) {
+export default function SpotFocus({ levelConfig, onLevelComplete, generatedContent }: Props) {
   const { t } = useTranslation();
   const { currentPhase, advance } = useGamePhase<Phase>([
     'scene_intro',
@@ -233,20 +24,36 @@ export default function SpotFocus({ levelConfig, onLevelComplete }: Props) {
     'completion',
   ]);
 
-  const scene = useMemo<Scene>(() => {
-    const pool =
-      levelConfig.id === 'level_5'                                  ? HARD_SCENES   :
-      levelConfig.id === 'level_3' || levelConfig.id === 'level_4'  ? MEDIUM_SCENES :
-                                                                       EASY_SCENES;
-    return pickScene(pool, levelConfig.id);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- stable per mount
+  // Use generated content or a minimal fallback
+  const scene = useMemo<GeneratedScene>(() => {
+    if (generatedContent) return generatedContent;
+    // Minimal fallback
+    return {
+      label: 'Scene',
+      originalRows: [
+        [
+          { id: 'a', display: '🫖', label: 'Tea Kettle' },
+          { id: 'b', display: '🫙', label: 'Pickle Jar' },
+          { id: 'c', display: '🫕', label: 'Cooking Pot' },
+        ],
+      ],
+      modifiedRows: [
+        [
+          { id: 'a', display: '☕', label: 'Coffee Cup', isDifference: true },
+          { id: 'b', display: '🫙', label: 'Pickle Jar' },
+          { id: 'c', display: '🫕', label: 'Cooking Pot' },
+        ],
+      ],
+      differenceCount: 1,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [found, setFound] = useState<Set<string>>(new Set());
   const falseTapsRef = useRef(0);
   const startedAt = useRef(Date.now());
 
-  // Use params.differenceCount so level_1 (2 required) can complete before finding all 3 in scene
-  const effectiveDiffCount = levelConfig.params.differenceCount as number;
+  const effectiveDiffCount = scene.differenceCount;
 
   function handleCellTap(rowIndex: number, colIndex: number) {
     const cell = scene.modifiedRows[rowIndex][colIndex];
@@ -261,9 +68,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete }: Props) {
       });
     } else if (!cell.isDifference) {
       falseTapsRef.current++;
-      // Zero response — nothing changes in DOM
     }
-    // Already found: zero response too
   }
 
   function handleComplete() {
@@ -289,7 +94,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete }: Props) {
     const isFound = found.has(cell.id);
 
     const baseClasses =
-      'flex-1 min-h-[80px] min-w-[80px] rounded-xl flex items-center justify-center text-4xl bg-app-bg relative select-none';
+      'flex-1 min-h-[96px] min-w-[96px] rounded-xl flex items-center justify-center text-[2.7rem] bg-app-bg relative select-none';
     const emptyClasses = isEmpty ? 'border-2 border-dashed border-gray-300' : '';
     const interactiveClasses = interactive
       ? 'cursor-pointer active:scale-95 transition-transform'
@@ -299,7 +104,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete }: Props) {
       <div
         key={cell.id}
         className={`${baseClasses} ${emptyClasses} ${interactiveClasses}`}
-        aria-label={cell.label}
+        aria-label={t(cell.label)}
         role={interactive ? 'button' : undefined}
         tabIndex={interactive ? 0 : undefined}
         onClick={interactive ? () => handleCellTap(rowIndex, colIndex) : undefined}
@@ -317,7 +122,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete }: Props) {
         {cell.display}
         {interactive && isFound && (
           <div className="absolute inset-0 rounded-xl bg-emerald-green/20 flex items-center justify-center">
-            <span className="text-emerald-green text-3xl font-bold">✓</span>
+            <span className="text-emerald-green text-[2.25rem] font-bold">✓</span>
           </div>
         )}
       </div>

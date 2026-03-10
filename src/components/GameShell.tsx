@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSessionContext } from '../session/SessionManager';
 import { track } from '../lib/analytics';
-import { recordCompletion, shouldPrompt, markPrompted } from '../lib/adaptiveDifficulty';
-import { upsertGameProgress } from '../lib/db';
+import { adjustDifficulty, scoreLevelLabel } from '../lib/dynamicDifficulty';
 import { useAppStore } from '../store';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
@@ -21,6 +20,7 @@ interface GameShellProps {
   gameId: string;
   gameCategory: 'memory' | 'attention' | 'executive';
   levelConfig: LevelConfig;
+  difficultyScore?: number;
   onLevelComplete: (result: LevelResult) => void;
   onExit: () => void;
   children: React.ReactNode;
@@ -38,12 +38,13 @@ const CATEGORY_BADGE_VARIANTS: Record<string, 'blue' | 'green' | 'purple'> = {
   executive: 'purple',
 };
 
-const ROTATION_THRESHOLD_SECONDS = 1 * 20; // 1 minutes
+const ROTATION_THRESHOLD_SECONDS = 1 * 30; // 30 seconds for testing
 
 export default function GameShell({
   gameId,
   gameCategory,
   levelConfig,
+  difficultyScore,
   onLevelComplete,
   onExit,
   children,
@@ -54,8 +55,6 @@ export default function GameShell({
   const profile = useAppStore((s) => s.activeProfile);
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [showChallengePrompt, setShowChallengePrompt] = useState(false);
-  const [pendingResult, setPendingResult] = useState<LevelResult | null>(null);
   const startedAt = useRef<number>(Date.now());
 
   const gameName = gameId
@@ -63,11 +62,16 @@ export default function GameShell({
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 
+  const levelLabel = difficultyScore !== undefined
+    ? scoreLevelLabel(difficultyScore)
+    : t(`level.${levelConfig.id}`);
+
   useEffect(() => {
     track('game_started', {
       gameId,
       gameCategory,
       levelId: levelConfig.id,
+      difficultyScore,
     });
 
     const handleBeforeUnload = () => {
@@ -79,13 +83,19 @@ export default function GameShell({
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [gameId, gameCategory, levelConfig.id, secondsInCurrentCategory]);
+  }, [gameId, gameCategory, levelConfig.id, secondsInCurrentCategory, difficultyScore]);
 
   async function handleLevelComplete(result: LevelResult) {
     const userId = profile?.userId;
 
+    // Adjust dynamic difficulty score
     if (userId) {
-      await recordCompletion(userId, gameId, result.completed);
+      // Calculate performance ratio from metrics
+      const performanceRatio = computePerformanceRatio(gameId, result);
+      await adjustDifficulty(userId, gameId, {
+        completed: result.completed,
+        performanceRatio,
+      });
     }
 
     const eventName = result.completed ? 'level_completed' : 'level_not_completed';
@@ -95,18 +105,8 @@ export default function GameShell({
       durationSeconds: result.durationSeconds,
       completed: result.completed,
       metrics: result.metrics,
+      difficultyScore,
     });
-
-    // Check if user should be prompted for a level up
-    if (userId && result.completed) {
-      const prompt = await shouldPrompt(userId, gameId);
-      if (prompt) {
-        setPendingResult(result);
-        setShowChallengePrompt(true);
-        await markPrompted(userId, gameId);
-        return;
-      }
-    }
 
     finishLevel(result);
   }
@@ -143,7 +143,7 @@ export default function GameShell({
         <Badge variant={CATEGORY_BADGE_VARIANTS[gameCategory] ?? 'blue'}>
           {t(CATEGORY_LABEL_KEYS[gameCategory] ?? '')}
         </Badge>
-        <Badge variant="amber">{t(`level.${levelConfig.id}`)}</Badge>
+        <Badge variant="amber">{levelLabel}</Badge>
         <button
           onClick={handleExit}
           className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-hover-state transition-colors text-xl text-caption-text"
@@ -184,40 +184,41 @@ export default function GameShell({
           </div>
         </div>
       )}
-
-      {/* Challenge prompt dialog */}
-      {showChallengePrompt && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
-          <div className="bg-card-bg rounded-3xl p-8 max-w-sm w-full shadow-xl">
-            <div className="text-center mb-6">
-              <div className="text-5xl mb-4">🌟</div>
-              <h3 className="text-h2 font-bold text-body-text mb-3">{t('challenge.prompt.title')}</h3>
-              <p className="text-body-md text-caption-text">{t('challenge.prompt.message')}</p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <Button
-                fullWidth
-                onClick={() => {
-                  setShowChallengePrompt(false);
-                  if (pendingResult) finishLevel(pendingResult);
-                }}
-              >
-                {t('challenge.prompt.yes')}
-              </Button>
-              <Button
-                variant="secondary"
-                fullWidth
-                onClick={() => {
-                  setShowChallengePrompt(false);
-                  if (pendingResult) finishLevel(pendingResult);
-                }}
-              >
-                {t('challenge.prompt.no')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
+}
+
+// ── Performance ratio computation ────────────────────────────────────────────
+
+function computePerformanceRatio(gameId: string, result: LevelResult): number {
+  const m = result.metrics;
+
+  if (gameId === 'remember-match') {
+    const quizCorrect = (m.quizCorrect as number) ?? 0;
+    const quizTotal = (m.quizTotal as number) ?? 1;
+    const flipAttempts = (m.flipAttempts as number) ?? 0;
+    // Perfect = quizTotal * 2 flips (one for each pair's two cards)
+    const optimalFlips = (quizTotal > 0 ? quizTotal : 3) * 2;
+    const flipRatio = Math.min(1, optimalFlips / Math.max(1, flipAttempts));
+    const quizRatio = quizCorrect / Math.max(1, quizTotal);
+    return (flipRatio + quizRatio) / 2;
+  }
+
+  if (gameId === 'spot-focus') {
+    const falseTaps = (m.falseTaps as number) ?? 0;
+    // Fewer false taps = higher performance
+    return Math.max(0, 1 - falseTaps * 0.15);
+  }
+
+  if (gameId === 'morning-routine-quest') {
+    const firstAttempt = (m.firstAttemptPlacements as number) ?? 0;
+    const totalCards = (m.totalCards as number) ?? 4;
+    const decisionCorrect = m.decisionCorrect;
+    let ratio = firstAttempt / Math.max(1, totalCards);
+    if (decisionCorrect === false) ratio *= 0.7;
+    return ratio;
+  }
+
+  // Default for non-dynamic games
+  return result.completed ? 0.7 : 0.3;
 }

@@ -1,27 +1,15 @@
-import { useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
 import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
 import type { GameCategory } from '../styles/tokens';
 
-const CATEGORIES: {
-  id: GameCategory;
-  icon: string;
-  labelKey: string;
-  descKey: string;
-}[] = [
-  { id: 'memory',    icon: '🧠', labelKey: 'questionnaire.memory.label',    descKey: 'questionnaire.memory.desc' },
-  { id: 'attention', icon: '🎯', labelKey: 'questionnaire.attention.label',  descKey: 'questionnaire.attention.desc' },
-  { id: 'executive', icon: '🗂️', labelKey: 'questionnaire.executive.label', descKey: 'questionnaire.executive.desc' },
-];
-
 const GAME_BY_CATEGORY: Record<GameCategory, string[]> = {
-  memory:    ['remember-match', 'shopping-list-recall', 'sequence-repeat'],
-  attention: ['spot-focus', 'target-tap', 'focus-filter'],
-  executive: ['morning-routine-quest', 'recipe-builder', 'garden-planner'],
+  memory:    ['remember-match'],
+  attention: ['spot-focus'],
+  executive: ['morning-routine-quest'],
 };
 
 function pickGame(category: GameCategory): string {
@@ -32,85 +20,76 @@ function pickGame(category: GameCategory): string {
 export default function DailyQuestionnaire() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const session                = useAppStore((s) => s.currentSession);
-  const setFocusCategory       = useAppStore((s) => s.setFocusCategory);
+  const session                   = useAppStore((s) => s.currentSession);
   const markQuestionnaireComplete = useAppStore((s) => s.markQuestionnaireComplete);
-  const setCurrentGame         = useAppStore((s) => s.setCurrentGame);
-  const setCurrentCategory     = useAppStore((s) => s.setCurrentCategory);
+  const setCurrentGame            = useAppStore((s) => s.setCurrentGame);
+  const setCurrentCategory        = useAppStore((s) => s.setCurrentCategory);
+  const navigatingRef = useRef(false);
 
-  const [screen, setScreen] = useState<'intro' | 'pick'>('intro');
+  // Guard: if questionnaire already done for today, redirect to home (only on mount)
+  useEffect(() => {
+    if (session.questionnaireCompleted && !navigatingRef.current) {
+      navigate('/app/home', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  if (session.questionnaireCompleted) {
-    navigate('/app/home');
-    return null;
-  }
+  function handleLetsBegin() {
+    navigatingRef.current = true;
+    // Always start with Memory category, pick a random memory game
+    const firstCategory: GameCategory = 'memory';
+    const gameId = pickGame(firstCategory);
 
-  function handleCategorySelect(cat: GameCategory) {
-    const gameId = pickGame(cat);
-    setFocusCategory(cat);
-    markQuestionnaireComplete();
-    setCurrentCategory(cat);
+    setCurrentCategory(firstCategory);
     setCurrentGame(gameId);
+    markQuestionnaireComplete();
 
-    track('questionnaire_completed', {
-      category: cat,
+    track('session_workout_started', {
+      firstGame: gameId,
       dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' }),
     });
 
     navigate(`/app/game/${gameId}`);
   }
 
-  if (screen === 'intro') {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-xl mx-auto w-full">
-        <div className="text-center mb-10">
-          <div className="text-7xl mb-6">🌟</div>
-          <h2 className="text-h1 font-bold text-body-text mb-4">{t('questionnaire.intro.title')}</h2>
-          <p className="text-h3 text-caption-text mb-10">{t('questionnaire.intro.message')}</p>
-        </div>
-
-        <div className="w-full space-y-4 mb-10">
-          {[
-            { icon: '🧠', text: 'questionnaire.intro.memory' },
-            { icon: '🎯', text: 'questionnaire.intro.attention' },
-            { icon: '🗂️', text: 'questionnaire.intro.executive' },
-          ].map(({ icon, text }) => (
-            <div key={text} className="flex items-center gap-4 bg-card-bg rounded-2xl px-6 py-4">
-              <span className="text-3xl">{icon}</span>
-              <p className="text-body-md text-body-text">{t(text)}</p>
-            </div>
-          ))}
-        </div>
-
-        <Button fullWidth onClick={() => setScreen('pick')}>
-          {t('btn.letsBegin')}
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex-1 flex flex-col p-8 max-w-xl mx-auto w-full">
-      <h2 className="text-h1 font-bold text-body-text mb-8">{t('questionnaire.pick.title')}</h2>
+    <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-xl mx-auto w-full">
+      <div className="text-center mb-6">
+        <div className="text-6xl mb-3">🧠</div>
+        <h2 className="text-h1 font-bold text-body-text mb-2">
+          {t('questionnaire.intro.title', "Your Daily Brain Workout")}
+        </h2>
+        <p className="text-h3 text-caption-text">
+          {t('questionnaire.intro.message', "Today's session will exercise three key areas of your brain.")}
+        </p>
+      </div>
 
-      <div className="space-y-5">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => handleCategorySelect(cat.id)}
-            className="w-full min-h-[120px] bg-card-bg rounded-3xl p-6 flex items-center gap-5
-                       border-2 border-transparent hover:border-primary-blue hover:bg-hover-state
-                       active:scale-[0.98] transition-all duration-150 shadow-sm text-left"
-          >
-            <span className="text-5xl flex-shrink-0">{cat.icon}</span>
-            <div>
-              <p className="text-h2 font-bold text-body-text mb-1">{t(cat.labelKey)}</p>
-              <p className="text-body-md text-caption-text">{t(cat.descKey)}</p>
+      <div className="w-full space-y-3 mb-8">
+        {[
+          { icon: '🧠', num: '1', label: t('game.category.memory', 'Memory'), desc: t('questionnaire.intro.memory', 'Remember and recall patterns') },
+          { icon: '🎯', num: '2', label: t('game.category.attention', 'Attention'), desc: t('questionnaire.intro.attention', 'Focus and filter information') },
+          { icon: '🗂️', num: '3', label: t('game.category.executive', 'Executive Function'), desc: t('questionnaire.intro.executive', 'Plan, organise and problem-solve') },
+        ].map(({ icon, num, label, desc }) => (
+          <div key={num} className="flex items-center gap-4 bg-card-bg rounded-2xl px-5 py-4 shadow-sm">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-blue text-white font-bold text-body-md flex-shrink-0">
+              {num}
             </div>
-            <span className="ml-auto text-3xl text-caption-text">›</span>
-          </button>
+            <span className="text-3xl flex-shrink-0">{icon}</span>
+            <div>
+              <p className="text-h3 font-semibold text-body-text leading-tight mb-1">{label}</p>
+              <p className="text-body-md text-caption-text leading-snug">{desc}</p>
+            </div>
+          </div>
         ))}
       </div>
+
+      <p className="text-body-md text-caption-text text-center mb-8">
+        {t('questionnaire.intro.duration', '~10 minutes per area • 30 minutes total')}
+      </p>
+
+      <Button fullWidth onClick={handleLetsBegin}>
+        {t('btn.letsBegin', "Let's Begin")}
+      </Button>
     </div>
   );
 }

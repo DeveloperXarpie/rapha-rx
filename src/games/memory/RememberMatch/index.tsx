@@ -4,126 +4,17 @@ import { Button } from '../../../components/ui/Button';
 import { useGamePhase } from '../../../hooks/useGamePhase';
 import type { LevelConfig } from '../../types';
 import type { LevelResult } from '../../../components/GameShell';
+import type { GeneratedRememberMatchContent, GeneratedPair, GeneratedQuizQuestion } from '../../../lib/contentGenerators/rememberMatch';
 
 interface Props {
   levelConfig: LevelConfig;
   onLevelComplete: (result: LevelResult) => void;
+  generatedContent?: GeneratedRememberMatchContent;
 }
 
-// ─── Data types ──────────────────────────────────────────────────────────────
+// ─── Card generation ─────────────────────────────────────────────────────────
 
-interface PairItem {
-  pairKey: string;
-  emoji: string;
-  label: string;
-}
-
-interface QuizQuestion {
-  question: string;
-  options: string[];  // first is always the correct one (shuffled before rendering)
-  correctAnswer: string;
-}
-
-interface CardPool {
-  pairs: PairItem[];
-  quizQuestions: QuizQuestion[];
-}
-
-// ─── Content pools ───────────────────────────────────────────────────────────
-
-const EASY_POOLS: CardPool[] = [
-  {
-    pairs: [
-      { pairKey: 'kettle',   emoji: '🫖', label: 'Tea Kettle' },
-      { pairKey: 'coconut',  emoji: '🥥', label: 'Coconut'   },
-      { pairKey: 'marigold', emoji: '🌺', label: 'Marigold'  },
-    ],
-    quizQuestions: [
-      { question: 'Which of these was in the game?', options: ['🥥 Coconut', '🥭 Mango', '🍋 Lemon', '🍎 Apple'], correctAnswer: '🥥 Coconut' },
-      { question: 'Which of these was in the game?', options: ['🌺 Marigold', '🌹 Rose', '🌻 Sunflower', '🌷 Tulip'], correctAnswer: '🌺 Marigold' },
-    ],
-  },
-  {
-    pairs: [
-      { pairKey: 'diya',    emoji: '🪔', label: 'Diya'    },
-      { pairKey: 'banana',  emoji: '🍌', label: 'Banana'  },
-      { pairKey: 'sparrow', emoji: '🐦', label: 'Sparrow' },
-    ],
-    quizQuestions: [
-      { question: 'Which of these was in the game?', options: ['🪔 Diya', '💡 Bulb', '🕯️ Candle', '🔦 Torch'], correctAnswer: '🪔 Diya' },
-      { question: 'Which of these was in the game?', options: ['🍌 Banana', '🥭 Mango', '🍊 Orange', '🍇 Grapes'], correctAnswer: '🍌 Banana' },
-    ],
-  },
-  {
-    pairs: [
-      { pairKey: 'rice',    emoji: '🍚', label: 'Rice'    },
-      { pairKey: 'jasmine', emoji: '🌸', label: 'Jasmine' },
-      { pairKey: 'cow',     emoji: '🐄', label: 'Cow'     },
-    ],
-    quizQuestions: [
-      { question: 'Which of these was in the game?', options: ['🍚 Rice', '🍞 Bread', '🌾 Wheat', '🫓 Roti'], correctAnswer: '🍚 Rice' },
-      { question: 'Which of these was in the game?', options: ['🌸 Jasmine', '🌹 Rose', '🌻 Sunflower', '🌺 Marigold'], correctAnswer: '🌸 Jasmine' },
-    ],
-  },
-];
-
-const MEDIUM_POOLS: CardPool[] = [
-  {
-    pairs: [
-      { pairKey: 'kettle',   emoji: '🫖', label: 'Tea Kettle' },
-      { pairKey: 'coconut',  emoji: '🥥', label: 'Coconut'   },
-      { pairKey: 'marigold', emoji: '🌺', label: 'Marigold'  },
-      { pairKey: 'diya',     emoji: '🪔', label: 'Diya'      },
-      { pairKey: 'banana',   emoji: '🍌', label: 'Banana'    },
-      { pairKey: 'sparrow',  emoji: '🐦', label: 'Sparrow'   },
-    ],
-    quizQuestions: [
-      { question: 'Which of these was in the game?', options: ['🫖 Tea Kettle', '☕ Coffee Cup', '🥤 Cold Drink', '🍶 Flask'], correctAnswer: '🫖 Tea Kettle' },
-      { question: 'Which of these was in the game?', options: ['🪔 Diya', '💡 Bulb', '🕯️ Candle', '🔦 Torch'], correctAnswer: '🪔 Diya' },
-      { question: 'Which of these was in the game?', options: ['🐦 Sparrow', '🦚 Peacock', '🐓 Rooster', '🦆 Duck'], correctAnswer: '🐦 Sparrow' },
-    ],
-  },
-  {
-    pairs: [
-      { pairKey: 'rice',    emoji: '🍚', label: 'Rice'    },
-      { pairKey: 'jasmine', emoji: '🌸', label: 'Jasmine' },
-      { pairKey: 'cow',     emoji: '🐄', label: 'Cow'     },
-      { pairKey: 'tulsi',   emoji: '🌿', label: 'Tulsi'   },
-      { pairKey: 'mango',   emoji: '🥭', label: 'Mango'   },
-      { pairKey: 'peacock', emoji: '🦚', label: 'Peacock' },
-    ],
-    quizQuestions: [
-      { question: 'Which of these was in the game?', options: ['🥭 Mango', '🍎 Apple', '🍊 Orange', '🍋 Lemon'], correctAnswer: '🥭 Mango' },
-      { question: 'Which of these was in the game?', options: ['🌿 Tulsi', '🌵 Cactus', '🌴 Palm', '🍀 Clover'], correctAnswer: '🌿 Tulsi' },
-      { question: 'Which of these was in the game?', options: ['🦚 Peacock', '🦜 Parrot', '🐓 Rooster', '🦢 Swan'], correctAnswer: '🦚 Peacock' },
-    ],
-  },
-];
-
-const HARD_POOLS: CardPool[] = [
-  {
-    pairs: [
-      { pairKey: 'kettle',   emoji: '🫖', label: 'Tea Kettle' },
-      { pairKey: 'coconut',  emoji: '🥥', label: 'Coconut'   },
-      { pairKey: 'marigold', emoji: '🌺', label: 'Marigold'  },
-      { pairKey: 'diya',     emoji: '🪔', label: 'Diya'      },
-      { pairKey: 'tulsi',    emoji: '🌿', label: 'Tulsi'     },
-      { pairKey: 'mango',    emoji: '🥭', label: 'Mango'     },
-      { pairKey: 'peacock',  emoji: '🦚', label: 'Peacock'   },
-      { pairKey: 'jasmine',  emoji: '🌸', label: 'Jasmine'   },
-    ],
-    quizQuestions: [
-      { question: 'Which of these was in the game?', options: ['🥥 Coconut', '🍌 Banana', '🍇 Grapes', '🍊 Orange'], correctAnswer: '🥥 Coconut' },
-      { question: 'Which of these was in the game?', options: ['🪔 Diya', '💡 Bulb', '🕯️ Candle', '🔦 Torch'], correctAnswer: '🪔 Diya' },
-      { question: 'Which of these was in the game?', options: ['🦚 Peacock', '🦜 Parrot', '🐓 Rooster', '🦢 Swan'], correctAnswer: '🦚 Peacock' },
-      { question: 'Which of these was in the game?', options: ['🌸 Jasmine', '🌹 Rose', '🌻 Sunflower', '🌷 Tulip'], correctAnswer: '🌸 Jasmine' },
-    ],
-  },
-];
-
-// ─── Card generation (stable on mount) ──────────────────────────────────────
-
-function buildShuffledCards(pairs: PairItem[]) {
+function buildShuffledCards(pairs: GeneratedPair[]) {
   const cards = pairs.flatMap((item) => [
     { id: `${item.pairKey}-a`, pairKey: item.pairKey, emoji: item.emoji, label: item.label },
     { id: `${item.pairKey}-b`, pairKey: item.pairKey, emoji: item.emoji, label: item.label },
@@ -145,16 +36,18 @@ interface CardProps {
 
 function MemoryCard({ emoji, label, faceUp, matched, onClick, interactive }: CardProps) {
   const baseClasses =
-    'min-w-[100px] min-h-[100px] rounded-2xl flex flex-col items-center justify-center gap-2 transition-all duration-200 select-none';
+    'min-w-[120px] min-h-[120px] rounded-2xl flex flex-col items-center justify-center gap-2 transition-all duration-200 select-none';
+
+  const { t } = useTranslation();
 
   if (matched) {
     return (
       <div
         className={`${baseClasses} bg-card-bg border-4 border-emerald-green`}
-        aria-label={label}
+        aria-label={t(label)}
       >
-        <span className="text-5xl">{emoji}</span>
-        <span className="text-body-md text-body-text font-medium text-center px-1">{label}</span>
+        <span className="text-[3.6rem] leading-none">{emoji}</span>
+        <span className="text-[1.2rem] leading-tight text-body-text font-medium text-center px-1">{t(label)}</span>
       </div>
     );
   }
@@ -163,10 +56,10 @@ function MemoryCard({ emoji, label, faceUp, matched, onClick, interactive }: Car
     return (
       <div
         className={`${baseClasses} bg-card-bg border-2 border-gray-200`}
-        aria-label={label}
+        aria-label={t(label)}
       >
-        <span className="text-5xl">{emoji}</span>
-        <span className="text-body-md text-body-text font-medium text-center px-1">{label}</span>
+        <span className="text-[3.6rem] leading-none">{emoji}</span>
+        <span className="text-[1.2rem] leading-tight text-body-text font-medium text-center px-1">{t(label)}</span>
       </div>
     );
   }
@@ -176,41 +69,56 @@ function MemoryCard({ emoji, label, faceUp, matched, onClick, interactive }: Car
     <button
       className={`${baseClasses} bg-primary-blue text-white ${interactive ? 'cursor-pointer active:scale-95' : 'cursor-default'}`}
       onClick={interactive ? onClick : undefined}
-      aria-label={label}
+      aria-label={t(label)}
     >
-      <span className="text-4xl font-bold">?</span>
+      <span className="text-[2.7rem] font-bold">?</span>
     </button>
   );
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
-export default function RememberMatch({ levelConfig, onLevelComplete }: Props) {
+export default function RememberMatch({ levelConfig, onLevelComplete, generatedContent }: Props) {
   const { t } = useTranslation();
   const startedAt = useRef(Date.now());
-  const params = levelConfig.params;
 
   const PHASES = ['preview', 'matching', 'celebration', 'quiz', 'summary'] as const;
   type Phase = typeof PHASES[number];
   const { currentPhase, advance } = useGamePhase<Phase>([...PHASES]);
 
-  // ── Pool selection — pick once per mount ────────────────────────────────
-  const pool = useMemo<CardPool>(() => {
-    const pools =
-      levelConfig.id === 'level_5'                                  ? HARD_POOLS   :
-      levelConfig.id === 'level_3' || levelConfig.id === 'level_4'  ? MEDIUM_POOLS :
-                                                                       EASY_POOLS;
-    return pools[Math.floor(Math.random() * pools.length)];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // ── Content from generator or fallback ──────────────────────────────────
+  const content = useMemo<{ pairs: GeneratedPair[]; quizQuestions: GeneratedQuizQuestion[]; gridCols: number; previewDurationMs: number }>(() => {
+    if (generatedContent) {
+      return {
+        pairs: generatedContent.pairs,
+        quizQuestions: generatedContent.quizQuestions,
+        gridCols: generatedContent.gridCols,
+        previewDurationMs: generatedContent.previewDurationMs,
+      };
+    }
+    // Fallback to params-based (for non-dynamic use)
+    const params = levelConfig.params;
+    return {
+      pairs: [
+        { pairKey: 'kettle', emoji: '🫖', label: 'Tea Kettle' },
+        { pairKey: 'coconut', emoji: '🥥', label: 'Coconut' },
+        { pairKey: 'marigold', emoji: '🌺', label: 'Marigold' },
+      ],
+      quizQuestions: [
+        { question: 'Which of these was in the game?', options: ['🥥 Coconut', '🥭 Mango', '🍋 Lemon', '🍎 Apple'], correctAnswer: '🥥 Coconut' },
+      ],
+      gridCols: (params.gridCols as number) ?? 3,
+      previewDurationMs: (params.previewDurationMs as number) ?? 60000,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Dynamic values derived from pool and params ─────────────────────────
-  const totalPairs = pool.pairs.length;
-  const gridCols   = params.gridCols as number;
-  const quizCount  = Math.min(params.quizQuestions as number, pool.quizQuestions.length);
+  const totalPairs = content.pairs.length;
+  const gridCols   = content.gridCols;
+  const quizCount  = Math.min(content.quizQuestions.length, content.quizQuestions.length);
 
   // ── Stable card order — never re-shuffle after mount ────────────────────
-  const [cards] = useState(() => buildShuffledCards(pool.pairs));
+  const [cards] = useState(() => buildShuffledCards(content.pairs));
 
   const [matched, setMatched]           = useState<Set<string>>(new Set());
   const [flipped, setFlipped]           = useState<string[]>([]);
@@ -223,11 +131,10 @@ export default function RememberMatch({ levelConfig, onLevelComplete }: Props) {
   // ── PREVIEW: auto-advance after previewDurationMs ───────────────────────
   useEffect(() => {
     if (currentPhase !== 'preview') return;
-    const ms = params.previewDurationMs as number;
+    const ms = content.previewDurationMs;
     const timer = setTimeout(advance, ms);
     return () => clearTimeout(timer);
-  // advance is stable (useCallback inside useGamePhase); intentionally omit
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPhase]);
 
   // ── CELEBRATION: auto-advance after 1800ms ───────────────────────────────
@@ -235,16 +142,16 @@ export default function RememberMatch({ levelConfig, onLevelComplete }: Props) {
     if (currentPhase !== 'celebration') return;
     const timer = setTimeout(advance, 1800);
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPhase]);
 
   // ── Shuffle quiz options once per question ───────────────────────────────
   useEffect(() => {
     if (currentPhase === 'quiz') {
-      const q = pool.quizQuestions[quizIndex];
+      const q = content.quizQuestions[quizIndex];
       setShuffledOptions([...q.options].sort(() => Math.random() - 0.5));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPhase, quizIndex]);
 
   // ── Card tap handler ─────────────────────────────────────────────────────
@@ -288,7 +195,7 @@ export default function RememberMatch({ levelConfig, onLevelComplete }: Props) {
 
   // ── Quiz answer handler ──────────────────────────────────────────────────
   function handleQuizAnswer(option: string) {
-    const q = pool.quizQuestions[quizIndex];
+    const q = content.quizQuestions[quizIndex];
     if (option === q.correctAnswer) {
       setQuizCorrect((n) => n + 1);
     }
@@ -396,8 +303,16 @@ export default function RememberMatch({ levelConfig, onLevelComplete }: Props) {
     );
   }
 
+  function translateOption(option: string) {
+    const spaceIndex = option.indexOf(' ');
+    if (spaceIndex === -1) return option;
+    const emoji = option.substring(0, spaceIndex);
+    const text = option.substring(spaceIndex + 1);
+    return `${emoji} ${t(text)}`;
+  }
+
   function renderQuiz() {
-    const q = pool.quizQuestions[quizIndex];
+    const q = content.quizQuestions[quizIndex];
 
     return (
       <div className="flex flex-col items-center gap-8 w-full max-w-md mx-auto">
@@ -413,7 +328,7 @@ export default function RememberMatch({ levelConfig, onLevelComplete }: Props) {
               fullWidth
               onClick={() => handleQuizAnswer(option)}
             >
-              {t(`remember-match.quiz.option.${quizIndex}.${option}`, option)}
+              {translateOption(option)}
             </Button>
           ))}
         </div>

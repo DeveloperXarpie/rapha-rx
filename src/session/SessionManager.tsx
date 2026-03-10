@@ -11,14 +11,6 @@ const GAME_BY_CATEGORY: Record<GameCategory, string[]> = {
   executive: ['morning-routine-quest'],
 };
 
-function pickNextCategory(completed: string[], focus: GameCategory | null): GameCategory | null {
-  // Focus category goes first if not done
-  if (focus && !completed.includes(focus)) return focus;
-  // Then pick from remaining
-  const remaining = ALL_CATEGORIES.filter((c) => !completed.includes(c));
-  return remaining[0] ?? null;
-}
-
 function pickGame(category: GameCategory, excludeGameId?: string): string {
   const games = GAME_BY_CATEGORY[category].filter((g) => g !== excludeGameId);
   return games[Math.floor(Math.random() * games.length)] ?? GAME_BY_CATEGORY[category][0];

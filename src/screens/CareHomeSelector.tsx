@@ -338,17 +338,17 @@ export default function CareHomeSelector() {
   return (
     <div className="min-h-screen bg-[#060A18] flex flex-col items-center justify-center p-8 text-white">
       <div className="flex flex-col items-center text-center">
-        <h1 className="font-serif text-[48px] font-bold tracking-wide mb-14 drop-shadow-md" aria-label="RAPHA-Rx">
+        <h1 className="font-serif text-[48px] font-bold tracking-wide mb-8 drop-shadow-md" aria-label="RAPHA-Rx">
           <span className="text-[#4C84E3]">RAPHA-</span>
           <span className="text-[#88B04B]">Rx</span>
         </h1>
         
-        <div className="relative mb-14">
+        <div className="relative mb-8">
           <div className="absolute inset-0 bg-blue-500/20 blur-[50px] rounded-full"></div>
           <img src="/brain_logo.png" alt="RAPHA-Rx Logo" className="w-[300px] h-[300px] object-contain relative z-10 mix-blend-screen" />
         </div>
 
-        <p className="text-[#88B04B] text-[26px] font-serif mb-[90px]">Restore Your Mind</p>
+        <p className="text-[#88B04B] text-[26px] font-serif mb-12">Restore Your Mind</p>
 
         <div className="flex flex-col gap-8 w-full max-w-md items-center">
           <button 

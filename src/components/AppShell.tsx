@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
@@ -18,6 +19,12 @@ export default function AppShell() {
   const updateSetting = useAppStore((s) => s.updateSetting);
   const isOnline = useOnlineStatus();
 
+  useEffect(() => {
+    const html = document.documentElement;
+    html.className = html.className.replace(/\btext-size-\w+\b/g, '').trim();
+    html.classList.add(`text-size-${settings.textSize}`);
+  }, [settings.textSize]);
+
   function changeLang(lang: Lang) {
     const from = settings.language;
     if (from === lang) return;
@@ -27,7 +34,7 @@ export default function AppShell() {
   }
 
   return (
-    <div className={`min-h-screen bg-app-bg flex flex-col text-size-${settings.textSize}`}>
+    <div className="min-h-screen bg-app-bg flex flex-col">
       {/* Top bar */}
       <header className="bg-card-bg shadow-sm px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <h1 className="text-h2 font-bold text-primary-blue">{t('app.name')}</h1>
