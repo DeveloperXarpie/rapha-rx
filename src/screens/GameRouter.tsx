@@ -1,6 +1,6 @@
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store';
-import { getTodayDifficulty, getRememberMatchParams, getSpotFocusParams, getMorningRoutineParams, scoreToLevel } from '../lib/dynamicDifficulty';
+import { getTodayDifficulty, getRememberMatchParams, getSpotFocusParams, getMorningRoutineParams, getWordSearchParams, scoreToLevel } from '../lib/dynamicDifficulty';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import GameShell, { type LevelResult } from '../components/GameShell';
 import type { LevelConfig } from '../games/types';
@@ -11,24 +11,24 @@ import RememberMatch from '../games/memory/RememberMatch';
 import ShoppingListRecall from '../games/memory/ShoppingListRecall';
 import SequenceRepeat from '../games/memory/SequenceRepeat';
 import SpotFocus from '../games/attention/SpotFocus';
-import TargetTap from '../games/attention/TargetTap';
+import WordSearch from '../games/attention/WordSearch';
 import FocusFilter from '../games/attention/FocusFilter';
 import MorningRoutineQuest from '../games/executive/MorningRoutineQuest';
 import RecipeBuilder from '../games/executive/RecipeBuilder';
-import GardenPlanner from '../games/executive/GardenPlanner';
+import GardenSequencer from '../games/executive/GardenSequencer';
 
 // ─── Level config imports (fallback for non-dynamic games) ────────────────────
 import { levels as shoppingListLevels } from '../games/memory/ShoppingListRecall/levels.config';
 import { levels as sequenceRepeatLevels } from '../games/memory/SequenceRepeat/levels.config';
-import { levels as targetTapLevels } from '../games/attention/TargetTap/levels.config';
 import { levels as focusFilterLevels } from '../games/attention/FocusFilter/levels.config';
 import { levels as recipeBuilderLevels } from '../games/executive/RecipeBuilder/levels.config';
-import { levels as gardenPlannerLevels } from '../games/executive/GardenPlanner/levels.config';
+import { levels as gardenSequencerLevels } from '../games/executive/GardenSequencer/levels.config';
 
 // ─── Content generators ───────────────────────────────────────────────────────
 import { generateRememberMatchContent, type GeneratedRememberMatchContent } from '../lib/contentGenerators/rememberMatch';
 import { generateSpotFocusContent, type GeneratedScene } from '../lib/contentGenerators/spotFocus';
 import { generateMorningRoutineContent, type GeneratedRoutineContent } from '../lib/contentGenerators/morningRoutine';
+import { generateWordSearchContent } from '../lib/contentGenerators/wordSearch';
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
@@ -36,7 +36,7 @@ type GameEntry = {
   component: React.ComponentType<{
     levelConfig: LevelConfig;
     onLevelComplete: (result: LevelResult) => void;
-    generatedContent?: unknown;
+    generatedContent?: any;
   }>;
   levels?: LevelConfig[];
   category: GameCategory;
@@ -49,11 +49,11 @@ const GAME_REGISTRY: Record<string, GameEntry> = {
   'shopping-list-recall':   { component: ShoppingListRecall,   levels: shoppingListLevels,    category: 'memory',     dynamic: false },
   'sequence-repeat':        { component: SequenceRepeat,       levels: sequenceRepeatLevels,  category: 'memory',     dynamic: false },
   'spot-focus':             { component: SpotFocus,            category: 'attention',  dynamic: true },
-  'target-tap':             { component: TargetTap,            levels: targetTapLevels,       category: 'attention',  dynamic: false },
+  'word-search':            { component: WordSearch,           category: 'attention',  dynamic: true },
   'focus-filter':           { component: FocusFilter,          levels: focusFilterLevels,     category: 'attention',  dynamic: false },
   'morning-routine-quest':  { component: MorningRoutineQuest,  category: 'executive',  dynamic: true },
   'recipe-builder':         { component: RecipeBuilder,        levels: recipeBuilderLevels,   category: 'executive',  dynamic: false },
-  'garden-planner':         { component: GardenPlanner,        levels: gardenPlannerLevels,   category: 'executive',  dynamic: false },
+  'garden-sequencer':       { component: GardenSequencer,      levels: gardenSequencerLevels, category: 'executive',  dynamic: false },
 };
 
 // ─── Dynamic content generation ───────────────────────────────────────────────
@@ -83,6 +83,15 @@ function generateContentForGame(gameId: string, score: number): { levelConfig: L
   if (gameId === 'morning-routine-quest') {
     const params = getMorningRoutineParams(score);
     const content = generateMorningRoutineContent(params);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: content,
+    };
+  }
+
+  if (gameId === 'word-search') {
+    const params = getWordSearchParams(score);
+    const content = generateWordSearchContent(params);
     return {
       levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
       generatedContent: content,

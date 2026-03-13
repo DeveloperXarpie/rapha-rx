@@ -153,3 +153,21 @@ export function getMorningRoutineParams(score: number): MorningRoutineDynamicPar
     disruptionEventEnabled: score >= 0.7,
   };
 }
+
+export interface WordSearchDynamicParams {
+  gridRows: number;
+  gridCols: number;
+  wordCount: number;
+  allowDiagonal: boolean;
+  allowBackwards: boolean;
+}
+
+export function getWordSearchParams(score: number): WordSearchDynamicParams {
+  return {
+    gridRows: lerpInt(5, 8, score),
+    gridCols: lerpInt(6, 8, score),
+    wordCount: lerpInt(3, 5, score),
+    allowDiagonal: score >= 0.3,
+    allowBackwards: score >= 0.7,
+  };
+}

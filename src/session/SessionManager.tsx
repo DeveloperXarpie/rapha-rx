@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useCallback } from 'react';
+import { createContext, useContext, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import { useAppStore } from '../store';
 import type { GameCategory } from '../styles/tokens';
@@ -6,9 +6,9 @@ import type { GameCategory } from '../styles/tokens';
 const ALL_CATEGORIES: GameCategory[] = ['memory', 'attention', 'executive'];
 
 const GAME_BY_CATEGORY: Record<GameCategory, string[]> = {
-  memory:    ['remember-match'],
-  attention: ['spot-focus'],
-  executive: ['morning-routine-quest'],
+  memory:    ['remember-match', 'shopping-list-recall', 'sequence-repeat'],
+  attention: ['spot-focus', 'focus-filter', 'word-search'],
+  executive: ['morning-routine-quest', 'recipe-builder', 'garden-sequencer'],
 };
 
 function pickGame(category: GameCategory, excludeGameId?: string): string {

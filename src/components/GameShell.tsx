@@ -219,6 +219,58 @@ function computePerformanceRatio(gameId: string, result: LevelResult): number {
     return ratio;
   }
 
+  if (gameId === 'word-search') {
+    const wordsFound  = (m.wordsFound  as number) ?? 0;
+    const totalWords  = (m.totalWords  as number) ?? 1;
+    const falseDrags  = (m.falseDrags  as number) ?? 0;
+    const foundRatio    = wordsFound / Math.max(1, totalWords);
+    const accuracyRatio = Math.max(0, 1 - falseDrags / Math.max(1, totalWords * 3));
+    return (foundRatio + accuracyRatio) / 2;
+  }
+
+  if (gameId === 'shopping-list-recall') {
+    const recalled       = (m.itemsRecalled   as number) ?? 0;
+    const total          = (m.totalItems      as number) ?? 1;
+    const falsePositives = (m.falsePositives  as number) ?? 0;
+    const recallRatio   = recalled / Math.max(1, total);
+    const precisionRatio = Math.max(0, 1 - falsePositives / Math.max(1, total));
+    return (recallRatio + precisionRatio) / 2;
+  }
+
+  if (gameId === 'recipe-builder') {
+    const firstCorrect   = (m.firstChoiceCorrect as number) ?? 0;
+    const totalSteps     = (m.totalSteps         as number) ?? 4;
+    const ingCorrect     = m.ingredientDecisionCorrect;
+    let ratio = firstCorrect / Math.max(1, totalSteps);
+    if (ingCorrect === false) ratio *= 0.8;
+    if (ingCorrect === true)  ratio = Math.min(1, ratio * 1.1);
+    return ratio;
+  }
+
+  if (gameId === 'sequence-repeat') {
+    const peak   = (m.peakSequenceLength as number) ?? 0;
+    const max    = (m.maxLength          as number) ?? Math.max(1, peak);
+    const errors = (m.totalErrors        as number) ?? 0;
+    const lengthRatio = Math.min(1, peak / Math.max(1, max));
+    const errorPenalty = Math.max(0, 1 - errors * 0.1);
+    return (lengthRatio + errorPenalty) / 2;
+  }
+
+  if (gameId === 'focus-filter') {
+    const firstCorrect = (m.firstAttemptCorrect as number) ?? 0;
+    const total        = (m.totalQuestions      as number) ?? 1;
+    return firstCorrect / Math.max(1, total);
+  }
+
+  if (gameId === 'garden-sequencer') {
+    const firstCorrect = (m.firstAttemptCorrect as number) ?? 0;
+    const resets       = (m.resetCount          as number) ?? 0;
+    // 4 slots total; each reset penalises 10%
+    let ratio = firstCorrect / 4;
+    ratio = Math.max(0, ratio - resets * 0.1);
+    return Math.min(1, ratio);
+  }
+
   // Default for non-dynamic games
   return result.completed ? 0.7 : 0.3;
 }

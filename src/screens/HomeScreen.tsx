@@ -23,13 +23,19 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
 
 const GAME_BY_CATEGORY: Record<GameCategory, { id: string; nameKey: string; icon: string }[]> = {
   memory: [
-    { id: 'remember-match', nameKey: 'game.rememberMatch', icon: '🃏' },
+    { id: 'remember-match',       nameKey: 'game.rememberMatch',      icon: '🃏' },
+    { id: 'shopping-list-recall', nameKey: 'game.shoppingListRecall', icon: '🛒' },
+    { id: 'sequence-repeat',      nameKey: 'game.sequenceRepeat',     icon: '🎨' },
   ],
   attention: [
-    { id: 'spot-focus', nameKey: 'game.spotFocus', icon: '👁️' },
+    { id: 'spot-focus',    nameKey: 'game.spotFocus',    icon: '👁️' },
+    { id: 'word-search',   nameKey: 'game.wordSearch',   icon: '🔤' },
+    { id: 'focus-filter',  nameKey: 'game.focusFilter',  icon: '🔎' },
   ],
   executive: [
     { id: 'morning-routine-quest', nameKey: 'game.morningRoutine', icon: '☀️' },
+    { id: 'recipe-builder',        nameKey: 'game.recipeBuilder',  icon: '🍲' },
+    { id: 'garden-sequencer',      nameKey: 'game.gardenSequencer', icon: '🌱' },
   ],
 };
 

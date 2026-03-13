@@ -115,7 +115,7 @@ export default function RememberMatch({ levelConfig, onLevelComplete, generatedC
 
   const totalPairs = content.pairs.length;
   const gridCols   = content.gridCols;
-  const quizCount  = Math.min(content.quizQuestions.length, content.quizQuestions.length);
+  const quizCount  = Math.min(levelConfig.params.quizQuestions as number, content.quizQuestions.length);
 
   // ── Stable card order — never re-shuffle after mount ────────────────────
   const [cards] = useState(() => buildShuffledCards(content.pairs));
@@ -317,7 +317,7 @@ export default function RememberMatch({ levelConfig, onLevelComplete, generatedC
     return (
       <div className="flex flex-col items-center gap-8 w-full max-w-md mx-auto">
         <p className="text-h3 font-medium text-body-text text-center">
-          {t('remember-match.phase.quiz.question', q.question)}
+          {q.question}
         </p>
 
         <div className="flex flex-col gap-4 w-full">

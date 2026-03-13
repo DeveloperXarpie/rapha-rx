@@ -7,9 +7,9 @@ import { Button } from '../components/ui/Button';
 import type { GameCategory } from '../styles/tokens';
 
 const GAME_BY_CATEGORY: Record<GameCategory, string[]> = {
-  memory:    ['remember-match'],
-  attention: ['spot-focus'],
-  executive: ['morning-routine-quest'],
+  memory:    ['remember-match', 'shopping-list-recall', 'sequence-repeat'],
+  attention: ['spot-focus', 'word-search', 'focus-filter'],
+  executive: ['morning-routine-quest', 'recipe-builder', 'garden-sequencer'],
 };
 
 function pickGame(category: GameCategory): string {
