@@ -138,7 +138,7 @@ export default function MorningRoutineQuest({ levelConfig, onLevelComplete, gene
     return (
       <div role="main" className="flex-1 flex flex-col items-center justify-center p-8 gap-6 text-center bg-app-bg min-h-screen">
         <span className="text-7xl" aria-hidden="true">{routineContent.emoji}</span>
-        <h2 className="text-h2 font-bold text-body-text">
+        <h2 className="game-title-banner game-title-banner-compact text-center">
           {t(routineContent.title)}
         </h2>
         <p className="text-h3 text-caption-text">
@@ -148,7 +148,7 @@ export default function MorningRoutineQuest({ levelConfig, onLevelComplete, gene
           {t(routineContent.contextDescription)}
         </p>
         <div className="w-full max-w-sm mt-2">
-          <Button fullWidth onClick={advance}>
+          <Button fullWidth className="btn-ready" onClick={advance}>
             {t('morning-routine.intro.begin', "Let's Begin!")}
           </Button>
         </div>

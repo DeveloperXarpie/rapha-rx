@@ -309,7 +309,7 @@ export default function GardenSequencer({ levelConfig, onLevelComplete }: Props)
       <div className="flex-1 flex flex-col items-center justify-center p-8 gap-6 text-center bg-[#FAFAF8]">
         <span className="text-8xl">{activity.emoji}</span>
         <div>
-          <h2 className="text-h1 font-bold text-body-text">{getTitle()}</h2>
+          <h2 className="game-title-banner game-title-banner-compact text-center">{getTitle()}</h2>
           <p className="text-h3 text-caption-text mt-3">
             {t('garden-sequencer.goal.subtitle', 'Place the 4 steps in the right order')}
           </p>
@@ -336,7 +336,7 @@ export default function GardenSequencer({ levelConfig, onLevelComplete }: Props)
           ))}
         </div>
 
-        <button onClick={advance} className="btn-primary w-full max-w-sm mt-2">
+        <button onClick={advance} className="btn-ready w-full max-w-sm mt-2">
           {t('btn.startGame', 'Start!')}
         </button>
       </div>

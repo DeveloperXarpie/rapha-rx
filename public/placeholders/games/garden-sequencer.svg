@@ -1,0 +1,12 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Garden Sequencer placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1C7ED6" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#111827" stop-opacity="0.95" />
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)" rx="72" ry="72" />
+  <rect x="80" y="80" width="864" height="864" fill="none" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="4" rx="56" ry="56" />
+  <text x="512" y="465" text-anchor="middle" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="64" font-weight="700">Garden Sequencer</text>
+  <text x="512" y="555" text-anchor="middle" fill="#E5E7EB" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="500">Placeholder Image</text>
+</svg>

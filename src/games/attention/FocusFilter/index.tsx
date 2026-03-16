@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useGamePhase } from '../../../hooks/useGamePhase';
 import type { LevelConfig } from '../../types';
 import type { LevelResult } from '../../../components/GameShell';
+import AssetPanel from '../../../components/AssetPanel';
+import { registerAsset } from '../../../lib/assets/catalog';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -17,7 +19,15 @@ interface Question {
   pool: string;
   outlierType: string;
   categoryHint: string;
-  items: { emoji: string; label: string }[];
+  items: { assetId: string; label: string; panelColorClass?: string }[];
+  outlierIndex: number;
+}
+
+interface RawQuestion {
+  pool: string;
+  outlierType: string;
+  categoryHint: string;
+  items: { emoji: string; label: string; panelColorClass?: string }[];
   outlierIndex: number;
 }
 
@@ -28,7 +38,7 @@ interface Props {
 
 // ─── Question Bank ────────────────────────────────────────────────────────────
 
-const ALL_QUESTIONS: Question[] = [
+const RAW_QUESTIONS: RawQuestion[] = [
   // ── south_indian_food × obvious ───────────────────────────────────────────
   {
     pool: 'south_indian_food', outlierType: 'obvious',
@@ -302,6 +312,40 @@ const ALL_QUESTIONS: Question[] = [
   },
 ];
 
+// ─── Asset helpers ────────────────────────────────────────────────────────────
+
+function toAssetId(label: string): string {
+  return `item.${label.toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+}
+
+// Optional per-asset image overrides for this game.
+// Example:
+// 'item.vada': '/placeholders/elements/by-game/focus-filter/vada-custom.png'
+const ASSET_IMAGE_OVERRIDES: Record<string, string> = {
+  'item.vada': '/placeholders/elements/by-game/focus-filter/vada.png',
+};
+
+function materializeQuestions(raw: RawQuestion[]): Question[] {
+  return raw.map((q) => ({
+    ...q,
+    items: q.items.map((item) => {
+      const assetId = toAssetId(item.label);
+      registerAsset({
+        assetId,
+        token: item.emoji,
+        imageSrc: ASSET_IMAGE_OVERRIDES[assetId],
+      });
+      return {
+        assetId,
+        label: item.label,
+        panelColorClass: item.panelColorClass,
+      };
+    }),
+  }));
+}
+
+const ALL_QUESTIONS: Question[] = materializeQuestions(RAW_QUESTIONS);
+
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
 function buildQuestions(p: FocusFilterParams): Question[] {
@@ -348,7 +392,7 @@ export default function FocusFilter({ levelConfig, onLevelComplete }: Props) {
     // Show hint on first question if intro_only, hide after that
     setShowCategoryHint(
       p.categoryLabelVisible === 'always' ||
-        (p.categoryLabelVisible === 'intro_only' && idx === 0),
+      (p.categoryLabelVisible === 'intro_only' && idx === 0),
     );
     setPhase('question');
   }
@@ -394,7 +438,7 @@ export default function FocusFilter({ levelConfig, onLevelComplete }: Props) {
       <div className="flex-1 flex flex-col items-center justify-center p-8 gap-8 text-center">
         <span className="text-7xl">🔎</span>
         <div>
-          <h2 className="text-h1 font-bold text-body-text">
+          <h2 className="game-title-banner game-title-banner-compact text-center">
             {t('focus-filter.intro.title', 'Find the Odd One Out!')}
           </h2>
           <p className="text-h3 text-caption-text mt-3">
@@ -411,7 +455,7 @@ export default function FocusFilter({ levelConfig, onLevelComplete }: Props) {
             <li>• {t('focus-filter.intro.step3', 'Tap the one that does NOT belong')}</li>
           </ul>
         </div>
-        <button onClick={() => startQuestion(0)} className="btn-primary w-full max-w-sm">
+        <button onClick={() => startQuestion(0)} className="btn-ready w-full max-w-sm">
           {t('btn.startGame', 'Start!')}
         </button>
       </div>
@@ -466,9 +510,9 @@ export default function FocusFilter({ levelConfig, onLevelComplete }: Props) {
 
             let cls = 'bg-card-bg border-gray-200';
             if (isResult) {
-              if (isSelected && isOutlier)  cls = 'bg-green-100 border-emerald-green';
-              else if (isSelected)           cls = 'bg-red-50 border-red-400';
-              else if (isOutlier)            cls = 'bg-green-50 border-emerald-green/50';
+              if (isSelected && isOutlier) cls = 'bg-green-100 border-emerald-green';
+              else if (isSelected) cls = 'bg-red-50 border-red-400';
+              else if (isOutlier) cls = 'bg-green-50 border-emerald-green/50';
             } else if (isSelected) {
               cls = 'bg-primary-blue/10 border-primary-blue';
             }
@@ -481,8 +525,13 @@ export default function FocusFilter({ levelConfig, onLevelComplete }: Props) {
                 className={`rounded-2xl p-4 flex flex-col items-center justify-center gap-2
                             border-2 min-h-[100px] transition-all duration-150 ${cls}`}
               >
-                <span className="text-4xl">{item.emoji}</span>
-                <span className="text-body-md font-semibold text-body-text">{item.label}</span>
+                <AssetPanel
+                  assetId={item.assetId}
+                  label={item.label}
+                  gameId="focus-filter"
+                  panelColorClass={item.panelColorClass}
+                  className="rounded-xl px-3 py-2 w-full flex flex-col items-center gap-2"
+                />
                 {isResult && isSelected && isOutlier && (
                   <span className="text-emerald-green text-xl font-bold">✓</span>
                 )}
@@ -501,15 +550,13 @@ export default function FocusFilter({ levelConfig, onLevelComplete }: Props) {
         {isResult && (
           <div className="w-full max-w-lg mt-auto space-y-3">
             <div
-              className={`rounded-2xl p-4 text-center border ${
-                selectedIndex === q.outlierIndex
+              className={`rounded-2xl p-4 text-center border ${selectedIndex === q.outlierIndex
                   ? 'bg-green-50 border-emerald-green/30'
                   : 'bg-red-50 border-red-200'
-              }`}
+                }`}
             >
-              <p className={`text-h3 font-bold ${
-                selectedIndex === q.outlierIndex ? 'text-emerald-green' : 'text-red-600'
-              }`}>
+              <p className={`text-h3 font-bold ${selectedIndex === q.outlierIndex ? 'text-emerald-green' : 'text-red-600'
+                }`}>
                 {selectedIndex === q.outlierIndex
                   ? `🌟 ${t('focus-filter.result.correct', 'Correct!')}`
                   : `💡 ${t('focus-filter.result.incorrect', 'Not quite!')} ${q.items[q.outlierIndex].label} ${t('focus-filter.result.wasOdd', 'was the odd one out.')}`}
@@ -534,8 +581,8 @@ export default function FocusFilter({ levelConfig, onLevelComplete }: Props) {
     pct === 100
       ? t('focus-filter.completion.perfect', 'Perfect focus! Outstanding!')
       : pct >= 70
-      ? t('focus-filter.completion.great', 'Great attention to detail!')
-      : t('focus-filter.completion.good', 'Good effort! Keep practising.');
+        ? t('focus-filter.completion.great', 'Great attention to detail!')
+        : t('focus-filter.completion.good', 'Good effort! Keep practising.');
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-8 gap-6 text-center">

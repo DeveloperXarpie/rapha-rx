@@ -238,13 +238,13 @@ export default function RecipeBuilder({ levelConfig, onLevelComplete }: Props) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 gap-6 text-center bg-app-bg">
         <span className="text-7xl">{recipe.emoji}</span>
-        <h2 className="text-h2 font-bold text-body-text">{recipe.name}</h2>
+        <h2 className="game-title-banner game-title-banner-compact text-center">{recipe.name}</h2>
         <p className="text-h3 text-caption-text max-w-md">{recipe.description}</p>
         <p className="text-body-md text-caption-text">
           {t('recipe-builder.intro.instruction', 'Arrange the cooking steps in the correct order')}
         </p>
         <div className="w-full max-w-sm mt-2">
-          <Button fullWidth onClick={advance}>
+          <Button fullWidth className="btn-ready" onClick={advance}>
             {t('recipe-builder.intro.begin', "Let's Cook!")}
           </Button>
         </div>

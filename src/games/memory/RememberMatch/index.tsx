@@ -255,11 +255,11 @@ export default function RememberMatch({ levelConfig, onLevelComplete, generatedC
   function renderPreview() {
     return (
       <div className="flex flex-col items-center gap-8 w-full">
-        <p className="text-h3 font-medium text-body-text text-center">
+        <p className="game-title-banner game-title-banner-compact text-center">
           {t('remember-match.phase.preview.instruction', 'Study the pairs carefully')}
         </p>
         {renderCardGrid(true)}
-        <Button fullWidth onClick={advance}>
+        <Button fullWidth className="btn-ready" onClick={advance}>
           {t('remember-match.phase.preview.ready', "I'm Ready!")}
         </Button>
       </div>

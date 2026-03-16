@@ -194,12 +194,12 @@ export default function WordSearch({ levelConfig, onLevelComplete, generatedCont
   if (phase === 'topic_intro') {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="bg-card-bg rounded-3xl shadow-md p-10 flex flex-col items-center gap-5 max-w-sm w-full text-center">
+        <div className="panel-surface p-10 flex flex-col items-center gap-5 max-w-sm w-full text-center">
           <span className="text-8xl">{themeIcon}</span>
           <p className="text-caption font-semibold text-caption-text uppercase tracking-widest">
             {t('game.wordSearch.topic', 'Find words about')}
           </p>
-          <h2 className="text-h1 font-bold text-body-text">{theme}</h2>
+          <h2 className="game-title-banner game-title-banner-compact text-center">{theme}</h2>
           <p className="text-body-md text-caption-text">
             {t('game.wordSearch.instructions', 'Swipe across the letters to find each word')}
           </p>

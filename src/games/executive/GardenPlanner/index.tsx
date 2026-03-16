@@ -207,7 +207,7 @@ export default function GardenPlanner({ levelConfig, onLevelComplete }: Props) {
       <div className="flex-1 flex flex-col items-center gap-5 p-6 bg-[#FAFAF8]">
         <div className="text-center">
           <span className="text-5xl">🌱</span>
-          <h2 className="text-h2 font-bold text-body-text mt-2">
+          <h2 className="game-title-banner game-title-banner-compact text-center mt-2">
             {t('garden-planner.intro.title', 'Plan Your Garden!')}
           </h2>
           <p className="text-body-md text-caption-text mt-1">
@@ -256,7 +256,7 @@ export default function GardenPlanner({ levelConfig, onLevelComplete }: Props) {
           </div>
         )}
 
-        <button onClick={advance} className="btn-primary w-full max-w-md mt-auto">
+        <button onClick={advance} className="btn-ready w-full max-w-md mt-auto">
           {t('garden-planner.intro.cta', "Let's Plant!")}
         </button>
       </div>

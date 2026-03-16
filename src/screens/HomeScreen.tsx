@@ -21,21 +21,21 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
   executive: 'game.category.executive',
 };
 
-const GAME_BY_CATEGORY: Record<GameCategory, { id: string; nameKey: string; icon: string }[]> = {
+const GAME_BY_CATEGORY: Record<GameCategory, { id: string; nameKey: string; icon: string; imageSrc: string }[]> = {
   memory: [
-    { id: 'remember-match',       nameKey: 'game.rememberMatch',      icon: '🃏' },
-    { id: 'shopping-list-recall', nameKey: 'game.shoppingListRecall', icon: '🛒' },
-    { id: 'sequence-repeat',      nameKey: 'game.sequenceRepeat',     icon: '🎨' },
+    { id: 'remember-match',       nameKey: 'game.rememberMatch',      icon: '🃏', imageSrc: '/placeholders/games/remember-match.svg' },
+    { id: 'shopping-list-recall', nameKey: 'game.shoppingListRecall', icon: '🛒', imageSrc: '/placeholders/games/shopping-list-recall.svg' },
+    { id: 'sequence-repeat',      nameKey: 'game.sequenceRepeat',     icon: '🎨', imageSrc: '/placeholders/games/sequence-repeat.svg' },
   ],
   attention: [
-    { id: 'spot-focus',    nameKey: 'game.spotFocus',    icon: '👁️' },
-    { id: 'word-search',   nameKey: 'game.wordSearch',   icon: '🔤' },
-    { id: 'focus-filter',  nameKey: 'game.focusFilter',  icon: '🔎' },
+    { id: 'spot-focus',    nameKey: 'game.spotFocus',    icon: '👁️', imageSrc: '/placeholders/games/spot-focus.svg' },
+    { id: 'word-search',   nameKey: 'game.wordSearch',   icon: '🔤', imageSrc: '/placeholders/games/word-search.svg' },
+    { id: 'focus-filter',  nameKey: 'game.focusFilter',  icon: '🔎', imageSrc: '/placeholders/games/focus-filter.svg' },
   ],
   executive: [
-    { id: 'morning-routine-quest', nameKey: 'game.morningRoutine', icon: '☀️' },
-    { id: 'recipe-builder',        nameKey: 'game.recipeBuilder',  icon: '🍲' },
-    { id: 'garden-sequencer',      nameKey: 'game.gardenSequencer', icon: '🌱' },
+    { id: 'morning-routine-quest', nameKey: 'game.morningRoutine', icon: '☀️', imageSrc: '/placeholders/games/morning-routine-quest.svg' },
+    { id: 'recipe-builder',        nameKey: 'game.recipeBuilder',  icon: '🍲', imageSrc: '/placeholders/games/recipe-builder.svg' },
+    { id: 'garden-sequencer',      nameKey: 'game.gardenSequencer', icon: '🌱', imageSrc: '/placeholders/games/garden-sequencer.svg' },
   ],
 };
 
@@ -216,6 +216,12 @@ export default function HomeScreen() {
                                border-2 border-transparent hover:border-primary-blue hover:bg-hover-state
                                active:scale-[0.98] transition-all duration-150 shadow-sm text-left"
                   >
+                    <img
+                      src={game.imageSrc}
+                      alt={t(game.nameKey, game.id)}
+                      className="w-14 h-14 rounded-xl object-cover border border-black/10 shrink-0"
+                      loading="lazy"
+                    />
                     <span className="text-3xl">{game.icon}</span>
                     <span className="text-h3 font-semibold text-body-text">
                       {t(game.nameKey, game.id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '))}

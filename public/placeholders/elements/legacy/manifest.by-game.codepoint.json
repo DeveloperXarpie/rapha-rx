@@ -1,0 +1,1182 @@
+{
+  "focus-filter": [
+    {
+      "token": "⏱️",
+      "src": "/placeholders/elements/emoji/23f1-fe0f.svg"
+    },
+    {
+      "token": "☕",
+      "src": "/placeholders/elements/emoji/2615.svg"
+    },
+    {
+      "token": "⚖️",
+      "src": "/placeholders/elements/emoji/2696-fe0f.svg"
+    },
+    {
+      "token": "⛏️",
+      "src": "/placeholders/elements/emoji/26cf-fe0f.svg"
+    },
+    {
+      "token": "✂️",
+      "src": "/placeholders/elements/emoji/2702-fe0f.svg"
+    },
+    {
+      "token": "🌡️",
+      "src": "/placeholders/elements/emoji/1f321-fe0f.svg"
+    },
+    {
+      "token": "🌴",
+      "src": "/placeholders/elements/emoji/1f334.svg"
+    },
+    {
+      "token": "🌵",
+      "src": "/placeholders/elements/emoji/1f335.svg"
+    },
+    {
+      "token": "🌸",
+      "src": "/placeholders/elements/emoji/1f338.svg"
+    },
+    {
+      "token": "🌹",
+      "src": "/placeholders/elements/emoji/1f339.svg"
+    },
+    {
+      "token": "🌺",
+      "src": "/placeholders/elements/emoji/1f33a.svg"
+    },
+    {
+      "token": "🌾",
+      "src": "/placeholders/elements/emoji/1f33e.svg"
+    },
+    {
+      "token": "🌿",
+      "src": "/placeholders/elements/emoji/1f33f.svg"
+    },
+    {
+      "token": "🍅",
+      "src": "/placeholders/elements/emoji/1f345.svg"
+    },
+    {
+      "token": "🍋",
+      "src": "/placeholders/elements/emoji/1f34b.svg"
+    },
+    {
+      "token": "🍔",
+      "src": "/placeholders/elements/emoji/1f354.svg"
+    },
+    {
+      "token": "🍕",
+      "src": "/placeholders/elements/emoji/1f355.svg"
+    },
+    {
+      "token": "🍚",
+      "src": "/placeholders/elements/emoji/1f35a.svg"
+    },
+    {
+      "token": "🍩",
+      "src": "/placeholders/elements/emoji/1f369.svg"
+    },
+    {
+      "token": "🍮",
+      "src": "/placeholders/elements/emoji/1f36e.svg"
+    },
+    {
+      "token": "🍯",
+      "src": "/placeholders/elements/emoji/1f36f.svg"
+    },
+    {
+      "token": "🍰",
+      "src": "/placeholders/elements/emoji/1f370.svg"
+    },
+    {
+      "token": "🍲",
+      "src": "/placeholders/elements/emoji/1f372.svg"
+    },
+    {
+      "token": "🍳",
+      "src": "/placeholders/elements/emoji/1f373.svg"
+    },
+    {
+      "token": "🍵",
+      "src": "/placeholders/elements/emoji/1f375.svg"
+    },
+    {
+      "token": "🐄",
+      "src": "/placeholders/elements/emoji/1f404.svg"
+    },
+    {
+      "token": "🐈",
+      "src": "/placeholders/elements/emoji/1f408.svg"
+    },
+    {
+      "token": "🐊",
+      "src": "/placeholders/elements/emoji/1f40a.svg"
+    },
+    {
+      "token": "🐍",
+      "src": "/placeholders/elements/emoji/1f40d.svg"
+    },
+    {
+      "token": "🐐",
+      "src": "/placeholders/elements/emoji/1f410.svg"
+    },
+    {
+      "token": "🐓",
+      "src": "/placeholders/elements/emoji/1f413.svg"
+    },
+    {
+      "token": "🐕",
+      "src": "/placeholders/elements/emoji/1f415.svg"
+    },
+    {
+      "token": "🐟",
+      "src": "/placeholders/elements/emoji/1f41f.svg"
+    },
+    {
+      "token": "🐢",
+      "src": "/placeholders/elements/emoji/1f422.svg"
+    },
+    {
+      "token": "🐦",
+      "src": "/placeholders/elements/emoji/1f426.svg"
+    },
+    {
+      "token": "🐯",
+      "src": "/placeholders/elements/emoji/1f42f.svg"
+    },
+    {
+      "token": "🐸",
+      "src": "/placeholders/elements/emoji/1f438.svg"
+    },
+    {
+      "token": "📄",
+      "src": "/placeholders/elements/emoji/1f4c4.svg"
+    },
+    {
+      "token": "📏",
+      "src": "/placeholders/elements/emoji/1f4cf.svg"
+    },
+    {
+      "token": "🔧",
+      "src": "/placeholders/elements/emoji/1f527.svg"
+    },
+    {
+      "token": "🔨",
+      "src": "/placeholders/elements/emoji/1f528.svg"
+    },
+    {
+      "token": "🔪",
+      "src": "/placeholders/elements/emoji/1f52a.svg"
+    },
+    {
+      "token": "🕊️",
+      "src": "/placeholders/elements/emoji/1f54a-fe0f.svg"
+    },
+    {
+      "token": "🖌️",
+      "src": "/placeholders/elements/emoji/1f58c-fe0f.svg"
+    },
+    {
+      "token": "🥄",
+      "src": "/placeholders/elements/emoji/1f944.svg"
+    },
+    {
+      "token": "🥘",
+      "src": "/placeholders/elements/emoji/1f958.svg"
+    },
+    {
+      "token": "🥛",
+      "src": "/placeholders/elements/emoji/1f95b.svg"
+    },
+    {
+      "token": "🥜",
+      "src": "/placeholders/elements/emoji/1f95c.svg"
+    },
+    {
+      "token": "🥞",
+      "src": "/placeholders/elements/emoji/1f95e.svg"
+    },
+    {
+      "token": "🥢",
+      "src": "/placeholders/elements/emoji/1f962.svg"
+    },
+    {
+      "token": "🥥",
+      "src": "/placeholders/elements/emoji/1f965.svg"
+    },
+    {
+      "token": "🦀",
+      "src": "/placeholders/elements/emoji/1f980.svg"
+    },
+    {
+      "token": "🦁",
+      "src": "/placeholders/elements/emoji/1f981.svg"
+    },
+    {
+      "token": "🦅",
+      "src": "/placeholders/elements/emoji/1f985.svg"
+    },
+    {
+      "token": "🦆",
+      "src": "/placeholders/elements/emoji/1f986.svg"
+    },
+    {
+      "token": "🦇",
+      "src": "/placeholders/elements/emoji/1f987.svg"
+    },
+    {
+      "token": "🦉",
+      "src": "/placeholders/elements/emoji/1f989.svg"
+    },
+    {
+      "token": "🦜",
+      "src": "/placeholders/elements/emoji/1f99c.svg"
+    },
+    {
+      "token": "🧆",
+      "src": "/placeholders/elements/emoji/1f9c6.svg"
+    },
+    {
+      "token": "🧵",
+      "src": "/placeholders/elements/emoji/1f9f5.svg"
+    },
+    {
+      "token": "🧹",
+      "src": "/placeholders/elements/emoji/1f9f9.svg"
+    },
+    {
+      "token": "🧻",
+      "src": "/placeholders/elements/emoji/1f9fb.svg"
+    },
+    {
+      "token": "🧽",
+      "src": "/placeholders/elements/emoji/1f9fd.svg"
+    },
+    {
+      "token": "🪚",
+      "src": "/placeholders/elements/emoji/1fa9a.svg"
+    },
+    {
+      "token": "🪛",
+      "src": "/placeholders/elements/emoji/1fa9b.svg"
+    },
+    {
+      "token": "🪡",
+      "src": "/placeholders/elements/emoji/1faa1.svg"
+    },
+    {
+      "token": "🪣",
+      "src": "/placeholders/elements/emoji/1faa3.svg"
+    },
+    {
+      "token": "🫓",
+      "src": "/placeholders/elements/emoji/1fad3.svg"
+    },
+    {
+      "token": "🫕",
+      "src": "/placeholders/elements/emoji/1fad5.svg"
+    },
+    {
+      "token": "🫙",
+      "src": "/placeholders/elements/emoji/1fad9.svg"
+    },
+    {
+      "token": "🟡",
+      "src": "/placeholders/elements/emoji/1f7e1.svg"
+    },
+    {
+      "token": "🟤",
+      "src": "/placeholders/elements/emoji/1f7e4.svg"
+    }
+  ],
+  "garden-planner": [
+    {
+      "token": "🌳",
+      "src": "/placeholders/elements/emoji/1f333.svg"
+    },
+    {
+      "token": "🌸",
+      "src": "/placeholders/elements/emoji/1f338.svg"
+    },
+    {
+      "token": "🌺",
+      "src": "/placeholders/elements/emoji/1f33a.svg"
+    },
+    {
+      "token": "🌼",
+      "src": "/placeholders/elements/emoji/1f33c.svg"
+    },
+    {
+      "token": "🌿",
+      "src": "/placeholders/elements/emoji/1f33f.svg"
+    },
+    {
+      "token": "🍃",
+      "src": "/placeholders/elements/emoji/1f343.svg"
+    },
+    {
+      "token": "💐",
+      "src": "/placeholders/elements/emoji/1f490.svg"
+    },
+    {
+      "token": "🪴",
+      "src": "/placeholders/elements/emoji/1fab4.svg"
+    }
+  ],
+  "garden-sequencer": [
+    {
+      "token": "♻️",
+      "src": "/placeholders/elements/emoji/267b-fe0f.svg"
+    },
+    {
+      "token": "⛏️",
+      "src": "/placeholders/elements/emoji/26cf-fe0f.svg"
+    },
+    {
+      "token": "✂️",
+      "src": "/placeholders/elements/emoji/2702-fe0f.svg"
+    },
+    {
+      "token": "🌱",
+      "src": "/placeholders/elements/emoji/1f331.svg"
+    },
+    {
+      "token": "🌸",
+      "src": "/placeholders/elements/emoji/1f338.svg"
+    },
+    {
+      "token": "🌾",
+      "src": "/placeholders/elements/emoji/1f33e.svg"
+    },
+    {
+      "token": "🌿",
+      "src": "/placeholders/elements/emoji/1f33f.svg"
+    },
+    {
+      "token": "🍅",
+      "src": "/placeholders/elements/emoji/1f345.svg"
+    },
+    {
+      "token": "🍴",
+      "src": "/placeholders/elements/emoji/1f374.svg"
+    },
+    {
+      "token": "🎨",
+      "src": "/placeholders/elements/emoji/1f3a8.svg"
+    },
+    {
+      "token": "🏷️",
+      "src": "/placeholders/elements/emoji/1f3f7-fe0f.svg"
+    },
+    {
+      "token": "🏺",
+      "src": "/placeholders/elements/emoji/1f3fa.svg"
+    },
+    {
+      "token": "👁️",
+      "src": "/placeholders/elements/emoji/1f441-fe0f.svg"
+    },
+    {
+      "token": "👆",
+      "src": "/placeholders/elements/emoji/1f446.svg"
+    },
+    {
+      "token": "💐",
+      "src": "/placeholders/elements/emoji/1f490.svg"
+    },
+    {
+      "token": "💧",
+      "src": "/placeholders/elements/emoji/1f4a7.svg"
+    },
+    {
+      "token": "📦",
+      "src": "/placeholders/elements/emoji/1f4e6.svg"
+    },
+    {
+      "token": "📩",
+      "src": "/placeholders/elements/emoji/1f4e9.svg"
+    },
+    {
+      "token": "🔪",
+      "src": "/placeholders/elements/emoji/1f52a.svg"
+    },
+    {
+      "token": "🗑️",
+      "src": "/placeholders/elements/emoji/1f5d1-fe0f.svg"
+    },
+    {
+      "token": "🤝",
+      "src": "/placeholders/elements/emoji/1f91d.svg"
+    },
+    {
+      "token": "🤲",
+      "src": "/placeholders/elements/emoji/1f932.svg"
+    },
+    {
+      "token": "🥬",
+      "src": "/placeholders/elements/emoji/1f96c.svg"
+    },
+    {
+      "token": "🧤",
+      "src": "/placeholders/elements/emoji/1f9e4.svg"
+    },
+    {
+      "token": "🧺",
+      "src": "/placeholders/elements/emoji/1f9fa.svg"
+    },
+    {
+      "token": "🪑",
+      "src": "/placeholders/elements/emoji/1fa91.svg"
+    },
+    {
+      "token": "🪡",
+      "src": "/placeholders/elements/emoji/1faa1.svg"
+    },
+    {
+      "token": "🪣",
+      "src": "/placeholders/elements/emoji/1faa3.svg"
+    },
+    {
+      "token": "🪴",
+      "src": "/placeholders/elements/emoji/1fab4.svg"
+    },
+    {
+      "token": "🫗",
+      "src": "/placeholders/elements/emoji/1fad7.svg"
+    },
+    {
+      "token": "🫙",
+      "src": "/placeholders/elements/emoji/1fad9.svg"
+    },
+    {
+      "token": "🙌",
+      "src": "/placeholders/elements/emoji/1f64c.svg"
+    },
+    {
+      "token": "🚿",
+      "src": "/placeholders/elements/emoji/1f6bf.svg"
+    },
+    {
+      "token": "🛒",
+      "src": "/placeholders/elements/emoji/1f6d2.svg"
+    }
+  ],
+  "morning-routine-quest": [
+    {
+      "token": "☕",
+      "src": "/placeholders/elements/emoji/2615.svg"
+    },
+    {
+      "token": "🌅",
+      "src": "/placeholders/elements/emoji/1f305.svg"
+    },
+    {
+      "token": "🌳",
+      "src": "/placeholders/elements/emoji/1f333.svg"
+    },
+    {
+      "token": "🍳",
+      "src": "/placeholders/elements/emoji/1f373.svg"
+    },
+    {
+      "token": "🍽️",
+      "src": "/placeholders/elements/emoji/1f37d-fe0f.svg"
+    },
+    {
+      "token": "🏥",
+      "src": "/placeholders/elements/emoji/1f3e5.svg"
+    },
+    {
+      "token": "👕",
+      "src": "/placeholders/elements/emoji/1f455.svg"
+    },
+    {
+      "token": "👗",
+      "src": "/placeholders/elements/emoji/1f457.svg"
+    },
+    {
+      "token": "👟",
+      "src": "/placeholders/elements/emoji/1f45f.svg"
+    },
+    {
+      "token": "👨‍👩‍👧‍👦",
+      "src": "/placeholders/elements/emoji/1f468-200d-1f469-200d-1f467-200d-1f466.svg"
+    },
+    {
+      "token": "💊",
+      "src": "/placeholders/elements/emoji/1f48a.svg"
+    },
+    {
+      "token": "💧",
+      "src": "/placeholders/elements/emoji/1f4a7.svg"
+    },
+    {
+      "token": "💵",
+      "src": "/placeholders/elements/emoji/1f4b5.svg"
+    },
+    {
+      "token": "📋",
+      "src": "/placeholders/elements/emoji/1f4cb.svg"
+    },
+    {
+      "token": "📝",
+      "src": "/placeholders/elements/emoji/1f4dd.svg"
+    },
+    {
+      "token": "🧘",
+      "src": "/placeholders/elements/emoji/1f9d8.svg"
+    },
+    {
+      "token": "🧹",
+      "src": "/placeholders/elements/emoji/1f9f9.svg"
+    },
+    {
+      "token": "🪑",
+      "src": "/placeholders/elements/emoji/1fa91.svg"
+    },
+    {
+      "token": "🪥",
+      "src": "/placeholders/elements/emoji/1faa5.svg"
+    },
+    {
+      "token": "🚶",
+      "src": "/placeholders/elements/emoji/1f6b6.svg"
+    },
+    {
+      "token": "🚿",
+      "src": "/placeholders/elements/emoji/1f6bf.svg"
+    },
+    {
+      "token": "🛍️",
+      "src": "/placeholders/elements/emoji/1f6cd-fe0f.svg"
+    },
+    {
+      "token": "🛒",
+      "src": "/placeholders/elements/emoji/1f6d2.svg"
+    },
+    {
+      "token": "🛕",
+      "src": "/placeholders/elements/emoji/1f6d5.svg"
+    }
+  ],
+  "recipe-builder": [
+    {
+      "token": "♨️",
+      "src": "/placeholders/elements/emoji/2668-fe0f.svg"
+    },
+    {
+      "token": "⚙️",
+      "src": "/placeholders/elements/emoji/2699-fe0f.svg"
+    },
+    {
+      "token": "🌶️",
+      "src": "/placeholders/elements/emoji/1f336-fe0f.svg"
+    },
+    {
+      "token": "🌿",
+      "src": "/placeholders/elements/emoji/1f33f.svg"
+    },
+    {
+      "token": "🍅",
+      "src": "/placeholders/elements/emoji/1f345.svg"
+    },
+    {
+      "token": "🍚",
+      "src": "/placeholders/elements/emoji/1f35a.svg"
+    },
+    {
+      "token": "🍳",
+      "src": "/placeholders/elements/emoji/1f373.svg"
+    },
+    {
+      "token": "🍽️",
+      "src": "/placeholders/elements/emoji/1f37d-fe0f.svg"
+    },
+    {
+      "token": "💧",
+      "src": "/placeholders/elements/emoji/1f4a7.svg"
+    },
+    {
+      "token": "🔥",
+      "src": "/placeholders/elements/emoji/1f525.svg"
+    },
+    {
+      "token": "🥕",
+      "src": "/placeholders/elements/emoji/1f955.svg"
+    },
+    {
+      "token": "🥘",
+      "src": "/placeholders/elements/emoji/1f958.svg"
+    },
+    {
+      "token": "🥣",
+      "src": "/placeholders/elements/emoji/1f963.svg"
+    },
+    {
+      "token": "🧅",
+      "src": "/placeholders/elements/emoji/1f9c5.svg"
+    },
+    {
+      "token": "🫓",
+      "src": "/placeholders/elements/emoji/1fad3.svg"
+    },
+    {
+      "token": "🫕",
+      "src": "/placeholders/elements/emoji/1fad5.svg"
+    },
+    {
+      "token": "🫘",
+      "src": "/placeholders/elements/emoji/1fad8.svg"
+    },
+    {
+      "token": "🫙",
+      "src": "/placeholders/elements/emoji/1fad9.svg"
+    }
+  ],
+  "remember-match": [
+    {
+      "token": "☂️",
+      "src": "/placeholders/elements/emoji/2602-fe0f.svg"
+    },
+    {
+      "token": "☕",
+      "src": "/placeholders/elements/emoji/2615.svg"
+    },
+    {
+      "token": "🌱",
+      "src": "/placeholders/elements/emoji/1f331.svg"
+    },
+    {
+      "token": "🌷",
+      "src": "/placeholders/elements/emoji/1f337.svg"
+    },
+    {
+      "token": "🌸",
+      "src": "/placeholders/elements/emoji/1f338.svg"
+    },
+    {
+      "token": "🌹",
+      "src": "/placeholders/elements/emoji/1f339.svg"
+    },
+    {
+      "token": "🌺",
+      "src": "/placeholders/elements/emoji/1f33a.svg"
+    },
+    {
+      "token": "🌻",
+      "src": "/placeholders/elements/emoji/1f33b.svg"
+    },
+    {
+      "token": "🌿",
+      "src": "/placeholders/elements/emoji/1f33f.svg"
+    },
+    {
+      "token": "🍅",
+      "src": "/placeholders/elements/emoji/1f345.svg"
+    },
+    {
+      "token": "🍇",
+      "src": "/placeholders/elements/emoji/1f347.svg"
+    },
+    {
+      "token": "🍊",
+      "src": "/placeholders/elements/emoji/1f34a.svg"
+    },
+    {
+      "token": "🍋",
+      "src": "/placeholders/elements/emoji/1f34b.svg"
+    },
+    {
+      "token": "🍌",
+      "src": "/placeholders/elements/emoji/1f34c.svg"
+    },
+    {
+      "token": "🍎",
+      "src": "/placeholders/elements/emoji/1f34e.svg"
+    },
+    {
+      "token": "🍚",
+      "src": "/placeholders/elements/emoji/1f35a.svg"
+    },
+    {
+      "token": "🍲",
+      "src": "/placeholders/elements/emoji/1f372.svg"
+    },
+    {
+      "token": "🐄",
+      "src": "/placeholders/elements/emoji/1f404.svg"
+    },
+    {
+      "token": "🐈",
+      "src": "/placeholders/elements/emoji/1f408.svg"
+    },
+    {
+      "token": "🐕",
+      "src": "/placeholders/elements/emoji/1f415.svg"
+    },
+    {
+      "token": "🐘",
+      "src": "/placeholders/elements/emoji/1f418.svg"
+    },
+    {
+      "token": "🐦",
+      "src": "/placeholders/elements/emoji/1f426.svg"
+    },
+    {
+      "token": "👜",
+      "src": "/placeholders/elements/emoji/1f45c.svg"
+    },
+    {
+      "token": "💡",
+      "src": "/placeholders/elements/emoji/1f4a1.svg"
+    },
+    {
+      "token": "📚",
+      "src": "/placeholders/elements/emoji/1f4da.svg"
+    },
+    {
+      "token": "📱",
+      "src": "/placeholders/elements/emoji/1f4f1.svg"
+    },
+    {
+      "token": "🔔",
+      "src": "/placeholders/elements/emoji/1f514.svg"
+    },
+    {
+      "token": "🕰️",
+      "src": "/placeholders/elements/emoji/1f570-fe0f.svg"
+    },
+    {
+      "token": "🥄",
+      "src": "/placeholders/elements/emoji/1f944.svg"
+    },
+    {
+      "token": "🥣",
+      "src": "/placeholders/elements/emoji/1f963.svg"
+    },
+    {
+      "token": "🥥",
+      "src": "/placeholders/elements/emoji/1f965.svg"
+    },
+    {
+      "token": "🥭",
+      "src": "/placeholders/elements/emoji/1f96d.svg"
+    },
+    {
+      "token": "🦋",
+      "src": "/placeholders/elements/emoji/1f98b.svg"
+    },
+    {
+      "token": "🦚",
+      "src": "/placeholders/elements/emoji/1f99a.svg"
+    },
+    {
+      "token": "🦜",
+      "src": "/placeholders/elements/emoji/1f99c.svg"
+    },
+    {
+      "token": "🧂",
+      "src": "/placeholders/elements/emoji/1f9c2.svg"
+    },
+    {
+      "token": "🧅",
+      "src": "/placeholders/elements/emoji/1f9c5.svg"
+    },
+    {
+      "token": "🪔",
+      "src": "/placeholders/elements/emoji/1fa94.svg"
+    },
+    {
+      "token": "🪷",
+      "src": "/placeholders/elements/emoji/1fab7.svg"
+    },
+    {
+      "token": "🫕",
+      "src": "/placeholders/elements/emoji/1fad5.svg"
+    },
+    {
+      "token": "🫖",
+      "src": "/placeholders/elements/emoji/1fad6.svg"
+    },
+    {
+      "token": "🫙",
+      "src": "/placeholders/elements/emoji/1fad9.svg"
+    }
+  ],
+  "sequence-repeat": [
+    {
+      "token": "🍅",
+      "src": "/placeholders/elements/emoji/1f345.svg"
+    },
+    {
+      "token": "🍆",
+      "src": "/placeholders/elements/emoji/1f346.svg"
+    },
+    {
+      "token": "🍌",
+      "src": "/placeholders/elements/emoji/1f34c.svg"
+    },
+    {
+      "token": "🥥",
+      "src": "/placeholders/elements/emoji/1f965.svg"
+    },
+    {
+      "token": "🥦",
+      "src": "/placeholders/elements/emoji/1f966.svg"
+    },
+    {
+      "token": "🥭",
+      "src": "/placeholders/elements/emoji/1f96d.svg"
+    }
+  ],
+  "shopping-list-recall": [
+    {
+      "token": "🌰",
+      "src": "/placeholders/elements/emoji/1f330.svg"
+    },
+    {
+      "token": "🌿",
+      "src": "/placeholders/elements/emoji/1f33f.svg"
+    },
+    {
+      "token": "🍅",
+      "src": "/placeholders/elements/emoji/1f345.svg"
+    },
+    {
+      "token": "🍆",
+      "src": "/placeholders/elements/emoji/1f346.svg"
+    },
+    {
+      "token": "🍋",
+      "src": "/placeholders/elements/emoji/1f34b.svg"
+    },
+    {
+      "token": "🍌",
+      "src": "/placeholders/elements/emoji/1f34c.svg"
+    },
+    {
+      "token": "🍚",
+      "src": "/placeholders/elements/emoji/1f35a.svg"
+    },
+    {
+      "token": "🥒",
+      "src": "/placeholders/elements/emoji/1f952.svg"
+    },
+    {
+      "token": "🥔",
+      "src": "/placeholders/elements/emoji/1f954.svg"
+    },
+    {
+      "token": "🥕",
+      "src": "/placeholders/elements/emoji/1f955.svg"
+    },
+    {
+      "token": "🥛",
+      "src": "/placeholders/elements/emoji/1f95b.svg"
+    },
+    {
+      "token": "🥥",
+      "src": "/placeholders/elements/emoji/1f965.svg"
+    },
+    {
+      "token": "🥭",
+      "src": "/placeholders/elements/emoji/1f96d.svg"
+    },
+    {
+      "token": "🧂",
+      "src": "/placeholders/elements/emoji/1f9c2.svg"
+    },
+    {
+      "token": "🧅",
+      "src": "/placeholders/elements/emoji/1f9c5.svg"
+    },
+    {
+      "token": "🧈",
+      "src": "/placeholders/elements/emoji/1f9c8.svg"
+    },
+    {
+      "token": "🫘",
+      "src": "/placeholders/elements/emoji/1fad8.svg"
+    },
+    {
+      "token": "🫙",
+      "src": "/placeholders/elements/emoji/1fad9.svg"
+    },
+    {
+      "token": "🫚",
+      "src": "/placeholders/elements/emoji/1fada.svg"
+    },
+    {
+      "token": "🫛",
+      "src": "/placeholders/elements/emoji/1fadb.svg"
+    }
+  ],
+  "spot-focus": [
+    {
+      "token": "⏰",
+      "src": "/placeholders/elements/emoji/23f0.svg"
+    },
+    {
+      "token": "☀️",
+      "src": "/placeholders/elements/emoji/2600-fe0f.svg"
+    },
+    {
+      "token": "☂️",
+      "src": "/placeholders/elements/emoji/2602-fe0f.svg"
+    },
+    {
+      "token": "☕",
+      "src": "/placeholders/elements/emoji/2615.svg"
+    },
+    {
+      "token": "🌧️",
+      "src": "/placeholders/elements/emoji/1f327-fe0f.svg"
+    },
+    {
+      "token": "🌳",
+      "src": "/placeholders/elements/emoji/1f333.svg"
+    },
+    {
+      "token": "🌴",
+      "src": "/placeholders/elements/emoji/1f334.svg"
+    },
+    {
+      "token": "🌵",
+      "src": "/placeholders/elements/emoji/1f335.svg"
+    },
+    {
+      "token": "🌷",
+      "src": "/placeholders/elements/emoji/1f337.svg"
+    },
+    {
+      "token": "🌸",
+      "src": "/placeholders/elements/emoji/1f338.svg"
+    },
+    {
+      "token": "🌹",
+      "src": "/placeholders/elements/emoji/1f339.svg"
+    },
+    {
+      "token": "🌺",
+      "src": "/placeholders/elements/emoji/1f33a.svg"
+    },
+    {
+      "token": "🌻",
+      "src": "/placeholders/elements/emoji/1f33b.svg"
+    },
+    {
+      "token": "🌼",
+      "src": "/placeholders/elements/emoji/1f33c.svg"
+    },
+    {
+      "token": "🌿",
+      "src": "/placeholders/elements/emoji/1f33f.svg"
+    },
+    {
+      "token": "🍅",
+      "src": "/placeholders/elements/emoji/1f345.svg"
+    },
+    {
+      "token": "🍅🍅",
+      "src": "/placeholders/elements/emoji/1f345-1f345.svg"
+    },
+    {
+      "token": "🍊",
+      "src": "/placeholders/elements/emoji/1f34a.svg"
+    },
+    {
+      "token": "🍋",
+      "src": "/placeholders/elements/emoji/1f34b.svg"
+    },
+    {
+      "token": "🍌",
+      "src": "/placeholders/elements/emoji/1f34c.svg"
+    },
+    {
+      "token": "🍎",
+      "src": "/placeholders/elements/emoji/1f34e.svg"
+    },
+    {
+      "token": "🍲",
+      "src": "/placeholders/elements/emoji/1f372.svg"
+    },
+    {
+      "token": "🐈",
+      "src": "/placeholders/elements/emoji/1f408.svg"
+    },
+    {
+      "token": "🐕",
+      "src": "/placeholders/elements/emoji/1f415.svg"
+    },
+    {
+      "token": "🐛",
+      "src": "/placeholders/elements/emoji/1f41b.svg"
+    },
+    {
+      "token": "🐦",
+      "src": "/placeholders/elements/emoji/1f426.svg"
+    },
+    {
+      "token": "🐦‍⬛",
+      "src": "/placeholders/elements/emoji/1f426-200d-2b1b.svg"
+    },
+    {
+      "token": "👜",
+      "src": "/placeholders/elements/emoji/1f45c.svg"
+    },
+    {
+      "token": "👟",
+      "src": "/placeholders/elements/emoji/1f45f.svg"
+    },
+    {
+      "token": "👟👟",
+      "src": "/placeholders/elements/emoji/1f45f-1f45f.svg"
+    },
+    {
+      "token": "💡",
+      "src": "/placeholders/elements/emoji/1f4a1.svg"
+    },
+    {
+      "token": "💨",
+      "src": "/placeholders/elements/emoji/1f4a8.svg"
+    },
+    {
+      "token": "📖",
+      "src": "/placeholders/elements/emoji/1f4d6.svg"
+    },
+    {
+      "token": "📚",
+      "src": "/placeholders/elements/emoji/1f4da.svg"
+    },
+    {
+      "token": "📱",
+      "src": "/placeholders/elements/emoji/1f4f1.svg"
+    },
+    {
+      "token": "📺",
+      "src": "/placeholders/elements/emoji/1f4fa.svg"
+    },
+    {
+      "token": "🔥",
+      "src": "/placeholders/elements/emoji/1f525.svg"
+    },
+    {
+      "token": "🕰️",
+      "src": "/placeholders/elements/emoji/1f570-fe0f.svg"
+    },
+    {
+      "token": "🖼️",
+      "src": "/placeholders/elements/emoji/1f5bc-fe0f.svg"
+    },
+    {
+      "token": "🥄",
+      "src": "/placeholders/elements/emoji/1f944.svg"
+    },
+    {
+      "token": "🥣",
+      "src": "/placeholders/elements/emoji/1f963.svg"
+    },
+    {
+      "token": "🥤",
+      "src": "/placeholders/elements/emoji/1f964.svg"
+    },
+    {
+      "token": "🥥",
+      "src": "/placeholders/elements/emoji/1f965.svg"
+    },
+    {
+      "token": "🥭",
+      "src": "/placeholders/elements/emoji/1f96d.svg"
+    },
+    {
+      "token": "🦋",
+      "src": "/placeholders/elements/emoji/1f98b.svg"
+    },
+    {
+      "token": "🧂",
+      "src": "/placeholders/elements/emoji/1f9c2.svg"
+    },
+    {
+      "token": "🧅",
+      "src": "/placeholders/elements/emoji/1f9c5.svg"
+    },
+    {
+      "token": "🧅🧅",
+      "src": "/placeholders/elements/emoji/1f9c5-1f9c5.svg"
+    },
+    {
+      "token": "🪑",
+      "src": "/placeholders/elements/emoji/1fa91.svg"
+    },
+    {
+      "token": "🪟",
+      "src": "/placeholders/elements/emoji/1fa9f.svg"
+    },
+    {
+      "token": "🪣",
+      "src": "/placeholders/elements/emoji/1faa3.svg"
+    },
+    {
+      "token": "🪴",
+      "src": "/placeholders/elements/emoji/1fab4.svg"
+    },
+    {
+      "token": "🪵",
+      "src": "/placeholders/elements/emoji/1fab5.svg"
+    },
+    {
+      "token": "🫕",
+      "src": "/placeholders/elements/emoji/1fad5.svg"
+    },
+    {
+      "token": "🫖",
+      "src": "/placeholders/elements/emoji/1fad6.svg"
+    },
+    {
+      "token": "🫙",
+      "src": "/placeholders/elements/emoji/1fad9.svg"
+    },
+    {
+      "token": "🚪",
+      "src": "/placeholders/elements/emoji/1f6aa.svg"
+    },
+    {
+      "token": "🚿",
+      "src": "/placeholders/elements/emoji/1f6bf.svg"
+    },
+    {
+      "token": "🛋️",
+      "src": "/placeholders/elements/emoji/1f6cb-fe0f.svg"
+    },
+    {
+      "token": "🟩",
+      "src": "/placeholders/elements/emoji/1f7e9.svg"
+    },
+    {
+      "token": "🟫",
+      "src": "/placeholders/elements/emoji/1f7eb.svg"
+    }
+  ],
+  "word-search": [
+    {
+      "token": "🌸",
+      "src": "/placeholders/elements/emoji/1f338.svg"
+    },
+    {
+      "token": "🍽️",
+      "src": "/placeholders/elements/emoji/1f37d-fe0f.svg"
+    },
+    {
+      "token": "🥭",
+      "src": "/placeholders/elements/emoji/1f96d.svg"
+    },
+    {
+      "token": "🦜",
+      "src": "/placeholders/elements/emoji/1f99c.svg"
+    },
+    {
+      "token": "🪔",
+      "src": "/placeholders/elements/emoji/1fa94.svg"
+    }
+  ]
+}

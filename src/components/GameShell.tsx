@@ -5,7 +5,6 @@ import { useSessionContext } from '../session/SessionManager';
 import { track } from '../lib/analytics';
 import { adjustDifficulty, scoreLevelLabel } from '../lib/dynamicDifficulty';
 import { useAppStore } from '../store';
-import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 import type { LevelConfig } from '../games/types';
 
@@ -30,12 +29,6 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
   memory: 'game.category.memory',
   attention: 'game.category.attention',
   executive: 'game.category.executive',
-};
-
-const CATEGORY_BADGE_VARIANTS: Record<string, 'blue' | 'green' | 'purple'> = {
-  memory: 'blue',
-  attention: 'green',
-  executive: 'purple',
 };
 
 const ROTATION_THRESHOLD_SECONDS = 1 * 30; // 30 seconds for testing
@@ -136,17 +129,19 @@ export default function GameShell({
   return (
     <div className="flex flex-col min-h-full">
       {/* Top bar */}
-      <div className="bg-card-bg border-b border-gray-100 px-6 py-4 flex items-center gap-4">
+      <div className="panel-surface px-6 py-4 flex items-center gap-4">
         <div className="flex-1">
-          <h2 className="text-h2 font-bold text-body-text">{gameName}</h2>
+          <h2 className="text-h2">
+            <span className="game-title-banner game-title-banner-compact">{gameName}</span>
+          </h2>
         </div>
-        <Badge variant={CATEGORY_BADGE_VARIANTS[gameCategory] ?? 'blue'}>
+        <span className="shell-tag shell-tag-category">
           {t(CATEGORY_LABEL_KEYS[gameCategory] ?? '')}
-        </Badge>
-        <Badge variant="amber">{levelLabel}</Badge>
+        </span>
+        <span className="shell-tag shell-tag-level">{levelLabel}</span>
         <button
           onClick={handleExit}
-          className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-hover-state transition-colors text-xl text-caption-text"
+          className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-hover-state transition-colors text-xl text-caption-text border border-gray-200 bg-white/70"
           aria-label={t('btn.exit')}
         >
           ✕
@@ -172,7 +167,7 @@ export default function GameShell({
       {/* Exit confirmation dialog */}
       {showExitConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
-          <div className="bg-card-bg rounded-3xl p-8 max-w-sm w-full shadow-xl">
+          <div className="panel-surface p-8 max-w-sm w-full shadow-xl">
             <h3 className="text-h2 font-bold text-body-text mb-3">{t('game.exit.confirm.title')}</h3>
             <p className="text-body-md text-caption-text mb-8">{t('game.exit.confirm.message')}</p>
             <div className="flex flex-col gap-3">

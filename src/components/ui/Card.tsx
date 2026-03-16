@@ -19,7 +19,7 @@ export function Card({ children, className = '', onClick, selected }: CardProps)
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
       onKeyDown={onClick ? (e) => e.key === 'Enter' && onClick() : undefined}
-      className={`bg-card-bg rounded-3xl shadow-sm p-6 border-2 ${selectedClass} ${interactive} ${className}`}
+      className={`panel-surface p-6 border-2 ${selectedClass} ${interactive} ${className}`}
     >
       {children}
     </div>

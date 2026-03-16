@@ -94,8 +94,8 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
     const isFound = found.has(cell.id);
 
     const baseClasses =
-      'flex-1 min-h-[96px] min-w-[96px] rounded-xl flex items-center justify-center text-[2.7rem] bg-app-bg relative select-none';
-    const emptyClasses = isEmpty ? 'border-2 border-dashed border-gray-300' : '';
+      'flex-1 min-h-[96px] min-w-[96px] rounded-xl flex items-center justify-center text-[2.7rem] bg-[#e9eef8] border border-[#d5ddee] relative select-none shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]';
+    const emptyClasses = isEmpty ? 'border-2 border-dashed border-gray-400 bg-[#dde4f2]' : '';
     const interactiveClasses = interactive
       ? 'cursor-pointer active:scale-95 transition-transform'
       : '';
@@ -131,7 +131,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
 
   function renderScene(rows: SceneCell[][], interactive: boolean) {
     return (
-      <div className="bg-card-bg rounded-2xl p-3 flex flex-col gap-1 flex-1">
+      <div className="scene-board flex flex-col gap-1 flex-1">
         {rows.map((row, rowIndex) => (
           <div key={rowIndex} className="flex gap-1">
             {row.map((cell, colIndex) =>
@@ -150,10 +150,10 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
         role="main"
         className="flex-1 flex flex-col items-center gap-6 p-6 bg-app-bg"
       >
-        <h2 className="text-h2 font-bold text-body-text text-center">
+        <h2 className="hero-quest-banner">
           {t('spot-focus.intro.heading', 'Can you spot the differences?')}
         </h2>
-        <p className="text-body-md text-caption-text text-center max-w-lg">
+        <p className="hero-quest-subtitle">
           {t(
             'spot-focus.intro.instruction',
             'Look at both pictures carefully. Tap on the right picture where you see a difference.'
@@ -162,21 +162,21 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
 
         <div className="w-full flex flex-col md:flex-row gap-4">
           <div className="flex flex-col gap-2 flex-1">
-            <p className="text-body-md font-semibold text-caption-text text-center">
-              {t('spot-focus.label.original', 'Original')}
+            <p className="text-body-md text-center">
+              <span className="scene-ribbon-blue">{t('spot-focus.label.original', 'Original')}</span>
             </p>
             {renderScene(scene.originalRows, false)}
           </div>
           <div className="flex flex-col gap-2 flex-1">
-            <p className="text-body-md font-semibold text-primary-blue text-center">
-              {t('spot-focus.label.modified', 'Find differences here →')}
+            <p className="text-body-md text-center">
+              <span className="scene-ribbon-red">{t('spot-focus.label.modified', 'Differences')}</span>
             </p>
             {renderScene(scene.modifiedRows, false)}
           </div>
         </div>
 
         <div className="w-full max-w-xs mt-auto">
-          <Button fullWidth onClick={advance}>
+          <Button fullWidth className="btn-ready" onClick={advance}>
             {t('spot-focus.btn.ready', "I'm Ready")}
           </Button>
         </div>
@@ -204,14 +204,14 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
 
         <div className="flex flex-col md:flex-row gap-4 flex-1">
           <div className="flex flex-col gap-2 flex-1">
-            <p className="text-body-md font-semibold text-caption-text text-center">
-              {t('spot-focus.label.original', 'Original')}
+            <p className="text-body-md text-center">
+              <span className="scene-ribbon-blue">{t('spot-focus.label.original', 'Original')}</span>
             </p>
             {renderScene(scene.originalRows, false)}
           </div>
           <div className="flex flex-col gap-2 flex-1">
-            <p className="text-body-md font-semibold text-primary-blue text-center">
-              {t('spot-focus.label.modified', 'Find differences here →')}
+            <p className="text-body-md text-center">
+              <span className="scene-ribbon-red">{t('spot-focus.label.modified', 'Differences')}</span>
             </p>
             {renderScene(scene.modifiedRows, true)}
           </div>

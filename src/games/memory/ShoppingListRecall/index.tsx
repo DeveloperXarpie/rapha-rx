@@ -2,12 +2,22 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LevelConfig } from '../../types';
 import type { LevelResult } from '../../../components/GameShell';
+import AssetPanel from '../../../components/AssetPanel';
+import { registerAsset } from '../../../lib/assets/catalog';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Phase = 'study' | 'gap' | 'recall' | 'bonus_sort' | 'completion';
 
 interface GroceryItem {
+  id: string;
+  assetId: string;
+  label: string;
+  category: 'vegetables' | 'fresh' | 'dry' | 'dairy' | 'spices';
+  panelColorClass?: string;
+}
+
+interface RawGroceryItem {
   id: string;
   emoji: string;
   label: string;
@@ -29,7 +39,7 @@ interface Props {
 
 // ─── Item pool ────────────────────────────────────────────────────────────────
 
-const GROCERY_POOL: GroceryItem[] = [
+const RAW_GROCERY_POOL: RawGroceryItem[] = [
   { id: 'tomato',    emoji: '🍅', label: 'Tomato',        category: 'vegetables' },
   { id: 'onion',     emoji: '🧅', label: 'Onion',         category: 'vegetables' },
   { id: 'potato',    emoji: '🥔', label: 'Potato',        category: 'vegetables' },
@@ -51,6 +61,17 @@ const GROCERY_POOL: GroceryItem[] = [
   { id: 'tamarind',  emoji: '🌰', label: 'Tamarind',      category: 'spices'     },
   { id: 'mustard',   emoji: '🫛', label: 'Mustard Seeds', category: 'spices'     },
 ];
+
+const GROCERY_POOL: GroceryItem[] = RAW_GROCERY_POOL.map((item) => {
+  const assetId = `item.${item.id}`;
+  registerAsset({ assetId, token: item.emoji });
+  return {
+    id: item.id,
+    assetId,
+    label: item.label,
+    category: item.category,
+  };
+});
 
 // ─── Content builder (randomised once per mount) ──────────────────────────────
 
@@ -132,7 +153,7 @@ export default function ShoppingListRecall({ levelConfig, onLevelComplete }: Pro
       <div className="flex-1 flex flex-col items-center gap-5 p-6 bg-[#FAFAF8]">
         <div className="text-center">
           <span className="text-5xl">🛒</span>
-          <h2 className="text-h2 font-bold text-body-text mt-2">
+          <h2 className="game-title-banner game-title-banner-compact text-center mt-2">
             {t('shopping-list.study.title', 'Remember these items!')}
           </h2>
           <p className="text-body-md text-caption-text">
@@ -147,8 +168,13 @@ export default function ShoppingListRecall({ levelConfig, onLevelComplete }: Pro
               className="bg-card-bg rounded-2xl p-4 flex items-center gap-3 shadow-sm
                          border border-gray-100 min-h-[80px]"
             >
-              <span className="text-4xl">{item.emoji}</span>
-              <span className="text-h3 font-semibold text-body-text">{item.label}</span>
+              <AssetPanel
+                assetId={item.assetId}
+                label={item.label}
+                gameId="shopping-list-recall"
+                panelColorClass={item.panelColorClass}
+                className="rounded-xl px-2 py-1 flex items-center gap-3 w-full"
+              />
             </div>
           ))}
         </div>
@@ -160,7 +186,7 @@ export default function ShoppingListRecall({ levelConfig, onLevelComplete }: Pro
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <button onClick={advanceFromStudy} className="btn-primary w-full">
+          <button onClick={advanceFromStudy} className="btn-ready w-full">
             {t('shopping-list.study.ready', "I'm Ready!")}
           </button>
         </div>
@@ -220,8 +246,13 @@ export default function ShoppingListRecall({ levelConfig, onLevelComplete }: Pro
                 className={`rounded-2xl p-4 flex items-center gap-3 border-2 min-h-[80px]
                             transition-all duration-150 text-left ${cls}`}
               >
-                <span className="text-4xl">{item.emoji}</span>
-                <span className="text-h3 font-semibold text-body-text flex-1">{item.label}</span>
+                <AssetPanel
+                  assetId={item.assetId}
+                  label={item.label}
+                  gameId="shopping-list-recall"
+                  panelColorClass={item.panelColorClass}
+                  className="rounded-xl px-2 py-1 flex items-center gap-3 flex-1"
+                />
                 {submitted && isSel &&  isTarget && <span className="text-emerald-green text-xl">✓</span>}
                 {submitted && isSel && !isTarget && <span className="text-accent-amber  text-xl">✗</span>}
                 {submitted && !isSel && isTarget && <span className="text-caption-text  text-xl">○</span>}
@@ -306,8 +337,13 @@ export default function ShoppingListRecall({ levelConfig, onLevelComplete }: Pro
                 disabled={sortSubmitted}
                 className={`rounded-2xl p-4 flex items-center gap-3 border-2 min-h-[80px] transition-all ${cls}`}
               >
-                <span className="text-4xl">{item.emoji}</span>
-                <span className="text-h3 font-semibold text-body-text">{item.label}</span>
+                <AssetPanel
+                  assetId={item.assetId}
+                  label={item.label}
+                  gameId="shopping-list-recall"
+                  panelColorClass={item.panelColorClass}
+                  className="rounded-xl px-2 py-1 flex items-center gap-3 w-full"
+                />
               </button>
             );
           })}

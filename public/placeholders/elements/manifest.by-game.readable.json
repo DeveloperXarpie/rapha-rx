@@ -1,0 +1,2367 @@
+{
+  "focus-filter": [
+    {
+      "id": null,
+      "label": "Idli",
+      "token": "🫓",
+      "src": "/placeholders/elements/by-game/focus-filter/idli.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Dosa",
+      "token": "🥞",
+      "src": "/placeholders/elements/by-game/focus-filter/dosa.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Vada",
+      "token": "🍩",
+      "src": "/placeholders/elements/by-game/focus-filter/vada.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Burger",
+      "token": "🍔",
+      "src": "/placeholders/elements/by-game/focus-filter/burger.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Coconut Chutney",
+      "token": "🥥",
+      "src": "/placeholders/elements/by-game/focus-filter/coconut-chutney.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Tomato Chutney",
+      "token": "🍅",
+      "src": "/placeholders/elements/by-game/focus-filter/tomato-chutney.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Mint Chutney",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/focus-filter/mint-chutney.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Coffee",
+      "token": "☕",
+      "src": "/placeholders/elements/by-game/focus-filter/coffee.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Mysore Pak",
+      "token": "🟡",
+      "src": "/placeholders/elements/by-game/focus-filter/mysore-pak.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Payasam",
+      "token": "🍮",
+      "src": "/placeholders/elements/by-game/focus-filter/payasam.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Halwa",
+      "token": "🍯",
+      "src": "/placeholders/elements/by-game/focus-filter/halwa.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Sambar",
+      "token": "🍲",
+      "src": "/placeholders/elements/by-game/focus-filter/sambar.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Filter Coffee",
+      "token": "☕",
+      "src": "/placeholders/elements/by-game/focus-filter/filter-coffee.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Ginger Tea",
+      "token": "🍵",
+      "src": "/placeholders/elements/by-game/focus-filter/ginger-tea.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Badam Milk",
+      "token": "🥛",
+      "src": "/placeholders/elements/by-game/focus-filter/badam-milk.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Rasam",
+      "token": "🍲",
+      "src": "/placeholders/elements/by-game/focus-filter/rasam.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Murukku",
+      "token": "🧆",
+      "src": "/placeholders/elements/by-game/focus-filter/murukku.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Mixture",
+      "token": "🟤",
+      "src": "/placeholders/elements/by-game/focus-filter/mixture.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Masala Peanuts",
+      "token": "🥜",
+      "src": "/placeholders/elements/by-game/focus-filter/masala-peanuts.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Cake",
+      "token": "🍰",
+      "src": "/placeholders/elements/by-game/focus-filter/cake.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Curd Rice",
+      "token": "🍚",
+      "src": "/placeholders/elements/by-game/focus-filter/curd-rice.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Lemon Rice",
+      "token": "🍋",
+      "src": "/placeholders/elements/by-game/focus-filter/lemon-rice.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Pongal",
+      "token": "🫕",
+      "src": "/placeholders/elements/by-game/focus-filter/pongal.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Pizza",
+      "token": "🍕",
+      "src": "/placeholders/elements/by-game/focus-filter/pizza.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Cow",
+      "token": "🐄",
+      "src": "/placeholders/elements/by-game/focus-filter/cow.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Goat",
+      "token": "🐐",
+      "src": "/placeholders/elements/by-game/focus-filter/goat.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Dog",
+      "token": "🐕",
+      "src": "/placeholders/elements/by-game/focus-filter/dog.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Tiger",
+      "token": "🐯",
+      "src": "/placeholders/elements/by-game/focus-filter/tiger.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Crow",
+      "token": "🐦",
+      "src": "/placeholders/elements/by-game/focus-filter/crow.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Pigeon",
+      "token": "🕊️",
+      "src": "/placeholders/elements/by-game/focus-filter/pigeon.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Parrot",
+      "token": "🦜",
+      "src": "/placeholders/elements/by-game/focus-filter/parrot.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Fish",
+      "token": "🐟",
+      "src": "/placeholders/elements/by-game/focus-filter/fish.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Crab",
+      "token": "🦀",
+      "src": "/placeholders/elements/by-game/focus-filter/crab.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Frog",
+      "token": "🐸",
+      "src": "/placeholders/elements/by-game/focus-filter/frog.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Eagle",
+      "token": "🦅",
+      "src": "/placeholders/elements/by-game/focus-filter/eagle.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Hen",
+      "token": "🐓",
+      "src": "/placeholders/elements/by-game/focus-filter/hen.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Duck",
+      "token": "🦆",
+      "src": "/placeholders/elements/by-game/focus-filter/duck.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Lion",
+      "token": "🦁",
+      "src": "/placeholders/elements/by-game/focus-filter/lion.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Cat",
+      "token": "🐈",
+      "src": "/placeholders/elements/by-game/focus-filter/cat.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Snake",
+      "token": "🐍",
+      "src": "/placeholders/elements/by-game/focus-filter/snake.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Crocodile",
+      "token": "🐊",
+      "src": "/placeholders/elements/by-game/focus-filter/crocodile.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Turtle",
+      "token": "🐢",
+      "src": "/placeholders/elements/by-game/focus-filter/turtle.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Sparrow",
+      "token": "🐦",
+      "src": "/placeholders/elements/by-game/focus-filter/sparrow.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Owl",
+      "token": "🦉",
+      "src": "/placeholders/elements/by-game/focus-filter/owl.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Bat",
+      "token": "🦇",
+      "src": "/placeholders/elements/by-game/focus-filter/bat.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Pan",
+      "token": "🍳",
+      "src": "/placeholders/elements/by-game/focus-filter/pan.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Wok",
+      "token": "🥘",
+      "src": "/placeholders/elements/by-game/focus-filter/wok.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Pressure Cooker",
+      "token": "🫕",
+      "src": "/placeholders/elements/by-game/focus-filter/pressure-cooker.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Garden Bucket",
+      "token": "🪣",
+      "src": "/placeholders/elements/by-game/focus-filter/garden-bucket.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Broom",
+      "token": "🧹",
+      "src": "/placeholders/elements/by-game/focus-filter/broom.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Sponge",
+      "token": "🧽",
+      "src": "/placeholders/elements/by-game/focus-filter/sponge.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Mop Bucket",
+      "token": "🪣",
+      "src": "/placeholders/elements/by-game/focus-filter/mop-bucket.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Garden Spade",
+      "token": "⛏️",
+      "src": "/placeholders/elements/by-game/focus-filter/garden-spade.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Hammer",
+      "token": "🔨",
+      "src": "/placeholders/elements/by-game/focus-filter/hammer.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Screwdriver",
+      "token": "🪛",
+      "src": "/placeholders/elements/by-game/focus-filter/screwdriver.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Wrench",
+      "token": "🔧",
+      "src": "/placeholders/elements/by-game/focus-filter/wrench.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Chopping Knife",
+      "token": "🔪",
+      "src": "/placeholders/elements/by-game/focus-filter/chopping-knife.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Ladle",
+      "token": "🥄",
+      "src": "/placeholders/elements/by-game/focus-filter/ladle.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Spatula",
+      "token": "🫙",
+      "src": "/placeholders/elements/by-game/focus-filter/spatula.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Tongs",
+      "token": "🥢",
+      "src": "/placeholders/elements/by-game/focus-filter/tongs.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Scissors",
+      "token": "✂️",
+      "src": "/placeholders/elements/by-game/focus-filter/scissors.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Needle",
+      "token": "🪡",
+      "src": "/placeholders/elements/by-game/focus-filter/needle.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Thread",
+      "token": "🧵",
+      "src": "/placeholders/elements/by-game/focus-filter/thread.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Kitchen Knife",
+      "token": "🔪",
+      "src": "/placeholders/elements/by-game/focus-filter/kitchen-knife.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Kitchen Scale",
+      "token": "⚖️",
+      "src": "/placeholders/elements/by-game/focus-filter/kitchen-scale.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Cooking Timer",
+      "token": "⏱️",
+      "src": "/placeholders/elements/by-game/focus-filter/cooking-timer.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Thermometer",
+      "token": "🌡️",
+      "src": "/placeholders/elements/by-game/focus-filter/thermometer.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Ruler",
+      "token": "📏",
+      "src": "/placeholders/elements/by-game/focus-filter/ruler.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Spade",
+      "token": "⛏️",
+      "src": "/placeholders/elements/by-game/focus-filter/spade.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Rake",
+      "token": "🌾",
+      "src": "/placeholders/elements/by-game/focus-filter/rake.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Watering Can",
+      "token": "🪣",
+      "src": "/placeholders/elements/by-game/focus-filter/watering-can.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Indoor Broom",
+      "token": "🧹",
+      "src": "/placeholders/elements/by-game/focus-filter/indoor-broom.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Cleaning Cloth",
+      "token": "🧻",
+      "src": "/placeholders/elements/by-game/focus-filter/cleaning-cloth.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Brush",
+      "token": "🖌️",
+      "src": "/placeholders/elements/by-game/focus-filter/brush.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Sandpaper",
+      "token": "📄",
+      "src": "/placeholders/elements/by-game/focus-filter/sandpaper.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Saw",
+      "token": "🪚",
+      "src": "/placeholders/elements/by-game/focus-filter/saw.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Rose",
+      "token": "🌹",
+      "src": "/placeholders/elements/by-game/focus-filter/rose.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Jasmine",
+      "token": "🌸",
+      "src": "/placeholders/elements/by-game/focus-filter/jasmine.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Hibiscus",
+      "token": "🌺",
+      "src": "/placeholders/elements/by-game/focus-filter/hibiscus.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Cactus",
+      "token": "🌵",
+      "src": "/placeholders/elements/by-game/focus-filter/cactus.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Tulsi",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/focus-filter/tulsi.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Mint",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/focus-filter/mint.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Coriander",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/focus-filter/coriander.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Banana Plant",
+      "token": "🌴",
+      "src": "/placeholders/elements/by-game/focus-filter/banana-plant.svg",
+      "sourceFile": "src/games/attention/FocusFilter/index.tsx"
+    }
+  ],
+  "garden-planner": [
+    {
+      "id": "tulsi",
+      "label": "Tulsi",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/garden-planner/tulsi.svg",
+      "sourceFile": "src/games/executive/GardenPlanner/index.tsx"
+    },
+    {
+      "id": "neem",
+      "label": "Neem",
+      "token": "🌳",
+      "src": "/placeholders/elements/by-game/garden-planner/neem.svg",
+      "sourceFile": "src/games/executive/GardenPlanner/index.tsx"
+    },
+    {
+      "id": "marigold",
+      "label": "Marigold",
+      "token": "🌼",
+      "src": "/placeholders/elements/by-game/garden-planner/marigold.svg",
+      "sourceFile": "src/games/executive/GardenPlanner/index.tsx"
+    },
+    {
+      "id": "hibiscus",
+      "label": "Hibiscus",
+      "token": "🌺",
+      "src": "/placeholders/elements/by-game/garden-planner/hibiscus.svg",
+      "sourceFile": "src/games/executive/GardenPlanner/index.tsx"
+    },
+    {
+      "id": "curryleaf",
+      "label": "Curry Leaf",
+      "token": "🍃",
+      "src": "/placeholders/elements/by-game/garden-planner/curryleaf.svg",
+      "sourceFile": "src/games/executive/GardenPlanner/index.tsx"
+    },
+    {
+      "id": "jasmine",
+      "label": "Jasmine",
+      "token": "🌸",
+      "src": "/placeholders/elements/by-game/garden-planner/jasmine.svg",
+      "sourceFile": "src/games/executive/GardenPlanner/index.tsx"
+    },
+    {
+      "id": "aloe",
+      "label": "Aloe Vera",
+      "token": "🪴",
+      "src": "/placeholders/elements/by-game/garden-planner/aloe.svg",
+      "sourceFile": "src/games/executive/GardenPlanner/index.tsx"
+    },
+    {
+      "id": "butterfly",
+      "label": "Butterfly Pea",
+      "token": "💐",
+      "src": "/placeholders/elements/by-game/garden-planner/butterfly.svg",
+      "sourceFile": "src/games/executive/GardenPlanner/index.tsx"
+    }
+  ],
+  "garden-sequencer": [
+    {
+      "id": "plant_seed",
+      "label": "Dig a hole",
+      "token": "🌱",
+      "src": "/placeholders/elements/by-game/garden-sequencer/plant-seed.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "seed",
+      "label": "Place the seed",
+      "token": "🌱",
+      "src": "/placeholders/elements/by-game/garden-sequencer/seed.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "water",
+      "label": "Water gently",
+      "token": "🪣",
+      "src": "/placeholders/elements/by-game/garden-sequencer/water.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "cover",
+      "label": "Cover with soil",
+      "token": "🤲",
+      "src": "/placeholders/elements/by-game/garden-sequencer/cover.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "water_garden",
+      "label": "Check the soil",
+      "token": "🪣",
+      "src": "/placeholders/elements/by-game/garden-sequencer/water-garden.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "fill_can",
+      "label": "Fill the watering can",
+      "token": "🚿",
+      "src": "/placeholders/elements/by-game/garden-sequencer/fill-can.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "water_plants",
+      "label": "Water each plant",
+      "token": "🪣",
+      "src": "/placeholders/elements/by-game/garden-sequencer/water-plants.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "empty_can",
+      "label": "Empty excess water",
+      "token": "🫗",
+      "src": "/placeholders/elements/by-game/garden-sequencer/empty-can.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "weed_bed",
+      "label": "Spot the weeds",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/garden-sequencer/weed-bed.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "gloves",
+      "label": "Put on gloves",
+      "token": "🧤",
+      "src": "/placeholders/elements/by-game/garden-sequencer/gloves.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "loosen",
+      "label": "Loosen the soil",
+      "token": "🍴",
+      "src": "/placeholders/elements/by-game/garden-sequencer/loosen.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "mulch",
+      "label": "Add mulch",
+      "token": "🌾",
+      "src": "/placeholders/elements/by-game/garden-sequencer/mulch.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "harvest_veg",
+      "label": "Check if ripe",
+      "token": "🍅",
+      "src": "/placeholders/elements/by-game/garden-sequencer/harvest-veg.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "cut",
+      "label": "Cut from the plant",
+      "token": "✂️",
+      "src": "/placeholders/elements/by-game/garden-sequencer/cut.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "rinse",
+      "label": "Rinse the produce",
+      "token": "💧",
+      "src": "/placeholders/elements/by-game/garden-sequencer/rinse.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "basket",
+      "label": "Place in basket",
+      "token": "🧺",
+      "src": "/placeholders/elements/by-game/garden-sequencer/basket.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "collect_flowers",
+      "label": "Choose the best blooms",
+      "token": "🌸",
+      "src": "/placeholders/elements/by-game/garden-sequencer/collect-flowers.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "cut_stem",
+      "label": "Cut the stem",
+      "token": "✂️",
+      "src": "/placeholders/elements/by-game/garden-sequencer/cut-stem.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "strip_leaves",
+      "label": "Remove lower leaves",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/garden-sequencer/strip-leaves.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "water_vase",
+      "label": "Place in water",
+      "token": "🪣",
+      "src": "/placeholders/elements/by-game/garden-sequencer/water-vase.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "make_bouquet",
+      "label": "Sort by colour",
+      "token": "💐",
+      "src": "/placeholders/elements/by-game/garden-sequencer/make-bouquet.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "arrange",
+      "label": "Arrange the bunch",
+      "token": "🙌",
+      "src": "/placeholders/elements/by-game/garden-sequencer/arrange.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "tie_stems",
+      "label": "Tie the stems",
+      "token": "🪡",
+      "src": "/placeholders/elements/by-game/garden-sequencer/tie-stems.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "wrap",
+      "label": "Wrap and present",
+      "token": "📦",
+      "src": "/placeholders/elements/by-game/garden-sequencer/wrap.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "compost_waste",
+      "label": "Collect scraps",
+      "token": "♻️",
+      "src": "/placeholders/elements/by-game/garden-sequencer/compost-waste.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "chop",
+      "label": "Chop into pieces",
+      "token": "🔪",
+      "src": "/placeholders/elements/by-game/garden-sequencer/chop.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "compost_bin",
+      "label": "Add to compost bin",
+      "token": "🗑️",
+      "src": "/placeholders/elements/by-game/garden-sequencer/compost-bin.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "mix",
+      "label": "Mix it in",
+      "token": "🍴",
+      "src": "/placeholders/elements/by-game/garden-sequencer/mix.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "repot_plant",
+      "label": "Remove from old pot",
+      "token": "🪴",
+      "src": "/placeholders/elements/by-game/garden-sequencer/repot-plant.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "shake_roots",
+      "label": "Shake off old soil",
+      "token": "🤲",
+      "src": "/placeholders/elements/by-game/garden-sequencer/shake-roots.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "new_pot",
+      "label": "Place in new pot",
+      "token": "🪴",
+      "src": "/placeholders/elements/by-game/garden-sequencer/new-pot.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "water_settle",
+      "label": "Water to settle roots",
+      "token": "🪣",
+      "src": "/placeholders/elements/by-game/garden-sequencer/water-settle.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "market_stall",
+      "label": "Pack the produce",
+      "token": "🛒",
+      "src": "/placeholders/elements/by-game/garden-sequencer/market-stall.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "label",
+      "label": "Label each bundle",
+      "token": "🏷️",
+      "src": "/placeholders/elements/by-game/garden-sequencer/label.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "set_stall",
+      "label": "Set up the stall",
+      "token": "🪑",
+      "src": "/placeholders/elements/by-game/garden-sequencer/set-stall.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "serve",
+      "label": "Serve the customer",
+      "token": "🤝",
+      "src": "/placeholders/elements/by-game/garden-sequencer/serve.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "save_seeds",
+      "label": "Let the pod dry",
+      "token": "🫙",
+      "src": "/placeholders/elements/by-game/garden-sequencer/save-seeds.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "open_pod",
+      "label": "Open the pod",
+      "token": "🤲",
+      "src": "/placeholders/elements/by-game/garden-sequencer/open-pod.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "collect_seeds",
+      "label": "Collect the seeds",
+      "token": "🫙",
+      "src": "/placeholders/elements/by-game/garden-sequencer/collect-seeds.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    },
+    {
+      "id": "envelope",
+      "label": "Store in envelope",
+      "token": "📩",
+      "src": "/placeholders/elements/by-game/garden-sequencer/envelope.svg",
+      "sourceFile": "src/games/executive/GardenSequencer/index.tsx"
+    }
+  ],
+  "morning-routine-quest": [
+    {
+      "id": "wake",
+      "label": "Wake up",
+      "token": "🌅",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/wake.svg",
+      "sourceFile": "src/games/executive/MorningRoutineQuest/index.tsx"
+    },
+    {
+      "id": "brush",
+      "label": "Brush teeth",
+      "token": "🪥",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/brush.svg",
+      "sourceFile": "src/games/executive/MorningRoutineQuest/index.tsx"
+    },
+    {
+      "id": "breakfast",
+      "label": "Eat breakfast",
+      "token": "🍽️",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/breakfast.svg",
+      "sourceFile": "src/games/executive/MorningRoutineQuest/index.tsx"
+    },
+    {
+      "id": "chai",
+      "label": "Drink chai",
+      "token": "☕",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/chai.svg",
+      "sourceFile": "src/games/executive/MorningRoutineQuest/index.tsx"
+    },
+    {
+      "id": "wash_face",
+      "label": "Wash face",
+      "token": "💧",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/wash-face.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "freshen",
+      "label": "Freshen up",
+      "token": "🚿",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/freshen.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "water",
+      "label": "Drink water",
+      "token": "💧",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/water.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "meds",
+      "label": "Take medicine",
+      "token": "💊",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/meds.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "dress",
+      "label": "Wear clean clothes",
+      "token": "👗",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/dress.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "yoga_cloth",
+      "label": "Wear yoga clothes",
+      "token": "👕",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/yoga-cloth.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "docs",
+      "label": "Collect documents",
+      "token": "📋",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/docs.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "list",
+      "label": "Write shopping list",
+      "token": "📝",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/list.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "bag",
+      "label": "Take cloth bags",
+      "token": "🛍️",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/bag.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "money",
+      "label": "Take money",
+      "token": "💵",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/money.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "shoes",
+      "label": "Wear shoes",
+      "token": "👟",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/shoes.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "clean_room",
+      "label": "Tidy the room",
+      "token": "🧹",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/clean-room.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "cook",
+      "label": "Prepare food",
+      "token": "🍳",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/cook.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "temple",
+      "label": "Walk to temple",
+      "token": "🛕",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/temple.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "garden",
+      "label": "Go to the garden",
+      "token": "🌳",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/garden.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "yoga",
+      "label": "Do yoga",
+      "token": "🧘",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/yoga.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "walk",
+      "label": "Go for a walk",
+      "token": "🚶",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/walk.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "market",
+      "label": "Go to market",
+      "token": "🛒",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/market.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "hospital",
+      "label": "Leave for hospital",
+      "token": "🏥",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/hospital.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": "wait_door",
+      "label": "Wait at the door",
+      "token": "🪑",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/wait-door.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": null,
+      "label": "Getting Ready for the Temple",
+      "token": "🛕",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/getting-ready-for-the-temple.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": null,
+      "label": "Yoga in the Garden",
+      "token": "🧘",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/yoga-in-the-garden.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": null,
+      "label": "Morning Wash",
+      "token": "🌅",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/morning-wash.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": null,
+      "label": "Morning Garden Walk",
+      "token": "🌳",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/morning-garden-walk.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": null,
+      "label": "Getting Ready for the Doctor",
+      "token": "🏥",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/getting-ready-for-the-doctor.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": null,
+      "label": "Family is Coming!",
+      "token": "👨‍👩‍👧‍👦",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/family-is-coming.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    },
+    {
+      "id": null,
+      "label": "Morning Market Trip",
+      "token": "🛒",
+      "src": "/placeholders/elements/by-game/morning-routine-quest/morning-market-trip.svg",
+      "sourceFile": "src/lib/contentGenerators/morningRoutine.ts"
+    }
+  ],
+  "recipe-builder": [
+    {
+      "id": "soak",
+      "label": "Soak rice and dal",
+      "token": "🍽️",
+      "src": "/placeholders/elements/by-game/recipe-builder/soak.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "grind",
+      "label": "Grind the batter",
+      "token": "⚙️",
+      "src": "/placeholders/elements/by-game/recipe-builder/grind.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "steam",
+      "label": "Steam the idlis",
+      "token": "♨️",
+      "src": "/placeholders/elements/by-game/recipe-builder/steam.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "serve",
+      "label": "Serve with sambar",
+      "token": "🥘",
+      "src": "/placeholders/elements/by-game/recipe-builder/serve.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "mix",
+      "label": "Mix rava and rice flour",
+      "token": "🫓",
+      "src": "/placeholders/elements/by-game/recipe-builder/mix.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "batter",
+      "label": "Add water and mix",
+      "token": "💧",
+      "src": "/placeholders/elements/by-game/recipe-builder/batter.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "season",
+      "label": "Add onion and spices",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/recipe-builder/season.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "heat",
+      "label": "Heat the griddle",
+      "token": "🔥",
+      "src": "/placeholders/elements/by-game/recipe-builder/heat.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "cook",
+      "label": "Pour and cook dosa",
+      "token": "🍳",
+      "src": "/placeholders/elements/by-game/recipe-builder/cook.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "soak",
+      "label": "Soak tamarind",
+      "token": "🫕",
+      "src": "/placeholders/elements/by-game/recipe-builder/soak-2.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "squeeze",
+      "label": "Extract tamarind juice",
+      "token": "🫙",
+      "src": "/placeholders/elements/by-game/recipe-builder/squeeze.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "tomato",
+      "label": "Add tomatoes to pot",
+      "token": "🍅",
+      "src": "/placeholders/elements/by-game/recipe-builder/tomato.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "boil",
+      "label": "Add tamarind water",
+      "token": "♨️",
+      "src": "/placeholders/elements/by-game/recipe-builder/boil.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "powder",
+      "label": "Add rasam powder",
+      "token": "🌶️",
+      "src": "/placeholders/elements/by-game/recipe-builder/powder.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "dal",
+      "label": "Add cooked dal",
+      "token": "🫘",
+      "src": "/placeholders/elements/by-game/recipe-builder/dal.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "temper",
+      "label": "Add tempering",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/recipe-builder/temper.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "roast",
+      "label": "Dry roast rava",
+      "token": "🥣",
+      "src": "/placeholders/elements/by-game/recipe-builder/roast.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "temper",
+      "label": "Prepare tempering",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/recipe-builder/temper-2.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "vegs",
+      "label": "Add vegetables",
+      "token": "🥕",
+      "src": "/placeholders/elements/by-game/recipe-builder/vegs.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "water",
+      "label": "Add water and boil",
+      "token": "💧",
+      "src": "/placeholders/elements/by-game/recipe-builder/water.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "mix",
+      "label": "Add rava and stir",
+      "token": "🥣",
+      "src": "/placeholders/elements/by-game/recipe-builder/mix-2.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "rinse",
+      "label": "Rinse the poha",
+      "token": "🍚",
+      "src": "/placeholders/elements/by-game/recipe-builder/rinse.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "onion",
+      "label": "Add onion",
+      "token": "🧅",
+      "src": "/placeholders/elements/by-game/recipe-builder/onion.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    },
+    {
+      "id": "mix",
+      "label": "Mix in poha",
+      "token": "🥣",
+      "src": "/placeholders/elements/by-game/recipe-builder/mix-2.svg",
+      "sourceFile": "src/games/executive/RecipeBuilder/index.tsx"
+    }
+  ],
+  "remember-match": [
+    {
+      "id": null,
+      "label": "Tea Kettle",
+      "token": "🫖",
+      "src": "/placeholders/elements/by-game/remember-match/tea-kettle.svg",
+      "sourceFile": "src/games/memory/RememberMatch/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Coconut",
+      "token": "🥥",
+      "src": "/placeholders/elements/by-game/remember-match/coconut.svg",
+      "sourceFile": "src/games/memory/RememberMatch/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Marigold",
+      "token": "🌺",
+      "src": "/placeholders/elements/by-game/remember-match/marigold.svg",
+      "sourceFile": "src/games/memory/RememberMatch/index.tsx"
+    },
+    {
+      "id": "cup",
+      "label": "Tea Cup",
+      "token": "☕",
+      "src": "/placeholders/elements/by-game/remember-match/cup.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "pot",
+      "label": "Cooking Pot",
+      "token": "🫕",
+      "src": "/placeholders/elements/by-game/remember-match/pot.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "cooker",
+      "label": "Pressure Cooker",
+      "token": "🍲",
+      "src": "/placeholders/elements/by-game/remember-match/cooker.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "spoon",
+      "label": "Serving Spoon",
+      "token": "🥄",
+      "src": "/placeholders/elements/by-game/remember-match/spoon.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "salt",
+      "label": "Salt",
+      "token": "🧂",
+      "src": "/placeholders/elements/by-game/remember-match/salt.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "bowl",
+      "label": "Bowl",
+      "token": "🥣",
+      "src": "/placeholders/elements/by-game/remember-match/bowl.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "jar",
+      "label": "Pickle Jar",
+      "token": "🫙",
+      "src": "/placeholders/elements/by-game/remember-match/jar.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "banana",
+      "label": "Banana",
+      "token": "🍌",
+      "src": "/placeholders/elements/by-game/remember-match/banana.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "mango",
+      "label": "Mango",
+      "token": "🥭",
+      "src": "/placeholders/elements/by-game/remember-match/mango.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "rice",
+      "label": "Rice",
+      "token": "🍚",
+      "src": "/placeholders/elements/by-game/remember-match/rice.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "tomato",
+      "label": "Tomato",
+      "token": "🍅",
+      "src": "/placeholders/elements/by-game/remember-match/tomato.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "onion",
+      "label": "Onion",
+      "token": "🧅",
+      "src": "/placeholders/elements/by-game/remember-match/onion.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "lime",
+      "label": "Lime",
+      "token": "🍋",
+      "src": "/placeholders/elements/by-game/remember-match/lime.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "apple",
+      "label": "Apple",
+      "token": "🍎",
+      "src": "/placeholders/elements/by-game/remember-match/apple.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "grapes",
+      "label": "Grapes",
+      "token": "🍇",
+      "src": "/placeholders/elements/by-game/remember-match/grapes.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "orange",
+      "label": "Orange",
+      "token": "🍊",
+      "src": "/placeholders/elements/by-game/remember-match/orange.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "jasmine",
+      "label": "Jasmine",
+      "token": "🌸",
+      "src": "/placeholders/elements/by-game/remember-match/jasmine.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "tulsi",
+      "label": "Tulsi",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/remember-match/tulsi.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "rose",
+      "label": "Rose",
+      "token": "🌹",
+      "src": "/placeholders/elements/by-game/remember-match/rose.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "sunflower",
+      "label": "Sunflower",
+      "token": "🌻",
+      "src": "/placeholders/elements/by-game/remember-match/sunflower.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "lotus",
+      "label": "Lotus",
+      "token": "🪷",
+      "src": "/placeholders/elements/by-game/remember-match/lotus.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "tulip",
+      "label": "Tulip",
+      "token": "🌷",
+      "src": "/placeholders/elements/by-game/remember-match/tulip.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "seedling",
+      "label": "Seedling",
+      "token": "🌱",
+      "src": "/placeholders/elements/by-game/remember-match/seedling.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "sparrow",
+      "label": "Sparrow",
+      "token": "🐦",
+      "src": "/placeholders/elements/by-game/remember-match/sparrow.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "peacock",
+      "label": "Peacock",
+      "token": "🦚",
+      "src": "/placeholders/elements/by-game/remember-match/peacock.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "cow",
+      "label": "Cow",
+      "token": "🐄",
+      "src": "/placeholders/elements/by-game/remember-match/cow.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "cat",
+      "label": "Cat",
+      "token": "🐈",
+      "src": "/placeholders/elements/by-game/remember-match/cat.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "dog",
+      "label": "Dog",
+      "token": "🐕",
+      "src": "/placeholders/elements/by-game/remember-match/dog.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "parrot",
+      "label": "Parrot",
+      "token": "🦜",
+      "src": "/placeholders/elements/by-game/remember-match/parrot.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "butterfly",
+      "label": "Butterfly",
+      "token": "🦋",
+      "src": "/placeholders/elements/by-game/remember-match/butterfly.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "elephant",
+      "label": "Elephant",
+      "token": "🐘",
+      "src": "/placeholders/elements/by-game/remember-match/elephant.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "diya",
+      "label": "Diya",
+      "token": "🪔",
+      "src": "/placeholders/elements/by-game/remember-match/diya.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "bell",
+      "label": "Temple Bell",
+      "token": "🔔",
+      "src": "/placeholders/elements/by-game/remember-match/bell.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "umbrella",
+      "label": "Umbrella",
+      "token": "☂️",
+      "src": "/placeholders/elements/by-game/remember-match/umbrella.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "clock",
+      "label": "Clock",
+      "token": "🕰️",
+      "src": "/placeholders/elements/by-game/remember-match/clock.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "book",
+      "label": "Books",
+      "token": "📚",
+      "src": "/placeholders/elements/by-game/remember-match/book.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "lamp",
+      "label": "Lamp",
+      "token": "💡",
+      "src": "/placeholders/elements/by-game/remember-match/lamp.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "bag",
+      "label": "Bag",
+      "token": "👜",
+      "src": "/placeholders/elements/by-game/remember-match/bag.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    },
+    {
+      "id": "remote",
+      "label": "Remote",
+      "token": "📱",
+      "src": "/placeholders/elements/by-game/remember-match/remote.svg",
+      "sourceFile": "src/lib/contentGenerators/rememberMatch.ts"
+    }
+  ],
+  "sequence-repeat": [
+    {
+      "id": null,
+      "label": "Mango",
+      "token": "🥭",
+      "src": "/placeholders/elements/by-game/sequence-repeat/mango.svg",
+      "sourceFile": "src/games/memory/SequenceRepeat/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Tomato",
+      "token": "🍅",
+      "src": "/placeholders/elements/by-game/sequence-repeat/tomato.svg",
+      "sourceFile": "src/games/memory/SequenceRepeat/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Brinjal",
+      "token": "🍆",
+      "src": "/placeholders/elements/by-game/sequence-repeat/brinjal.svg",
+      "sourceFile": "src/games/memory/SequenceRepeat/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Coconut",
+      "token": "🥥",
+      "src": "/placeholders/elements/by-game/sequence-repeat/coconut.svg",
+      "sourceFile": "src/games/memory/SequenceRepeat/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Banana",
+      "token": "🍌",
+      "src": "/placeholders/elements/by-game/sequence-repeat/banana.svg",
+      "sourceFile": "src/games/memory/SequenceRepeat/index.tsx"
+    },
+    {
+      "id": null,
+      "label": "Broccoli",
+      "token": "🥦",
+      "src": "/placeholders/elements/by-game/sequence-repeat/broccoli.svg",
+      "sourceFile": "src/games/memory/SequenceRepeat/index.tsx"
+    }
+  ],
+  "shopping-list-recall": [
+    {
+      "id": "tomato",
+      "label": "Tomato",
+      "token": "🍅",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/tomato.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "onion",
+      "label": "Onion",
+      "token": "🧅",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/onion.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "potato",
+      "label": "Potato",
+      "token": "🥔",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/potato.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "brinjal",
+      "label": "Brinjal",
+      "token": "🍆",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/brinjal.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "carrot",
+      "label": "Carrot",
+      "token": "🥕",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/carrot.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "cucumber",
+      "label": "Cucumber",
+      "token": "🥒",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/cucumber.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "coconut",
+      "label": "Coconut",
+      "token": "🥥",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/coconut.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "banana",
+      "label": "Banana",
+      "token": "🍌",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/banana.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "lemon",
+      "label": "Lemon",
+      "token": "🍋",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/lemon.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "mango",
+      "label": "Mango",
+      "token": "🥭",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/mango.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "rice",
+      "label": "Rice",
+      "token": "🍚",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/rice.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "dal",
+      "label": "Dal",
+      "token": "🫘",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/dal.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "oil",
+      "label": "Coconut Oil",
+      "token": "🫙",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/oil.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "salt",
+      "label": "Salt",
+      "token": "🧂",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/salt.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "milk",
+      "label": "Milk",
+      "token": "🥛",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/milk.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "butter",
+      "label": "Butter",
+      "token": "🧈",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/butter.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "ginger",
+      "label": "Ginger",
+      "token": "🫚",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/ginger.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "coriander",
+      "label": "Coriander",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/coriander.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "tamarind",
+      "label": "Tamarind",
+      "token": "🌰",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/tamarind.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    },
+    {
+      "id": "mustard",
+      "label": "Mustard Seeds",
+      "token": "🫛",
+      "src": "/placeholders/elements/by-game/shopping-list-recall/mustard.svg",
+      "sourceFile": "src/games/memory/ShoppingListRecall/index.tsx"
+    }
+  ],
+  "spot-focus": [
+    {
+      "id": "kettle",
+      "label": "Tea Kettle",
+      "token": "🫖",
+      "src": "/placeholders/elements/by-game/spot-focus/kettle.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "jar",
+      "label": "Pickle Jar",
+      "token": "🫙",
+      "src": "/placeholders/elements/by-game/spot-focus/jar.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "pot",
+      "label": "Cooking Pot",
+      "token": "🫕",
+      "src": "/placeholders/elements/by-game/spot-focus/pot.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "cooker",
+      "label": "Pressure Cooker",
+      "token": "🍲",
+      "src": "/placeholders/elements/by-game/spot-focus/cooker.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "spoon",
+      "label": "Serving Spoon",
+      "token": "🥄",
+      "src": "/placeholders/elements/by-game/spot-focus/spoon.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "tomato",
+      "label": "Tomato",
+      "token": "🍅",
+      "src": "/placeholders/elements/by-game/spot-focus/tomato.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "curry",
+      "label": "Curry Leaves",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/spot-focus/curry.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "stove",
+      "label": "Gas Stove",
+      "token": "🔥",
+      "src": "/placeholders/elements/by-game/spot-focus/stove.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "salt",
+      "label": "Salt",
+      "token": "🧂",
+      "src": "/placeholders/elements/by-game/spot-focus/salt.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "bowl",
+      "label": "Bowl",
+      "token": "🥣",
+      "src": "/placeholders/elements/by-game/spot-focus/bowl.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "onion",
+      "label": "Onion",
+      "token": "🧅",
+      "src": "/placeholders/elements/by-game/spot-focus/onion.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "lime",
+      "label": "Lime",
+      "token": "🍋",
+      "src": "/placeholders/elements/by-game/spot-focus/lime.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "window",
+      "label": "Window",
+      "token": "🪟",
+      "src": "/placeholders/elements/by-game/spot-focus/window.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "lamp",
+      "label": "Light",
+      "token": "💡",
+      "src": "/placeholders/elements/by-game/spot-focus/lamp.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "oil",
+      "label": "Oil Jar",
+      "token": "🫙",
+      "src": "/placeholders/elements/by-game/spot-focus/oil.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "ladle",
+      "label": "Ladle",
+      "token": "🥄",
+      "src": "/placeholders/elements/by-game/spot-focus/ladle.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "kettle",
+      "label": "Coffee Cup",
+      "token": "☕",
+      "src": "/placeholders/elements/by-game/spot-focus/kettle-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "tomato",
+      "label": "Two Tomatoes",
+      "token": "🍅🍅",
+      "src": "/placeholders/elements/by-game/spot-focus/tomato-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "bowl",
+      "label": "Bucket",
+      "token": "🪣",
+      "src": "/placeholders/elements/by-game/spot-focus/bowl-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "salt",
+      "label": "Jar",
+      "token": "🫙",
+      "src": "/placeholders/elements/by-game/spot-focus/salt-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "onion",
+      "label": "Two Onions",
+      "token": "🧅🧅",
+      "src": "/placeholders/elements/by-game/spot-focus/onion-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "window",
+      "label": "Door",
+      "token": "🚪",
+      "src": "/placeholders/elements/by-game/spot-focus/window-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "lime",
+      "label": "Orange",
+      "token": "🍊",
+      "src": "/placeholders/elements/by-game/spot-focus/lime-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "tulsi",
+      "label": "Tulsi",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/spot-focus/tulsi.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "neem",
+      "label": "Neem Tree",
+      "token": "🌳",
+      "src": "/placeholders/elements/by-game/spot-focus/neem.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "marigold",
+      "label": "Marigold",
+      "token": "🌺",
+      "src": "/placeholders/elements/by-game/spot-focus/marigold.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "hibiscus",
+      "label": "Hibiscus",
+      "token": "🌸",
+      "src": "/placeholders/elements/by-game/spot-focus/hibiscus.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "pot",
+      "label": "Pot",
+      "token": "🪴",
+      "src": "/placeholders/elements/by-game/spot-focus/pot-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "watering",
+      "label": "Watering Can",
+      "token": "🚿",
+      "src": "/placeholders/elements/by-game/spot-focus/watering.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "bench",
+      "label": "Bench",
+      "token": "🪑",
+      "src": "/placeholders/elements/by-game/spot-focus/bench.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "jasmine",
+      "label": "Jasmine",
+      "token": "🌼",
+      "src": "/placeholders/elements/by-game/spot-focus/jasmine.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "soil",
+      "label": "Soil Patch",
+      "token": "🟫",
+      "src": "/placeholders/elements/by-game/spot-focus/soil.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "butterfly",
+      "label": "Butterfly",
+      "token": "🦋",
+      "src": "/placeholders/elements/by-game/spot-focus/butterfly.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "sparrow",
+      "label": "Sparrow",
+      "token": "🐦",
+      "src": "/placeholders/elements/by-game/spot-focus/sparrow.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "sun",
+      "label": "Sunny Patch",
+      "token": "☀️",
+      "src": "/placeholders/elements/by-game/spot-focus/sun.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "rose",
+      "label": "Rose",
+      "token": "🌹",
+      "src": "/placeholders/elements/by-game/spot-focus/rose.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "aloe",
+      "label": "Aloe Vera",
+      "token": "🌵",
+      "src": "/placeholders/elements/by-game/spot-focus/aloe.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "mango",
+      "label": "Mango Tree",
+      "token": "🥭",
+      "src": "/placeholders/elements/by-game/spot-focus/mango.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "coconut",
+      "label": "Coconut Tree",
+      "token": "🥥",
+      "src": "/placeholders/elements/by-game/spot-focus/coconut.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "marigold",
+      "label": "Sunflower",
+      "token": "🌻",
+      "src": "/placeholders/elements/by-game/spot-focus/marigold-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "watering",
+      "label": "Watering",
+      "token": "🚿",
+      "src": "/placeholders/elements/by-game/spot-focus/watering-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "butterfly",
+      "label": "Caterpillar",
+      "token": "🐛",
+      "src": "/placeholders/elements/by-game/spot-focus/butterfly-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "sun",
+      "label": "Sunny",
+      "token": "☀️",
+      "src": "/placeholders/elements/by-game/spot-focus/sun-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "sun",
+      "label": "Rain Cloud",
+      "token": "🌧️",
+      "src": "/placeholders/elements/by-game/spot-focus/sun-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "rose",
+      "label": "Tulip",
+      "token": "🌷",
+      "src": "/placeholders/elements/by-game/spot-focus/rose-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "sparrow",
+      "label": "Crow",
+      "token": "🐦‍⬛",
+      "src": "/placeholders/elements/by-game/spot-focus/sparrow-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "coconut",
+      "label": "Coconut",
+      "token": "🥥",
+      "src": "/placeholders/elements/by-game/spot-focus/coconut-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "coconut",
+      "label": "Banana Tree",
+      "token": "🍌",
+      "src": "/placeholders/elements/by-game/spot-focus/coconut-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "aloe",
+      "label": "Palm Tree",
+      "token": "🌴",
+      "src": "/placeholders/elements/by-game/spot-focus/aloe-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "mango",
+      "label": "Mango",
+      "token": "🥭",
+      "src": "/placeholders/elements/by-game/spot-focus/mango-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "mango",
+      "label": "Apple",
+      "token": "🍎",
+      "src": "/placeholders/elements/by-game/spot-focus/mango-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "clock",
+      "label": "Clock",
+      "token": "🕰️",
+      "src": "/placeholders/elements/by-game/spot-focus/clock.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "photo",
+      "label": "Photo Frame",
+      "token": "🖼️",
+      "src": "/placeholders/elements/by-game/spot-focus/photo.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "fan",
+      "label": "Ceiling Fan",
+      "token": "💨",
+      "src": "/placeholders/elements/by-game/spot-focus/fan.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "sofa",
+      "label": "Sofa",
+      "token": "🛋️",
+      "src": "/placeholders/elements/by-game/spot-focus/sofa.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "lamp",
+      "label": "Floor Lamp",
+      "token": "💡",
+      "src": "/placeholders/elements/by-game/spot-focus/lamp-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "table",
+      "label": "Coffee Table",
+      "token": "🪵",
+      "src": "/placeholders/elements/by-game/spot-focus/table.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "plant",
+      "label": "Indoor Plant",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/spot-focus/plant.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "remote",
+      "label": "Remote",
+      "token": "📱",
+      "src": "/placeholders/elements/by-game/spot-focus/remote.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "cup",
+      "label": "Tea Cup",
+      "token": "☕",
+      "src": "/placeholders/elements/by-game/spot-focus/cup.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "book",
+      "label": "Books",
+      "token": "📚",
+      "src": "/placeholders/elements/by-game/spot-focus/book.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "cat",
+      "label": "Cat",
+      "token": "🐈",
+      "src": "/placeholders/elements/by-game/spot-focus/cat.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "mat",
+      "label": "Doormat",
+      "token": "🟩",
+      "src": "/placeholders/elements/by-game/spot-focus/mat.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "shoes",
+      "label": "Shoes",
+      "token": "👟",
+      "src": "/placeholders/elements/by-game/spot-focus/shoes.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "bag",
+      "label": "Bag",
+      "token": "👜",
+      "src": "/placeholders/elements/by-game/spot-focus/bag.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "umbrella",
+      "label": "Umbrella",
+      "token": "☂️",
+      "src": "/placeholders/elements/by-game/spot-focus/umbrella.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "clock",
+      "label": "Alarm Clock",
+      "token": "⏰",
+      "src": "/placeholders/elements/by-game/spot-focus/clock-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "lamp",
+      "label": "Lamp",
+      "token": "💡",
+      "src": "/placeholders/elements/by-game/spot-focus/lamp-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "plant",
+      "label": "Plant",
+      "token": "🌿",
+      "src": "/placeholders/elements/by-game/spot-focus/plant-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "plant",
+      "label": "Cactus",
+      "token": "🌵",
+      "src": "/placeholders/elements/by-game/spot-focus/plant-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "remote",
+      "label": "TV Remote",
+      "token": "📺",
+      "src": "/placeholders/elements/by-game/spot-focus/remote-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "book",
+      "label": "Single Book",
+      "token": "📖",
+      "src": "/placeholders/elements/by-game/spot-focus/book-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "shoes",
+      "label": "Two Pairs",
+      "token": "👟👟",
+      "src": "/placeholders/elements/by-game/spot-focus/shoes-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "cat",
+      "label": "Dog",
+      "token": "🐕",
+      "src": "/placeholders/elements/by-game/spot-focus/cat-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    },
+    {
+      "id": "cup",
+      "label": "Cold Drink",
+      "token": "🥤",
+      "src": "/placeholders/elements/by-game/spot-focus/cup-2.svg",
+      "sourceFile": "src/lib/contentGenerators/spotFocus.ts"
+    }
+  ],
+  "word-search": [
+    {
+      "id": null,
+      "label": "South Indian Fruits",
+      "token": "🥭",
+      "src": "/placeholders/elements/by-game/word-search/south-indian-fruits.svg",
+      "sourceFile": "src/lib/contentGenerators/wordSearch.ts"
+    },
+    {
+      "id": null,
+      "label": "Temple Items",
+      "token": "🪔",
+      "src": "/placeholders/elements/by-game/word-search/temple-items.svg",
+      "sourceFile": "src/lib/contentGenerators/wordSearch.ts"
+    },
+    {
+      "id": null,
+      "label": "Breakfast Foods",
+      "token": "🍽️",
+      "src": "/placeholders/elements/by-game/word-search/breakfast-foods.svg",
+      "sourceFile": "src/lib/contentGenerators/wordSearch.ts"
+    },
+    {
+      "id": null,
+      "label": "Garden Flowers",
+      "token": "🌸",
+      "src": "/placeholders/elements/by-game/word-search/garden-flowers.svg",
+      "sourceFile": "src/lib/contentGenerators/wordSearch.ts"
+    },
+    {
+      "id": null,
+      "label": "Birds of India",
+      "token": "🦜",
+      "src": "/placeholders/elements/by-game/word-search/birds-of-india.svg",
+      "sourceFile": "src/lib/contentGenerators/wordSearch.ts"
+    }
+  ]
+}
