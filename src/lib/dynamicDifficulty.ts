@@ -241,10 +241,12 @@ export interface RecipeBuilderDynamicParams {
   ingredientDecisionEnabled: boolean;
   midRecipeModificationEnabled: boolean;
   optionCount: number;
+  /** Controls how much text is shown on tray cards during gameplay */
+  cardDetail: 'full' | 'label' | 'emoji';
 }
 
 const RECIPE_STEPS: Record<SouthIndianRecipe, number> = {
-  idli_sambar: 4, upma: 4, poha: 4, pongal: 5,
+  idli_sambar: 4, upma: 5, poha: 4, pongal: 5,
   rava_dosa: 5, chapati_sabzi: 5,
   rasam: 7, avial: 7, rava_kesari: 7,
 };
@@ -266,6 +268,7 @@ export function getRecipeBuilderParams(score: number): RecipeBuilderDynamicParam
     ingredientDecisionEnabled: score >= 0.35,
     midRecipeModificationEnabled: score >= 0.7,
     optionCount: score < 0.5 ? 2 : 3,
+    cardDetail: score < 0.35 ? 'full' : score < 0.65 ? 'label' : 'emoji',
   };
 }
 
