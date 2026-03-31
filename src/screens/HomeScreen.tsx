@@ -8,6 +8,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import type { SessionState } from '../lib/db';
 import type { GameCategory } from '../styles/tokens';
+import { version } from '../../package.json';
 
 const CATEGORY_ICONS: Record<string, string> = {
   memory:    '🧠',
@@ -235,14 +236,15 @@ export default function HomeScreen() {
         </div>
       )}
 
-      {/* Settings link */}
-      <div className="mt-auto pt-4 text-center">
+      {/* Settings link + version */}
+      <div className="mt-auto pt-4 flex items-center justify-center gap-4">
         <button
           onClick={() => navigate('/app/settings')}
           className="text-body-md text-caption-text underline"
         >
           {t('nav.settings', 'Settings')}
         </button>
+        <span className="text-small text-caption-text opacity-50">v{version}</span>
       </div>
     </div>
   );
