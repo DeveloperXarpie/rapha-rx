@@ -1,6 +1,11 @@
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store';
-import { getTodayDifficulty, getRememberMatchParams, getSpotFocusParams, getMorningRoutineParams, getWordSearchParams, scoreToLevel } from '../lib/dynamicDifficulty';
+import {
+  getTodayDifficulty, scoreToLevel,
+  getRememberMatchParams, getSpotFocusParams, getMorningRoutineParams, getWordSearchParams,
+  getShoppingListParams, getSequenceRepeatParams, getFocusFilterParams,
+  getRecipeBuilderParams, getGardenSequencerParams,
+} from '../lib/dynamicDifficulty';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import GameShell, { type LevelResult } from '../components/GameShell';
 import type { LevelConfig } from '../games/types';
@@ -17,12 +22,7 @@ import MorningRoutineQuest from '../games/executive/MorningRoutineQuest';
 import RecipeBuilder from '../games/executive/RecipeBuilder';
 import GardenSequencer from '../games/executive/GardenSequencer';
 
-// ─── Level config imports (fallback for non-dynamic games) ────────────────────
-import { levels as shoppingListLevels } from '../games/memory/ShoppingListRecall/levels.config';
-import { levels as sequenceRepeatLevels } from '../games/memory/SequenceRepeat/levels.config';
-import { levels as focusFilterLevels } from '../games/attention/FocusFilter/levels.config';
-import { levels as recipeBuilderLevels } from '../games/executive/RecipeBuilder/levels.config';
-import { levels as gardenSequencerLevels } from '../games/executive/GardenSequencer/levels.config';
+// (all games now use the dynamic difficulty system — no static level imports needed)
 
 // ─── Content generators ───────────────────────────────────────────────────────
 import { generateRememberMatchContent, type GeneratedRememberMatchContent } from '../lib/contentGenerators/rememberMatch';
@@ -38,22 +38,19 @@ type GameEntry = {
     onLevelComplete: (result: LevelResult) => void;
     generatedContent?: any;
   }>;
-  levels?: LevelConfig[];
   category: GameCategory;
-  /** If true, this game uses the dynamic difficulty system */
-  dynamic: boolean;
 };
 
 const GAME_REGISTRY: Record<string, GameEntry> = {
-  'remember-match':         { component: RememberMatch,        category: 'memory',     dynamic: true },
-  'shopping-list-recall':   { component: ShoppingListRecall,   levels: shoppingListLevels,    category: 'memory',     dynamic: false },
-  'sequence-repeat':        { component: SequenceRepeat,       levels: sequenceRepeatLevels,  category: 'memory',     dynamic: false },
-  'spot-focus':             { component: SpotFocus,            category: 'attention',  dynamic: true },
-  'word-search':            { component: WordSearch,           category: 'attention',  dynamic: true },
-  'focus-filter':           { component: FocusFilter,          levels: focusFilterLevels,     category: 'attention',  dynamic: false },
-  'morning-routine-quest':  { component: MorningRoutineQuest,  category: 'executive',  dynamic: true },
-  'recipe-builder':         { component: RecipeBuilder,        levels: recipeBuilderLevels,   category: 'executive',  dynamic: false },
-  'garden-sequencer':       { component: GardenSequencer,      levels: gardenSequencerLevels, category: 'executive',  dynamic: false },
+  'remember-match':         { component: RememberMatch,       category: 'memory'    },
+  'shopping-list-recall':   { component: ShoppingListRecall,  category: 'memory'    },
+  'sequence-repeat':        { component: SequenceRepeat,      category: 'memory'    },
+  'spot-focus':             { component: SpotFocus,           category: 'attention' },
+  'word-search':            { component: WordSearch,          category: 'attention' },
+  'focus-filter':           { component: FocusFilter,         category: 'attention' },
+  'morning-routine-quest':  { component: MorningRoutineQuest, category: 'executive' },
+  'recipe-builder':         { component: RecipeBuilder,       category: 'executive' },
+  'garden-sequencer':       { component: GardenSequencer,     category: 'executive' },
 };
 
 // ─── Dynamic content generation ───────────────────────────────────────────────
@@ -98,6 +95,46 @@ function generateContentForGame(gameId: string, score: number): { levelConfig: L
     };
   }
 
+  if (gameId === 'shopping-list-recall') {
+    const params = getShoppingListParams(score);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: undefined,
+    };
+  }
+
+  if (gameId === 'sequence-repeat') {
+    const params = getSequenceRepeatParams(score);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: undefined,
+    };
+  }
+
+  if (gameId === 'focus-filter') {
+    const params = getFocusFilterParams(score);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: undefined,
+    };
+  }
+
+  if (gameId === 'recipe-builder') {
+    const params = getRecipeBuilderParams(score);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: undefined,
+    };
+  }
+
+  if (gameId === 'garden-sequencer') {
+    const params = getGardenSequencerParams(score);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: undefined,
+    };
+  }
+
   throw new Error(`No dynamic generator for game: ${gameId}`);
 }
 
@@ -118,11 +155,9 @@ export default function GameRouter() {
 
   const refreshDifficulty = useCallback(async () => {
     if (!gameId || !profile) return;
-    if (entry?.dynamic) {
-      const state = await getTodayDifficulty(profile.userId, gameId);
-      setDifficultyScore(state.score);
-    }
-  }, [gameId, profile, entry?.dynamic]);
+    const state = await getTodayDifficulty(profile.userId, gameId);
+    setDifficultyScore(state.score);
+  }, [gameId, profile]);
 
   useEffect(() => {
     refreshDifficulty().then(() => setLoading(false));
@@ -135,17 +170,9 @@ export default function GameRouter() {
   // Generate content for this round (regenerated each time gameKey changes)
   const { levelConfig, generatedContent } = useMemo(() => {
     if (!entry || !gameId) return { levelConfig: { id: 'level_1' as const, labelKey: 'level.1', params: {} }, generatedContent: undefined };
-
-    if (entry.dynamic) {
-      return generateContentForGame(gameId, difficultyScore);
-    }
-
-    // Static fallback for non-dynamic games
-    const staticLevels = entry.levels ?? [];
-    const fallback = staticLevels[0] ?? { id: 'level_1' as const, labelKey: 'level.1', params: {} };
-    return { levelConfig: fallback, generatedContent: undefined };
+    return generateContentForGame(gameId, difficultyScore);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameKey, difficultyScore, gameId, entry?.dynamic]);
+  }, [gameKey, difficultyScore, gameId]);
 
   if (!entry) return <Navigate to="/app/home" replace />;
   if (loading) return (

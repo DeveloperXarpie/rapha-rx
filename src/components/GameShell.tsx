@@ -31,7 +31,7 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
   executive: 'game.category.executive',
 };
 
-const ROTATION_THRESHOLD_SECONDS = 1 * 30; // 30 seconds for testing
+const ROTATION_THRESHOLD_SECONDS = 5 * 60; // 5 minutes per category
 
 export default function GameShell({
   gameId,

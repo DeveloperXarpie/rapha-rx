@@ -171,3 +171,121 @@ export function getWordSearchParams(score: number): WordSearchDynamicParams {
     allowBackwards: score >= 0.7,
   };
 }
+
+export interface ShoppingListDynamicParams {
+  itemCount: number;
+  studyDurationMs: number;
+  distractorGapEnabled: boolean;
+  recallFieldSize: number;
+  bonusSortEnabled: boolean;
+  itemPool: 'south_indian_groceries';
+}
+
+export function getShoppingListParams(score: number): ShoppingListDynamicParams {
+  return {
+    itemCount: lerpInt(4, 8, score),
+    studyDurationMs: Math.round(lerp(35000, 15000, score)),
+    distractorGapEnabled: score >= 0.35,
+    recallFieldSize: lerpInt(10, 18, score),
+    bonusSortEnabled: score >= 0.7,
+    itemPool: 'south_indian_groceries',
+  };
+}
+
+export interface SequenceRepeatDynamicParams {
+  startingLength: number;
+  colourCount: number;
+  playbackSpeedMs: number;
+  audioEnabled: boolean;
+  maxLength: number;
+}
+
+export function getSequenceRepeatParams(score: number): SequenceRepeatDynamicParams {
+  return {
+    startingLength: lerpInt(2, 5, score),
+    colourCount: score < 0.5 ? 3 : 4,
+    playbackSpeedMs: Math.round(lerp(900, 350, score)),
+    audioEnabled: score < 0.7,
+    maxLength: lerpInt(5, 12, score),
+  };
+}
+
+export interface FocusFilterDynamicParams {
+  questionCount: number;
+  outlierType: 'obvious' | 'subtle' | 'overlapping_category';
+  categoryLabelVisible: 'always' | 'intro_only' | 'never';
+  categoryPool: 'south_indian_food' | 'animals' | 'household_tools' | 'garden_plants';
+}
+
+const FOCUS_FILTER_POOLS = [
+  'south_indian_food', 'animals', 'household_tools', 'garden_plants',
+] as const;
+
+export function getFocusFilterParams(score: number): FocusFilterDynamicParams {
+  return {
+    questionCount: lerpInt(3, 8, score),
+    outlierType: score < 0.35 ? 'obvious' : score < 0.7 ? 'subtle' : 'overlapping_category',
+    categoryLabelVisible: score < 0.3 ? 'always' : score < 0.65 ? 'intro_only' : 'never',
+    categoryPool: FOCUS_FILTER_POOLS[Math.floor(score * 4) % 4],
+  };
+}
+
+type SouthIndianRecipe =
+  | 'idli_sambar' | 'upma' | 'poha' | 'pongal'
+  | 'rava_dosa' | 'chapati_sabzi'
+  | 'rasam' | 'avial' | 'rava_kesari';
+
+export interface RecipeBuilderDynamicParams {
+  recipe: SouthIndianRecipe;
+  stepCount: number;
+  ingredientDecisionEnabled: boolean;
+  midRecipeModificationEnabled: boolean;
+  optionCount: number;
+}
+
+const RECIPE_STEPS: Record<SouthIndianRecipe, number> = {
+  idli_sambar: 4, upma: 4, poha: 4, pongal: 5,
+  rava_dosa: 5, chapati_sabzi: 5,
+  rasam: 7, avial: 7, rava_kesari: 7,
+};
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+export function getRecipeBuilderParams(score: number): RecipeBuilderDynamicParams {
+  const recipe: SouthIndianRecipe = score < 0.33
+    ? pickRandom(['idli_sambar', 'upma', 'poha', 'pongal'] as const)
+    : score < 0.66
+    ? pickRandom(['rava_dosa', 'chapati_sabzi'] as const)
+    : pickRandom(['rasam', 'avial', 'rava_kesari'] as const);
+
+  return {
+    recipe,
+    stepCount: RECIPE_STEPS[recipe],
+    ingredientDecisionEnabled: score >= 0.35,
+    midRecipeModificationEnabled: score >= 0.7,
+    optionCount: score < 0.5 ? 2 : 3,
+  };
+}
+
+const ALL_GARDEN_ACTIVITY_IDS = [
+  'plant_seed', 'water_garden', 'weed_bed', 'harvest_veg',
+  'collect_flowers', 'make_bouquet', 'compost_waste',
+  'repot_plant', 'market_stall', 'save_seeds',
+];
+
+export interface GardenSequencerDynamicParams {
+  activityIds: string[];
+  anchorFirstStep: boolean;
+}
+
+export function getGardenSequencerParams(score: number): GardenSequencerDynamicParams {
+  // Pool size: more activities available at higher scores (more variety / harder to predict)
+  const poolSize = lerpInt(3, ALL_GARDEN_ACTIVITY_IDS.length, score);
+  const shuffled = [...ALL_GARDEN_ACTIVITY_IDS].sort(() => Math.random() - 0.5);
+  return {
+    activityIds: shuffled.slice(0, poolSize),
+    anchorFirstStep: score < 0.4,
+  };
+}
