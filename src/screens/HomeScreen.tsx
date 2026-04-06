@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { getLastCompletedSession } from '../lib/db';
+import { checkForResumableSession } from '../lib/resumeSession';
 import { track } from '../lib/analytics';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -67,15 +68,20 @@ export default function HomeScreen() {
   const startSession = useAppStore((s) => s.startSession);
 
   const [previousSession, setPreviousSession] = useState<SessionState | null>(null);
+  const [isResumable, setIsResumable] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const firstName = profile?.nickname ?? profile?.firstName ?? '';
 
-  // Check for previous completed sessions
+  // Check for previous completed sessions and any resumable in-progress session
   useEffect(() => {
     if (!profile) { setLoading(false); return; }
-    getLastCompletedSession(profile.userId).then((s) => {
-      setPreviousSession(s ?? null);
+    Promise.all([
+      getLastCompletedSession(profile.userId),
+      checkForResumableSession(profile.userId),
+    ]).then(([last, resumable]) => {
+      setPreviousSession(last ?? null);
+      setIsResumable(!!resumable);
       setLoading(false);
     });
   }, [profile]);
@@ -83,6 +89,10 @@ export default function HomeScreen() {
   function handleStartSession() {
     startSession();
     navigate('/app/questionnaire');
+  }
+
+  function handleResumeSession() {
+    navigate('/app/rotation');
   }
 
   function handlePracticeGame(gameId: string) {
@@ -187,6 +197,10 @@ export default function HomeScreen() {
           <p className="text-h2 font-bold text-body-text mb-2">{t('home.sessionComplete', "Today's session is complete!")}</p>
           <p className="text-h3 text-caption-text">{t('home.practiceBelow', 'You can practise any game below.')}</p>
         </Card>
+      ) : isResumable ? (
+        <Button fullWidth size="lg" onClick={handleResumeSession} className="text-h2 mb-8">
+          {t('btn.resumeSession', 'Resume Session')}
+        </Button>
       ) : (
         <Button fullWidth size="lg" onClick={handleStartSession} className="text-h2 mb-8">
           {t('btn.startSession', 'Start Session')}
@@ -217,13 +231,9 @@ export default function HomeScreen() {
                                border-2 border-transparent hover:border-primary-blue hover:bg-hover-state
                                active:scale-[0.98] transition-all duration-150 shadow-sm text-left"
                   >
-                    <img
-                      src={game.imageSrc}
-                      alt={t(game.nameKey, game.id)}
-                      className="w-14 h-14 rounded-xl object-cover border border-black/10 shrink-0"
-                      loading="lazy"
-                    />
-                    <span className="text-3xl">{game.icon}</span>
+                    <div className="w-14 h-14 rounded-xl bg-hover-state border border-black/10 shrink-0 flex items-center justify-center">
+                      <span className="text-3xl">{game.icon}</span>
+                    </div>
                     <span className="text-h3 font-semibold text-body-text">
                       {t(game.nameKey, game.id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '))}
                     </span>

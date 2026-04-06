@@ -337,10 +337,19 @@ export default function RememberMatch({ levelConfig, onLevelComplete, generatedC
   }
 
   function renderSummary() {
+    const allCorrect = quizCount === 0 || quizCorrect === quizCount;
+    const someCorrect = quizCorrect > 0 && quizCorrect < quizCount;
+
+    const message = allCorrect
+      ? t('remember-match.phase.summary.message.perfect', 'Great memory! You\'re improving! 🌟')
+      : someCorrect
+        ? t('remember-match.phase.summary.message.partial', 'Good effort! Keep practising! 💪')
+        : t('remember-match.phase.summary.message.low', 'Keep going! Practice makes perfect! 💪');
+
     return (
       <div className="flex flex-col items-center justify-center gap-8 w-full max-w-md mx-auto">
         <p className="text-h2 font-bold text-body-text text-center">
-          {t('remember-match.phase.summary.message', 'Great memory! You\'re improving! 🌟')}
+          {message}
         </p>
         <Button fullWidth onClick={handleComplete}>
           {t('remember-match.phase.summary.cta', 'Continue')}

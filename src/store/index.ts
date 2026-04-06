@@ -120,6 +120,11 @@ export const useAppStore = create<AppState>()(
 
       startSession: () => {
         const today = todayISO();
+        const existing = get().currentSession;
+
+        // Don't wipe an in-progress session for today
+        if (existing.date === today && existing.questionnaireCompleted) return;
+
         const updated: CurrentSession = {
           ...defaultSession,
           date: today,
