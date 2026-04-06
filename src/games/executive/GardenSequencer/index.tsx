@@ -184,9 +184,12 @@ const ALL_ACTIVITIES: Activity[] = [
 ];
 
 const ACTIVITY_MAP = new Map(ALL_ACTIVITIES.map((a) => [a.id, a]));
+const LAST_ACTIVITY_KEY = 'garden_sequencer_last_activity';
 
 function pickActivity(ids: string[]): Activity {
-  const id = ids[Math.floor(Math.random() * ids.length)];
+  const lastId = sessionStorage.getItem(LAST_ACTIVITY_KEY);
+  const pool = ids.length > 1 ? ids.filter((id) => id !== lastId) : ids;
+  const id = pool[Math.floor(Math.random() * pool.length)];
   return ACTIVITY_MAP.get(id) ?? ALL_ACTIVITIES[0];
 }
 
@@ -536,7 +539,8 @@ export default function GardenSequencer({ levelConfig, onLevelComplete }: Props)
       <p className="text-h3 text-caption-text font-semibold">{activity.completionEn}</p>
 
       <button
-        onClick={() =>
+        onClick={() => {
+          sessionStorage.setItem(LAST_ACTIVITY_KEY, activity.id);
           onLevelComplete({
             levelId: levelConfig.id,
             durationSeconds: Math.floor((Date.now() - startedAt.current) / 1000),
@@ -546,8 +550,8 @@ export default function GardenSequencer({ levelConfig, onLevelComplete }: Props)
               totalAttempts: totalAttempts.current,
               resetCount,
             },
-          })
-        }
+          });
+        }}
         className="btn-primary w-full max-w-sm mt-2"
       >
         {t('btn.continue', 'Continue')}

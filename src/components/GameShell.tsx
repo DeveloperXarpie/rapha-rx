@@ -13,6 +13,7 @@ export interface LevelResult {
   durationSeconds: number;
   completed: boolean;
   metrics: Record<string, unknown>;
+  newDifficultyScore?: number;
 }
 
 interface GameShellProps {
@@ -80,15 +81,17 @@ export default function GameShell({
 
   async function handleLevelComplete(result: LevelResult) {
     const userId = profile?.userId;
+    let newDifficultyScore: number | undefined;
 
     // Adjust dynamic difficulty score
     if (userId) {
       // Calculate performance ratio from metrics
       const performanceRatio = computePerformanceRatio(gameId, result);
-      await adjustDifficulty(userId, gameId, {
+      const updated = await adjustDifficulty(userId, gameId, {
         completed: result.completed,
         performanceRatio,
       });
+      newDifficultyScore = updated.score;
     }
 
     const eventName = result.completed ? 'level_completed' : 'level_not_completed';
@@ -101,7 +104,7 @@ export default function GameShell({
       difficultyScore,
     });
 
-    finishLevel(result);
+    finishLevel({ ...result, newDifficultyScore });
   }
 
   function finishLevel(result: LevelResult) {

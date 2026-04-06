@@ -183,8 +183,12 @@ export default function GameRouter() {
 
   const GameComponent = entry.component;
 
-  async function handleLevelComplete() {
-    await refreshDifficulty();
+  async function handleLevelComplete(result: LevelResult) {
+    if (result.newDifficultyScore !== undefined) {
+      setDifficultyScore(result.newDifficultyScore);
+    } else {
+      await refreshDifficulty();
+    }
     setGameKey((k) => k + 1);
   }
 
