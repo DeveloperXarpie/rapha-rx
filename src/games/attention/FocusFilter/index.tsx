@@ -352,12 +352,17 @@ function buildQuestions(p: FocusFilterParams): Question[] {
   const filtered = ALL_QUESTIONS.filter(
     (q) => q.pool === p.categoryPool && q.outlierType === p.outlierType,
   );
-  // Shuffle
+  // Shuffle question order
   const shuffled = [...filtered].sort(() => Math.random() - 0.5);
   // Take up to questionCount, cycling if not enough
   const result: Question[] = [];
   for (let i = 0; i < p.questionCount; i++) {
-    result.push(shuffled[i % shuffled.length]);
+    const q = shuffled[i % shuffled.length];
+    // Shuffle item positions so the outlier isn't always in the same tile
+    const indices = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+    const newItems = indices.map((idx) => q.items[idx]);
+    const newOutlierIndex = indices.indexOf(q.outlierIndex);
+    result.push({ ...q, items: newItems, outlierIndex: newOutlierIndex });
   }
   return result;
 }
