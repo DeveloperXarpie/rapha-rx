@@ -1549,7 +1549,9 @@ describe('trial generator', () => {
 - [ ] **Step 4: Run to verify PASS** (iterate until all generator tests green)
 - [ ] **Step 5: Commit** — `git commit -m "feat: picture-postcard trial generator"`
 
----### Task 12: Trial state machine (pure reducer)
+---
+
+### Task 12: Trial state machine (pure reducer)
 
 Spec SS4.1 phases + SS4.3 scaffolding triggers + pause semantics, as a pure reducer so all timing/scaffold logic is unit-testable without DOM.
 
