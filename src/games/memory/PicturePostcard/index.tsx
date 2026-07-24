@@ -17,6 +17,7 @@ import type { MachineState } from './trialMachine';
 import SceneView from './SceneView';
 import InterferenceTask from './InterferenceTask';
 import ProbeSpatial from './ProbeSpatial';
+import ProbeM3 from './ProbeM3';
 import { getScene } from './scenes';
 import type { SceneDef } from './scenes';
 
@@ -31,14 +32,13 @@ interface Props {
 export const interferenceEnabled = true;
 
 const TICK_MS = 100;
-const PROBE_PLACEHOLDER_MS = 1000; // Task 15 replaces this with the real M3 UI; M1/M2 are real as of Task 14.
 const COUNTED_TRIAL_DOTS = 10;
 const HINTS_PER_LEVEL = 3;
 
 interface ProbeTapLogEntry {
-  xNorm: number;
-  yNorm: number;
-  errorDistanceNorm: number | null; // distance from tap to the probed change's slot centre, in scene-normalised units
+  xNorm: number | null; // null for choice-based probes (M3) — there's no tap coordinate
+  yNorm: number | null;
+  errorDistanceNorm: number | null; // distance from tap to the probed change's slot centre, in scene-normalised units; null for M3
   correctChangeIndex: number | null;
 }
 
@@ -178,27 +178,6 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     return () => clearInterval(id);
   }, [trial, showTip]);
 
-  // ── Probe placeholder (M3 only): auto-resolve correct once ~1s of unpaused probe
-  // time has elapsed (Task 15 replaces this with the real M3 UI). Driven off the
-  // machine's own msSinceProbeStart rather than a wall-clock setTimeout so it stays
-  // correct across pause/resume: that counter only advances on unpaused TICKs, so a
-  // pause mid-placeholder can't cause the auto-resolve to fire (or get silently
-  // dropped) while the scene is masked. M1/M2 are real interactive UI as of Task 14
-  // and must never be auto-resolved by this timer.
-  const phase = machine?.phase;
-  const msSinceProbeStart = machine?.msSinceProbeStart ?? 0;
-  useEffect(() => {
-    if (!trial || phase !== 'probe' || trial.probeMode !== 'M3' || msSinceProbeStart < PROBE_PLACEHOLDER_MS) return;
-    setMachine((prev) => {
-      if (!prev || prev.phase !== 'probe') return prev;
-      let next = prev;
-      for (let i = 0; i < trial.changes.length; i++) {
-        next = reduce(next, trial, { type: 'RESPONSE', correctChangeIndex: i });
-      }
-      return next;
-    });
-  }, [trial, phase, msSinceProbeStart]);
-
   function togglePause() {
     if (!trial) return;
     setMachine((prev) => (prev ? reduce(prev, trial, { type: prev.paused ? 'RESUME' : 'PAUSE' }) : prev));
@@ -218,6 +197,34 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     tapLogRef.current.push({ xNorm: tap.xNorm, yNorm: tap.yNorm, errorDistanceNorm, correctChangeIndex });
 
     setMachine((prev) => (prev ? reduce(prev, trial, { type: 'RESPONSE', correctChangeIndex }) : prev));
+  }
+
+  // ── M3 probe wiring (spec SS4.2-4.3) ────────────────────────────────────────
+  // Choice-based, so there's no tap coordinate — log null coords/errorDistanceNorm
+  // to keep the telemetry shape uniform across probe modes for Task 16.
+  function handleM3Response(correctChangeIndex: number | null) {
+    if (!trial || !machine || machine.phase !== 'probe') return;
+
+    tapLogRef.current.push({ xNorm: null, yNorm: null, errorDistanceNorm: null, correctChangeIndex });
+
+    setMachine((prev) => {
+      if (!prev) return prev;
+      if (correctChangeIndex === null) {
+        return reduce(prev, trial, { type: 'RESPONSE', correctChangeIndex: null });
+      }
+      // M3 only ever probes trial.changes[0] (spec SS4.2) and has no UI to report any
+      // other change as found, but trialMachine's RESPONSE handler (Task 12) resolves
+      // the trial only once EVERY trial.changes entry is in foundChangeIds — a contract
+      // written for M1/M2's multi-change UI. `params.changes` (the level curve) can be
+      // >1 regardless of probe mode, so without this a correct M3 answer would add
+      // foundChangeIds=[0] and then just sit there, never resolving. Mark every change
+      // found in one go, mirroring what the Task-13/14 placeholder auto-resolver did.
+      let next: MachineState = prev;
+      for (let i = 0; i < trial.changes.length; i++) {
+        next = reduce(next, trial, { type: 'RESPONSE', correctChangeIndex: i });
+      }
+      return next;
+    });
   }
 
   function handleHint() {
@@ -367,12 +374,14 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     if (!trial || !machine) return null;
 
     if (trial.probeMode === 'M3') {
-      // Task 15 replaces this with the real recognition-choice UI.
       return (
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
-          <p className="text-h2 font-semibold text-body-text">{t('pp.probe.placeholder', 'What changed?')}</p>
-          <p className="text-h3 text-caption-text">{t('pp.probe.placeholderHint', 'Resolving…')}</p>
-        </div>
+        <ProbeM3
+          trial={trial}
+          machine={machine}
+          onResponse={handleM3Response}
+          onHint={handleHint}
+          hintsLeft={Math.max(0, hintBudgetRef.current - machine.hintsUsed)}
+        />
       );
     }
 

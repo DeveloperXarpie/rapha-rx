@@ -49,7 +49,9 @@ function FoundMarker({ bbox }: { bbox: { x: number; y: number; w: number; h: num
   );
 }
 
-function HintButton({ hintsLeft, onHint, label }: { hintsLeft: number; onHint: () => void; label: string }) {
+// Exported so ProbeM3 (Task 15) can reuse the identical hint affordance rather than
+// duplicating it.
+export function HintButton({ hintsLeft, onHint, label }: { hintsLeft: number; onHint: () => void; label: string }) {
   const enabled = hintsLeft > 0;
   return (
     <button
