@@ -146,22 +146,24 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     return () => clearInterval(id);
   }, [trial, showTip]);
 
-  // ── Probe placeholder: auto-resolve correct after 1s (Tasks 14/15 replace this) ──
+  // ── Probe placeholder: auto-resolve correct once ~1s of unpaused probe time has
+  // elapsed (Tasks 14/15 replace this). Driven off the machine's own msSinceProbeStart
+  // rather than a wall-clock setTimeout so it stays correct across pause/resume: that
+  // counter only advances on unpaused TICKs, so a pause mid-placeholder can't cause the
+  // auto-resolve to fire (or get silently dropped) while the scene is masked.
   const phase = machine?.phase;
+  const msSinceProbeStart = machine?.msSinceProbeStart ?? 0;
   useEffect(() => {
-    if (!trial || phase !== 'probe') return;
-    const id = setTimeout(() => {
-      setMachine((prev) => {
-        if (!prev || prev.phase !== 'probe' || prev.paused) return prev;
-        let next = prev;
-        for (let i = 0; i < trial.changes.length; i++) {
-          next = reduce(next, trial, { type: 'RESPONSE', correctChangeIndex: i });
-        }
-        return next;
-      });
-    }, PROBE_PLACEHOLDER_MS);
-    return () => clearTimeout(id);
-  }, [trial, phase]);
+    if (!trial || phase !== 'probe' || msSinceProbeStart < PROBE_PLACEHOLDER_MS) return;
+    setMachine((prev) => {
+      if (!prev || prev.phase !== 'probe') return prev;
+      let next = prev;
+      for (let i = 0; i < trial.changes.length; i++) {
+        next = reduce(next, trial, { type: 'RESPONSE', correctChangeIndex: i });
+      }
+      return next;
+    });
+  }, [trial, phase, msSinceProbeStart]);
 
   function togglePause() {
     if (!trial) return;
