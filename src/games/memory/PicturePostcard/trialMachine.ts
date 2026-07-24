@@ -150,7 +150,10 @@ function reduceInner(state: MachineState, trial: TrialSpec, event: MachineEvent)
       if (state.foundChangeIds.includes(event.correctChangeIndex)) return state; // already counted, ignore
 
       const foundChangeIds = [...state.foundChangeIds, event.correctChangeIndex];
-      if (foundChangeIds.length >= trial.changes.length) {
+      // M3 asks a single question about trial.changes[0] regardless of how many changes
+      // were applied to the scene, so it resolves on that one answer; other probe modes
+      // (M1/M2) resolve once every change has been found.
+      if (trial.probeMode === 'M3' || foundChangeIds.length >= trial.changes.length) {
         return resolve({ ...state, foundChangeIds }, { correct: true, omission: false });
       }
       return { ...state, foundChangeIds };

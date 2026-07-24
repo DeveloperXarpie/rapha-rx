@@ -207,24 +207,7 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
 
     tapLogRef.current.push({ xNorm: null, yNorm: null, errorDistanceNorm: null, correctChangeIndex });
 
-    setMachine((prev) => {
-      if (!prev) return prev;
-      if (correctChangeIndex === null) {
-        return reduce(prev, trial, { type: 'RESPONSE', correctChangeIndex: null });
-      }
-      // M3 only ever probes trial.changes[0] (spec SS4.2) and has no UI to report any
-      // other change as found, but trialMachine's RESPONSE handler (Task 12) resolves
-      // the trial only once EVERY trial.changes entry is in foundChangeIds — a contract
-      // written for M1/M2's multi-change UI. `params.changes` (the level curve) can be
-      // >1 regardless of probe mode, so without this a correct M3 answer would add
-      // foundChangeIds=[0] and then just sit there, never resolving. Mark every change
-      // found in one go, mirroring what the Task-13/14 placeholder auto-resolver did.
-      let next: MachineState = prev;
-      for (let i = 0; i < trial.changes.length; i++) {
-        next = reduce(next, trial, { type: 'RESPONSE', correctChangeIndex: i });
-      }
-      return next;
-    });
+    setMachine((prev) => (prev ? reduce(prev, trial, { type: 'RESPONSE', correctChangeIndex }) : prev));
   }
 
   function handleHint() {

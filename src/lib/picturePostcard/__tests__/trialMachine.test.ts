@@ -83,4 +83,21 @@ describe('trial machine', () => {
     expect(s.phase).toBe('feedback');
     expect(s.outcome).toEqual({ correct: true, omission: false });
   });
+  it('M3 trial resolves on its single probed answer, even with multiple changes', () => {
+    const m3: TrialSpec = {
+      ...trial,
+      probeMode: 'M3',
+      changes: [trial.changes[0], { changeClass: 3, slotId: 'park-dog' }],
+    };
+    let s = tick(tick(tick(initialState(m3), 1500), 6000), 2000); // probe
+
+    // a wrong response first still escalates and does not resolve
+    s = reduce(s, m3, { type: 'RESPONSE', correctChangeIndex: null });
+    expect(s.phase).toBe('probe');
+    expect(s.wrongResponses).toBe(1);
+
+    s = reduce(s, m3, { type: 'RESPONSE', correctChangeIndex: 0 });
+    expect(s.phase).toBe('feedback');
+    expect(s.outcome).toEqual({ correct: true, omission: false });
+  });
 });
