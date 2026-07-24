@@ -85,7 +85,7 @@ function applyScaffoldTriggers(state: MachineState): MachineState {
 
   if (next.scaffoldTier < 4 && next.wrongResponses >= 3) {
     return resolve(
-      { ...next, scaffoldTier: 4 },
+      { ...next, scaffoldTier: 4, autoScaffoldTiersAboveTier1: next.autoScaffoldTiersAboveTier1 + 1 },
       { correct: false, omission: false },
     );
   }
@@ -157,6 +157,7 @@ function reduceInner(state: MachineState, trial: TrialSpec, event: MachineEvent)
     }
 
     case 'HINT': {
+      if (state.phase !== 'probe') return state;
       const scaffoldTier = Math.max(state.scaffoldTier, 3) as MachineState['scaffoldTier'];
       return { ...state, scaffoldTier, hintsUsed: state.hintsUsed + 1 };
     }

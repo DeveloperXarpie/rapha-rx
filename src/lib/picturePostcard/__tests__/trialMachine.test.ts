@@ -51,6 +51,7 @@ describe('trial machine', () => {
     expect(s.scaffoldTier).toBe(4);
     expect(s.phase).toBe('feedback');
     expect(s.outcome).toEqual({ correct: false, omission: false });
+    expect(s.autoScaffoldTiersAboveTier1).toBe(3);
   });
   it('hint jumps to tier 3 without auto-scaffold cost', () => {
     let s = tick(tick(tick(initialState(trial), 1500), 6000), 2000);
@@ -58,6 +59,20 @@ describe('trial machine', () => {
     expect(s.scaffoldTier).toBe(3);
     expect(s.hintsUsed).toBe(1);
     expect(s.autoScaffoldTiersAboveTier1).toBe(0);
+  });
+  it('hint is ignored outside the probe phase', () => {
+    // during 'ready'
+    let s = reduce(initialState(trial), trial, { type: 'HINT' });
+    expect(s.hintsUsed).toBe(0);
+    expect(s.scaffoldTier).toBe(0);
+
+    // after resolving to 'feedback' via soft-timer expiry
+    s = tick(tick(tick(initialState(trial), 1500), 6000), 2000); // probe
+    s = tick(s, 60000); // feedback (omission)
+    expect(s.phase).toBe('feedback');
+    s = reduce(s, trial, { type: 'HINT' });
+    expect(s.hintsUsed).toBe(0);
+    expect(s.scaffoldTier).toBe(0);
   });
   it('correct response resolves; multi-change waits for all', () => {
     const two: TrialSpec = { ...trial, changes: [trial.changes[0], { changeClass: 3, slotId: 'park-dog' }] };
