@@ -55,12 +55,48 @@ export interface PendingEvent {
   queuedAt: number;
 }
 
+export interface PpTrialRecord {
+  correct: boolean;
+  di: number;
+  isWarmup: boolean;
+  isConfidence: boolean;
+}
+
+export interface PpEngineRow {
+  userId: string;
+  currentLevel: number;
+  di: number;
+  countedTrialsInLevel: number;
+  correctCountedInLevel: number;
+  trialHistory: PpTrialRecord[];      // rolling last 20
+  starsByLevel: Record<number, 1 | 2 | 3>;
+  consecutiveCorrect: number;
+  consecutiveErrors: number;
+  streak: number;
+  frustrationGuardUsedInLevel: number;
+  sessionStamp: number | null;        // sessionStartedAt ms; practice fallback: Date.parse(todayISO())
+  trialsThisSession: number;
+  prevSessionTrials: number;          // for adaptive warm-up count (spec SS3.3)
+  scenesThisSession: string[];
+  tipCardL41Shown: boolean;
+  lastPlayedDate: string;             // ISO date (UTC)
+  updatedAt: number;
+}
+
+export interface PpPairHistoryRow {
+  key: string;                        // `${userId}|${sceneId}:${changeClass}`
+  userId: string;
+  lastUsedDate: string;               // ISO date (UTC)
+}
+
 class BrainTrainingDB extends Dexie {
   userProfile!: Table<UserProfile, string>;
   sessionState!: Table<SessionState, number>;
   gameProgress!: Table<GameProgress, number>;
   difficultyState!: Table<DifficultyState, number>;
   pendingEvents!: Table<PendingEvent, number>;
+  ppEngine!: Table<PpEngineRow, string>;
+  ppPairHistory!: Table<PpPairHistoryRow, string>;
 
   constructor() {
     super('BrainTrainingDB');
@@ -76,6 +112,15 @@ class BrainTrainingDB extends Dexie {
       gameProgress: '++id, userId, gameId, [userId+gameId]',
       difficultyState: '++id, userId, gameId, date, [userId+gameId], [userId+gameId+date]',
       pendingEvents:'++id, queuedAt',
+    });
+    this.version(3).stores({
+      userProfile:  'userId, careHomeId, createdAt',
+      sessionState: '++id, userId, date, [userId+date]',
+      gameProgress: '++id, userId, gameId, [userId+gameId]',
+      difficultyState: '++id, userId, gameId, date, [userId+gameId], [userId+gameId+date]',
+      pendingEvents:'++id, queuedAt',
+      ppEngine: 'userId',
+      ppPairHistory: 'key, userId',
     });
   }
 }
@@ -152,4 +197,28 @@ export async function getLastCompletedSession(userId: string): Promise<SessionSt
 
 export async function getProfilesByCareHome(careHomeId: string): Promise<UserProfile[]> {
   return appDb.userProfile.where('careHomeId').equals(careHomeId).toArray();
+}
+
+export async function getPpEngine(userId: string): Promise<PpEngineRow | undefined> {
+  return appDb.ppEngine.get(userId);
+}
+
+export async function putPpEngine(row: PpEngineRow): Promise<void> {
+  await appDb.ppEngine.put(row);
+}
+
+function ppPairKey(userId: string, sceneId: string, changeClass: number): string {
+  return `${userId}|${sceneId}:${changeClass}`;
+}
+
+export async function getPpPair(userId: string, sceneId: string, changeClass: number): Promise<PpPairHistoryRow | undefined> {
+  return appDb.ppPairHistory.get(ppPairKey(userId, sceneId, changeClass));
+}
+
+export async function putPpPair(userId: string, sceneId: string, changeClass: number, lastUsedDate: string): Promise<void> {
+  await appDb.ppPairHistory.put({ key: ppPairKey(userId, sceneId, changeClass), userId, lastUsedDate });
+}
+
+export async function getPpPairsForUser(userId: string): Promise<PpPairHistoryRow[]> {
+  return appDb.ppPairHistory.where('userId').equals(userId).toArray();
 }
