@@ -28,6 +28,9 @@ export interface TrialSpec {
   params: TrialParams;
   softTimerMs: number | null;
   interference: boolean;
+  // Optional so hand-written TrialSpec fixtures elsewhere (e.g. trialMachine tests) keep compiling;
+  // generateTrial always populates it. Class-2 additions are NOT included (they target invisible slots).
+  visibleSlotIds?: string[];
 }
 
 interface PairHistoryEntry { sceneId: string; changeClass: number; lastUsedDate: string }
@@ -288,5 +291,6 @@ export function generateTrial(opts: {
     params,
     softTimerMs: levelDef.softTimerMs,
     interference: levelDef.interference,
+    visibleSlotIds: visible.map((s) => s.id),
   };
 }

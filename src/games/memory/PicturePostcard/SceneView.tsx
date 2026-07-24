@@ -1,0 +1,256 @@
+import { useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { AppliedChange, TrialSpec } from '../../../lib/contentGenerators/picturePostcard';
+import { SPRITES } from './sprites';
+import type { SceneDef } from './scenes';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type BBox = { x: number; y: number; w: number; h: number };
+
+export interface SceneViewProps {
+  scene: SceneDef;
+  modifications?: AppliedChange[];
+  lures?: TrialSpec['lurePlacements'];
+  visibleSlotIds: string[];
+  onSlotTap?: (slotId: string | null, pos: { xNorm: number; yNorm: number }) => void;
+  /** Scaffold tier 1: lightly desaturate every slot except the scaffold target. */
+  dimNonTargets?: boolean;
+  /** Scaffold tier 2: warm radial-gradient highlight over the target slot's quadrant. */
+  vignetteSlotId?: string;
+  /** Scaffold tier 3: pulsing opacity animation over the target slot. */
+  pulseSlotId?: string;
+  /** Feedback: dashed circle + label over the named slot. */
+  annotateSlotId?: string;
+  className?: string;
+}
+
+interface RenderTarget {
+  id: string;
+  bbox: BBox;
+  spriteId: string;
+  fill: string;
+  mirrored?: boolean;
+  scale?: number;
+  /** false = removed by a class-1 change: not painted, but still hit-testable. */
+  visible: boolean;
+}
+
+// ─── Style helpers ────────────────────────────────────────────────────────────
+
+function boxStyle(b: BBox): React.CSSProperties {
+  return {
+    position: 'absolute',
+    left: `${b.x * 100}%`,
+    top: `${b.y * 100}%`,
+    width: `${b.w * 100}%`,
+    height: `${b.h * 100}%`,
+  };
+}
+
+/** The 4:3-box quadrant (of 4) containing the bbox's centre — used to place the vignette hint. */
+function quadrantBox(b: BBox): BBox {
+  const cx = b.x + b.w / 2;
+  const cy = b.y + b.h / 2;
+  return { x: cx < 0.5 ? 0 : 0.5, y: cy < 0.5 ? 0 : 0.5, w: 0.5, h: 0.5 };
+}
+
+const PULSE_CSS = `
+@keyframes pp-scene-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.25; }
+  100% { opacity: 1; }
+}
+.pp-scene-pulse-overlay {
+  animation: pp-scene-pulse 0.4s ease-in-out 2;
+}
+`;
+
+const VIGNETTE_GRADIENT = 'radial-gradient(circle at center, rgba(255,179,71,0.55) 0%, rgba(255,179,71,0) 72%)';
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function SceneView({
+  scene,
+  modifications = [],
+  lures = [],
+  visibleSlotIds,
+  onSlotTap,
+  dimNonTargets,
+  vignetteSlotId,
+  pulseSlotId,
+  annotateSlotId,
+  className,
+}: SceneViewProps) {
+  const { t } = useTranslation();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const renderTargets = useMemo<RenderTarget[]>(() => {
+    const modBySlot = new Map(modifications.map((m) => [m.slotId, m]));
+    const out: RenderTarget[] = [];
+
+    for (const slot of scene.slots) {
+      if (!visibleSlotIds.includes(slot.id)) continue;
+      const mod = modBySlot.get(slot.id);
+
+      if (!mod) {
+        out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: slot.baseFill, visible: true });
+        continue;
+      }
+
+      switch (mod.changeClass) {
+        case 1: // removed — no paint, still hit-testable at its original bbox
+          out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: slot.baseFill, visible: false });
+          break;
+        case 3: // translocated
+          out.push({
+            id: slot.id,
+            bbox: { ...slot.bbox, x: mod.newPosition?.x ?? slot.bbox.x, y: mod.newPosition?.y ?? slot.bbox.y },
+            spriteId: slot.spriteId,
+            fill: slot.baseFill,
+            visible: true,
+          });
+          break;
+        case 4: // recoloured
+          out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: mod.newFill ?? slot.baseFill, visible: true });
+          break;
+        case 5: // sprite substituted
+          out.push({ id: slot.id, bbox: slot.bbox, spriteId: mod.newSpriteId ?? slot.spriteId, fill: slot.baseFill, visible: true });
+          break;
+        case 6: // rescaled
+          out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: slot.baseFill, scale: mod.newScale, visible: true });
+          break;
+        case 7: // mirrored
+          out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: slot.baseFill, mirrored: mod.mirrored, visible: true });
+          break;
+        default:
+          out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: slot.baseFill, visible: true });
+      }
+    }
+
+    // Class 2: an object added at a new position — the slot it targets was never visible.
+    for (const mod of modifications) {
+      if (mod.changeClass !== 2) continue;
+      const originSlot = scene.slots.find((s) => s.id === mod.slotId);
+      if (!originSlot || !mod.addedSpriteId || !mod.newPosition) continue;
+      out.push({
+        id: mod.slotId,
+        bbox: { x: mod.newPosition.x, y: mod.newPosition.y, w: originSlot.bbox.w, h: originSlot.bbox.h },
+        spriteId: mod.addedSpriteId,
+        fill: originSlot.baseFill,
+        visible: true,
+      });
+    }
+
+    return out;
+  }, [scene, modifications, visibleSlotIds]);
+
+  const targetsById = useMemo(() => new Map(renderTargets.map((r) => [r.id, r])), [renderTargets]);
+
+  const scaffoldTargetId = vignetteSlotId ?? pulseSlotId ?? annotateSlotId;
+
+  function handleTap(e: React.PointerEvent<HTMLDivElement>) {
+    if (!onSlotTap) return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect || rect.width === 0 || rect.height === 0) return;
+
+    const xNorm = (e.clientX - rect.left) / rect.width;
+    const yNorm = (e.clientY - rect.top) / rect.height;
+
+    let best: { id: string; distSq: number } | null = null;
+    for (const rt of renderTargets) {
+      const cx = rt.bbox.x + rt.bbox.w / 2;
+      const cy = rt.bbox.y + rt.bbox.h / 2;
+      const halfW = (rt.bbox.w * 1.5) / 2;
+      const halfH = (rt.bbox.h * 1.5) / 2;
+      if (xNorm < cx - halfW || xNorm > cx + halfW || yNorm < cy - halfH || yNorm > cy + halfH) continue;
+      const distSq = (xNorm - cx) ** 2 + (yNorm - cy) ** 2;
+      if (!best || distSq < best.distSq) best = { id: rt.id, distSq };
+    }
+
+    onSlotTap(best?.id ?? null, { xNorm, yNorm });
+  }
+
+  const vignetteTarget = vignetteSlotId ? targetsById.get(vignetteSlotId) : undefined;
+  const annotateTarget = annotateSlotId ? targetsById.get(annotateSlotId) : undefined;
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative w-full select-none ${className ?? ''}`}
+      style={{ aspectRatio: '4 / 3' }}
+      onPointerUp={handleTap}
+    >
+      <style>{PULSE_CSS}</style>
+
+      {scene.background.map((b, i) => (
+        <div
+          key={`bg-${i}`}
+          className="absolute"
+          style={{
+            left: `${b.x * 100}%`,
+            top: `${b.y * 100}%`,
+            width: `${b.w * 100}%`,
+            height: `${b.h * 100}%`,
+            background: b.fill,
+            borderRadius: b.kind === 'ellipse' ? '50%' : 0,
+          }}
+        />
+      ))}
+
+      {lures.map((lure, i) => {
+        const entry = SPRITES[lure.spriteId];
+        if (!entry) return null;
+        const Sprite = entry.Component;
+        return (
+          <div key={`lure-${i}`} className="absolute pointer-events-none" style={boxStyle(lure)}>
+            <Sprite />
+          </div>
+        );
+      })}
+
+      {renderTargets.map((rt) => {
+        const entry = SPRITES[rt.spriteId];
+        const isScaffoldTarget = scaffoldTargetId === rt.id;
+        return (
+          <div
+            key={rt.id}
+            className="absolute"
+            style={{
+              ...boxStyle(rt.bbox),
+              filter: dimNonTargets && scaffoldTargetId && !isScaffoldTarget ? 'saturate(0.92)' : undefined,
+            }}
+          >
+            {rt.visible && entry && <entry.Component fill={rt.fill} mirrored={rt.mirrored} scale={rt.scale} />}
+            {pulseSlotId === rt.id && (
+              <div className="absolute inset-0 pp-scene-pulse-overlay pointer-events-none rounded-full bg-white/40" />
+            )}
+          </div>
+        );
+      })}
+
+      {vignetteTarget && (
+        <div className="absolute pointer-events-none rounded-2xl overflow-hidden" style={boxStyle(quadrantBox(vignetteTarget.bbox))}>
+          <div className="w-full h-full" style={{ background: VIGNETTE_GRADIENT }} />
+        </div>
+      )}
+
+      {annotateTarget && (
+        <div
+          className="absolute pointer-events-none flex flex-col items-center"
+          style={boxStyle({
+            x: annotateTarget.bbox.x - annotateTarget.bbox.w * 0.15,
+            y: annotateTarget.bbox.y - annotateTarget.bbox.h * 0.15,
+            w: annotateTarget.bbox.w * 1.3,
+            h: annotateTarget.bbox.h * 1.3,
+          })}
+        >
+          <div className="w-full h-full rounded-full border-4 border-dashed border-accent-purple" />
+          <span className="text-h3 font-semibold text-accent-purple bg-white/90 rounded-xl px-3 py-1 -mt-4 shadow-sm">
+            {t('pp.annotate.here', 'Here')}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
