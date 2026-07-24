@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../../../store';
 import type { LevelConfig } from '../../types';
 import type { LevelResult } from '../../../components/GameShell';
-import { loadEngine, markSceneUsed, markTipShown } from '../../../lib/picturePostcard/engine';
+import { loadEngine, markSceneUsed, markTipShown, commitTrial } from '../../../lib/picturePostcard/engine';
 import { nextTrialKind, trialDi } from '../../../lib/picturePostcard/engineCore';
-import type { TrialKind } from '../../../lib/picturePostcard/engineCore';
+import type { TrialKind, LevelOutcome } from '../../../lib/picturePostcard/engineCore';
 import { getLevelDef, effectiveParams } from '../../../lib/picturePostcard/ladder';
+import { roundScore, speedBonus } from '../../../lib/picturePostcard/scoring';
+import { emitTrialCompleted, emitTrialAbandoned, emitLevelCompleted } from '../../../lib/picturePostcard/telemetry';
 import { generateTrial } from '../../../lib/contentGenerators/picturePostcard';
-import type { AppliedChange, TrialSpec } from '../../../lib/contentGenerators/picturePostcard';
+import type { TrialSpec } from '../../../lib/contentGenerators/picturePostcard';
 import { getPpPairsForUser } from '../../../lib/db';
 import type { PpEngineRow, PpPairHistoryRow } from '../../../lib/db';
 import { todayISO } from '../../../lib/dates';
@@ -18,8 +20,10 @@ import SceneView from './SceneView';
 import InterferenceTask from './InterferenceTask';
 import ProbeSpatial from './ProbeSpatial';
 import ProbeM3 from './ProbeM3';
+import FeedbackView from './FeedbackView';
+import StarCard from './StarCard';
+import { changeCentre } from './geometry';
 import { getScene } from './scenes';
-import type { SceneDef } from './scenes';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,20 +65,6 @@ function probeExpectFallback(mode: TrialSpec['probeMode']): string {
   return "You'll choose the answer from a set of pictures";
 }
 
-/**
- * Scene-normalised centre of a change's target — mirrors SceneView's own per-class
- * placement rules (Task 13) / ProbeSpatial's module-private changeBBox (Task 14) so
- * error-distance telemetry lines up with what's actually painted.
- */
-function changeCentre(scene: SceneDef, change: AppliedChange): { x: number; y: number } | null {
-  const slot = scene.slots.find((s) => s.id === change.slotId);
-  if (!slot) return null;
-  const bbox = (change.changeClass === 2 || change.changeClass === 3) && change.newPosition
-    ? { x: change.newPosition.x, y: change.newPosition.y, w: slot.bbox.w, h: slot.bbox.h }
-    : slot.bbox;
-  return { x: bbox.x + bbox.w / 2, y: bbox.y + bbox.h / 2 };
-}
-
 function DotGridMask() {
   return (
     <div className="relative w-full max-w-xl mx-auto" style={{ aspectRatio: '4 / 3' }}>
@@ -93,8 +83,6 @@ function DotGridMask() {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PicturePostcard({ levelConfig, onLevelComplete }: Props) {
-  void levelConfig; // this game drives its own level via the picture-postcard ladder engine, not GameShell's dynamic difficulty
-
   const { t } = useTranslation();
   const activeProfile = useAppStore((s) => s.activeProfile);
   const currentSession = useAppStore((s) => s.currentSession);
@@ -106,14 +94,33 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
   const [machine, setMachine] = useState<MachineState | null>(null);
   const [showTip, setShowTip] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [starOutcome, setStarOutcome] = useState<(LevelOutcome & { level: number }) | null>(null);
 
   // Hint budget is 3 per LEVEL, not per trial. This component currently completes the
   // level (via onLevelComplete) after a single trial, so a fresh ref per mount already
   // gives the right "3 per level" behaviour today — see task-14-report.md for the
   // multi-trial-per-level persistence caveat this leaves for a future task.
   const hintBudgetRef = useRef(HINTS_PER_LEVEL);
-  // Every probe tap, correct or not, for Task 16's telemetry.
+  // Every probe response, correct or not, for telemetry.
   const tapLogRef = useRef<ProbeTapLogEntry[]>([]);
+  // Spec SS2.3 ordering contract — the normal commit path and the abandonment
+  // cleanup are mutually exclusive; whoever flips this ref owns the commit.
+  const committedRef = useRef(false);
+  // Latest values for the unmount cleanup (refs, so cleanup sees current state).
+  const machineRef = useRef<MachineState | null>(null);
+  const rowRef = useRef<PpEngineRow | null>(null);
+  const kindRef = useRef<TrialKind | null>(null);
+  const diRef = useRef(0);
+  // Soft-timer remainder at the moment the probe resolved (for speedBonus).
+  const lastProbeRemainingRef = useRef(0);
+  const resultRef = useRef<LevelResult | null>(null);
+  const levelAttemptIdRef = useRef('');
+
+  useEffect(() => {
+    machineRef.current = machine;
+    rowRef.current = row;
+    kindRef.current = kind;
+  }, [machine, row, kind]);
 
   // ── Mount: load engine state, generate one trial, seed the machine ─────────
   useEffect(() => {
@@ -152,6 +159,8 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
       );
       if (cancelled) return;
 
+      diRef.current = di;
+      levelAttemptIdRef.current = `${userId}:${loadedRow.currentLevel}:${startedAt.current}`;
       setRow(updatedRow);
       setKind(trialKind);
       setTrial(newTrial);
@@ -169,6 +178,30 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Abandonment path (spec SS2.3): x-exit / unmount mid-trial ──────────────
+  // Ready/encoding/retention exits leave no staircase effect; probe/feedback
+  // exits are committed (best-effort, not awaited) as omissions so the x button
+  // can never be a free trial-reroll.
+  useEffect(() => {
+    return () => {
+      if (committedRef.current) return;
+      const m = machineRef.current;
+      const r = rowRef.current;
+      const k = kindRef.current;
+      if (!m || !r || !k) return;
+      emitTrialAbandoned({
+        level: r.currentLevel,
+        trialIndex: r.countedTrialsInLevel,
+        phase: m.phase,
+        effectiveDI: diRef.current,
+      });
+      if (m.phase === 'probe' || m.phase === 'feedback') {
+        committedRef.current = true;
+        void commitTrial(r, { correct: false, omission: true, kind: k });
+      }
+    };
+  }, []);
+
   // ── 100ms machine clock ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!trial || showTip) return;
@@ -177,6 +210,14 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     }, TICK_MS);
     return () => clearInterval(id);
   }, [trial, showTip]);
+
+  // Track the soft-timer remainder while the probe runs so scoring can use the
+  // value at the moment of resolution (msLeftInPhase is Infinity when no timer).
+  useEffect(() => {
+    if (machine?.phase === 'probe' && Number.isFinite(machine.msLeftInPhase)) {
+      lastProbeRemainingRef.current = machine.msLeftInPhase;
+    }
+  }, [machine]);
 
   function togglePause() {
     if (!trial) return;
@@ -201,7 +242,7 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
 
   // ── M3 probe wiring (spec SS4.2-4.3) ────────────────────────────────────────
   // Choice-based, so there's no tap coordinate — log null coords/errorDistanceNorm
-  // to keep the telemetry shape uniform across probe modes for Task 16.
+  // to keep the telemetry shape uniform across probe modes.
   function handleM3Response(correctChangeIndex: number | null) {
     if (!trial || !machine || machine.phase !== 'probe') return;
 
@@ -223,18 +264,97 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     setShowTip(false);
   }
 
-  function handleContinue() {
-    if (!row || !trial) return;
-    onLevelComplete({
-      levelId: `level_${row.currentLevel}`,
+  // ── Scoring for the trial that just resolved (pure; spec SS6) ──────────────
+  function computeTrialScore(m: MachineState, r: PpEngineRow, tr: TrialSpec): number {
+    return roundScore({
+      changesFound: m.foundChangeIds.length,
+      responded: !(m.outcome?.omission ?? false),
+      speedBonus: speedBonus(tr.softTimerMs, lastProbeRemainingRef.current),
+      streak: r.streak,
+      hintsUsed: m.hintsUsed,
+      autoScaffoldTiersAboveTier1: m.autoScaffoldTiersAboveTier1,
+    });
+  }
+
+  // ── The ordering contract (spec SS2.3) ──────────────────────────────────────
+  // Feedback window elapsed -> await commitTrial -> emit telemetry -> star card
+  // (level complete) or onLevelComplete. NEVER onLevelComplete before the commit
+  // resolves; the star card waits for an explicit Continue tap.
+  async function handleFeedbackDone() {
+    if (committedRef.current) return;
+    if (!row || !kind || !trial || !machine?.outcome) return;
+    committedRef.current = true;
+
+    const outcome = machine.outcome;
+    const score = computeTrialScore(machine, row, trial);
+    const preCommitLevel = row.currentLevel;
+    const preCommitTrialIndex = row.countedTrialsInLevel;
+
+    const { levelOutcome } = await commitTrial(row, {
+      correct: outcome.correct,
+      omission: outcome.omission,
+      kind,
+    });
+
+    const lastTap = tapLogRef.current[tapLogRef.current.length - 1];
+    emitTrialCompleted({
+      levelAttemptId: levelAttemptIdRef.current,
+      trialIndex: preCommitTrialIndex,
+      level: preCommitLevel,
+      effectiveDI: diRef.current,
+      sceneId: trial.sceneId,
+      objects: trial.params.objects,
+      encodeMs: trial.params.encodeMs,
+      delayMs: trial.params.delayMs,
+      changeType: trial.changes.map((c) => c.changeClass),
+      probeMode: trial.probeMode,
+      lureLevel: trial.params.lureLevel,
+      correct: outcome.correct,
+      omission: outcome.omission,
+      responseLatencyMs: machine.msSinceProbeStart,
+      tapCoordinates: tapLogRef.current.map((e) => ({ xNorm: e.xNorm, yNorm: e.yNorm })),
+      errorDistanceNorm: lastTap?.errorDistanceNorm ?? null,
+      scaffoldTierReached: machine.scaffoldTier,
+      hintsUsed: machine.hintsUsed,
+      isWarmup: kind === 'warmup',
+      isConfidence: kind === 'confidence',
+      interruptions: machine.interruptions,
+      roundScore: score,
+    });
+
+    resultRef.current = {
+      levelId: levelConfig.id,
       durationSeconds: Math.floor((Date.now() - startedAt.current) / 1000),
-      completed: true,
+      completed: outcome.correct,
       metrics: {
-        correct: machine?.outcome?.correct ?? false,
-        omission: machine?.outcome?.omission ?? false,
+        correct: outcome.correct,
+        omission: outcome.omission,
+        errorDistanceNorm: lastTap?.errorDistanceNorm ?? null,
+        hintsUsed: machine.hintsUsed,
+        scaffoldTierReached: machine.scaffoldTier,
+        roundScore: score,
+        ppLevel: preCommitLevel,
         probeMode: trial.probeMode,
       },
+    };
+
+    if (levelOutcome) {
+      setStarOutcome({ ...levelOutcome, level: preCommitLevel });
+    } else if (resultRef.current) {
+      onLevelComplete(resultRef.current);
+    }
+  }
+
+  function handleStarContinue() {
+    if (!starOutcome || !resultRef.current || !machine) return;
+    emitLevelCompleted({
+      stars: starOutcome.stars,
+      accuracy: starOutcome.accuracy,
+      level: starOutcome.level,
+      hintsUsed: machine.hintsUsed,
+      hintsUnused: Math.max(0, HINTS_PER_LEVEL - machine.hintsUsed),
     });
+    onLevelComplete(resultRef.current);
   }
 
   // ── Loading / error states ──────────────────────────────────────────────────
@@ -300,6 +420,22 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
             </button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // ── Star card (level complete) takes over the whole body ───────────────────
+
+  if (starOutcome) {
+    return (
+      <div className="flex-1 flex flex-col">
+        {header}
+        <StarCard
+          stars={starOutcome.stars}
+          correctCount={Math.round(starOutcome.accuracy * COUNTED_TRIAL_DOTS)}
+          level={starOutcome.level}
+          onContinue={handleStarContinue}
+        />
       </div>
     );
   }
@@ -381,20 +517,16 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
   }
 
   function renderFeedback() {
-    if (!machine) return null;
-    const correct = machine.outcome?.correct ?? false;
+    if (!trial || !machine || !row) return null;
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 p-6 text-center">
-        <div className="card max-w-md w-full flex flex-col gap-4 items-center p-8">
-          <span className="text-6xl" aria-hidden="true">{correct ? '✅' : '➖'}</span>
-          <h3 className="text-h2 font-bold text-body-text">
-            {correct ? t('pp.feedback.correct', 'Nicely spotted') : t('pp.feedback.tryNext', "Let's keep going")}
-          </h3>
-          <button type="button" onClick={handleContinue} className="btn-primary w-full min-h-[96px] min-w-[96px]">
-            {t('btn.continue', 'Continue')}
-          </button>
-        </div>
-      </div>
+      <FeedbackView
+        scene={getScene(trial.sceneId)}
+        trial={trial}
+        machine={machine}
+        paused={machine.paused}
+        scoreDelta={computeTrialScore(machine, row, trial)}
+        onDone={handleFeedbackDone}
+      />
     );
   }
 

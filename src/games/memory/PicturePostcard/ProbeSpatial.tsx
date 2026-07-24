@@ -4,6 +4,7 @@ import type { AppliedChange, TrialSpec } from '../../../lib/contentGenerators/pi
 import type { SceneDef } from './scenes';
 import type { MachineState } from './trialMachine';
 import SceneView from './SceneView';
+import { changeBBox } from './geometry';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,22 +15,6 @@ export interface ProbeSpatialProps {
   onResponse: (correctChangeIndex: number | null, tap: { xNorm: number; yNorm: number }) => void;
   onHint: () => void;
   hintsLeft: number;
-}
-
-// ─── Geometry helpers ───────────────────────────────────────────────────────
-// Mirrors SceneView's own per-class placement rules (Task 13) so the "found" ring
-// markers line up with what's actually painted. Kept module-private (not exported)
-// so this stays a components-only file for react-refresh; index.tsx has its own
-// copy of the same centre calc for Task 16's error-distance telemetry.
-
-/** Scene-normalised bbox a given change occupies on the MODIFIED scene. */
-function changeBBox(scene: SceneDef, change: AppliedChange): { x: number; y: number; w: number; h: number } | null {
-  const slot = scene.slots.find((s) => s.id === change.slotId);
-  if (!slot) return null;
-  if ((change.changeClass === 2 || change.changeClass === 3) && change.newPosition) {
-    return { x: change.newPosition.x, y: change.newPosition.y, w: slot.bbox.w, h: slot.bbox.h };
-  }
-  return slot.bbox;
 }
 
 // ─── Presentational bits ─────────────────────────────────────────────────────
