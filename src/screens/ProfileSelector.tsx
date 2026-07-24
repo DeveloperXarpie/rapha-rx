@@ -6,6 +6,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { db as firestoreDb, ensureAnonymousAuth } from '../lib/firebase';
 import { useAppStore } from '../store';
 import { track, setUserProperties } from '../lib/analytics';
+import { hydrateFromFirestore } from '../lib/picturePostcard/engine';
 import { Avatar } from '../components/ui/Avatar';
 import type { UserProfile } from '../lib/db';
 
@@ -46,6 +47,9 @@ export default function ProfileSelector() {
     }
 
     setActiveProfile(updated);
+    // Restore picture-postcard ladder progression from Firestore if this device
+    // is behind (fire-and-forget; never blocks profile selection — spec SS8.3).
+    void hydrateFromFirestore(updated.userId);
     setUserProperties(updated.userId, updated.careHomeId, updated.language);
     track('session_started', { userId: updated.userId, careHomeId: updated.careHomeId, language: updated.language });
     navigate('/app/home');

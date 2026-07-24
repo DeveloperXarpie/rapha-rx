@@ -21,6 +21,7 @@ import FocusFilter from '../games/attention/FocusFilter';
 import MorningRoutineQuest from '../games/executive/MorningRoutineQuest';
 import RecipeBuilder from '../games/executive/RecipeBuilder';
 import GardenSequencer from '../games/executive/GardenSequencer';
+import PicturePostcard from '../games/memory/PicturePostcard';
 
 // (all games now use the dynamic difficulty system — no static level imports needed)
 
@@ -43,6 +44,7 @@ type GameEntry = {
 
 const GAME_REGISTRY: Record<string, GameEntry> = {
   'remember-match':         { component: RememberMatch,       category: 'memory'    },
+  'picture-postcard':       { component: PicturePostcard,     category: 'memory'    },
   'shopping-list-recall':   { component: ShoppingListRecall,  category: 'memory'    },
   'sequence-repeat':        { component: SequenceRepeat,      category: 'memory'    },
   'spot-focus':             { component: SpotFocus,           category: 'attention' },
@@ -58,6 +60,17 @@ const GAME_REGISTRY: Record<string, GameEntry> = {
 function generateContentForGame(gameId: string, score: number): { levelConfig: LevelConfig; generatedContent: unknown } {
   const level = scoreToLevel(score);
   const levelId = `level_${Math.min(level, 5)}` as LevelConfig['id'];
+
+  if (gameId === 'picture-postcard') {
+    // Self-generating: the game loads its own ladder-engine state in-component
+    // (async Dexie reads can't flow through this synchronous path). The level_1
+    // id is a declared placeholder — the real 1-100 level travels in the game's
+    // own telemetry, not LevelResult.levelId.
+    return {
+      levelConfig: { id: 'level_1', labelKey: 'level.pp', params: {} },
+      generatedContent: undefined,
+    };
+  }
 
   if (gameId === 'remember-match') {
     const params = getRememberMatchParams(score);

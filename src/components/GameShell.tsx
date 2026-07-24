@@ -83,8 +83,10 @@ export default function GameShell({
     const userId = profile?.userId;
     let newDifficultyScore: number | undefined;
 
-    // Adjust dynamic difficulty score
-    if (userId) {
+    // Adjust dynamic difficulty score. Picture Postcard is exempt: its own
+    // ladder engine is the adaptive authority and already wrote the derived
+    // DifficultyState row inside commitTrial (spec SS2.4).
+    if (userId && gameId !== 'picture-postcard') {
       // Calculate performance ratio from metrics
       const performanceRatio = computePerformanceRatio(gameId, result);
       const updated = await adjustDifficulty(userId, gameId, {
@@ -141,7 +143,11 @@ export default function GameShell({
         <span className="shell-tag shell-tag-category">
           {t(CATEGORY_LABEL_KEYS[gameCategory] ?? '')}
         </span>
-        <span className="shell-tag shell-tag-level">{levelLabel}</span>
+        {/* Picture Postcard renders its own 1-100 ladder level; showing the 0-1
+            score's 1-10 label beside it would be two conflicting level numbers. */}
+        {gameId !== 'picture-postcard' && (
+          <span className="shell-tag shell-tag-level">{levelLabel}</span>
+        )}
         <button
           onClick={handleExit}
           className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-hover-state transition-colors text-xl text-caption-text border border-gray-200 bg-white/70"
@@ -200,6 +206,13 @@ function computePerformanceRatio(gameId: string, result: LevelResult): number {
     const flipRatio = Math.min(1, optimalFlips / Math.max(1, flipAttempts));
     const quizRatio = quizCorrect / Math.max(1, quizTotal);
     return (flipRatio + quizRatio) / 2;
+  }
+
+  if (gameId === 'picture-postcard') {
+    const correct = m.correct === true ? 1 : 0;
+    const distPenalty = typeof m.errorDistanceNorm === 'number' ? Math.min(0.3, m.errorDistanceNorm) : 0;
+    const hintPenalty = 0.1 * ((m.hintsUsed as number) ?? 0);
+    return Math.max(0, Math.min(1, correct - distPenalty - hintPenalty));
   }
 
   if (gameId === 'spot-focus') {
