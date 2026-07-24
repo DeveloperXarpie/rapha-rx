@@ -143,6 +143,7 @@ export default function ProbeSpatial({ trial, scene, machine, onResponse, onHint
               visibleSlotIds={trial.visibleSlotIds ?? []}
               onSlotTap={resolveTap}
               dimNonTargets={dimNonTargets}
+              dimExemptSlotId={scaffoldTargetSlotId}
               vignetteSlotId={vignetteSlotId}
               pulseSlotId={pulseSlotId}
               className="scene-board"
@@ -172,6 +173,7 @@ export default function ProbeSpatial({ trial, scene, machine, onResponse, onHint
             visibleSlotIds={trial.visibleSlotIds ?? []}
             onSlotTap={resolveTap}
             dimNonTargets={dimNonTargets}
+            dimExemptSlotId={scaffoldTargetSlotId}
             vignetteSlotId={vignetteSlotId}
             pulseSlotId={pulseSlotId}
             className="scene-board"

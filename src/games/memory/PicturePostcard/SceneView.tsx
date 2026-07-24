@@ -16,6 +16,8 @@ export interface SceneViewProps {
   onSlotTap?: (slotId: string | null, pos: { xNorm: number; yNorm: number }) => void;
   /** Scaffold tier 1: lightly desaturate every slot except the scaffold target. */
   dimNonTargets?: boolean;
+  /** Slot exempted from tier-1 dimming. Defaults to the vignette/pulse/annotate target when omitted. */
+  dimExemptSlotId?: string;
   /** Scaffold tier 2: warm radial-gradient highlight over the target slot's quadrant. */
   vignetteSlotId?: string;
   /** Scaffold tier 3: pulsing opacity animation over the target slot. */
@@ -77,6 +79,7 @@ export default function SceneView({
   visibleSlotIds,
   onSlotTap,
   dimNonTargets,
+  dimExemptSlotId,
   vignetteSlotId,
   pulseSlotId,
   annotateSlotId,
@@ -148,6 +151,7 @@ export default function SceneView({
   const targetsById = useMemo(() => new Map(renderTargets.map((r) => [r.id, r])), [renderTargets]);
 
   const scaffoldTargetId = vignetteSlotId ?? pulseSlotId ?? annotateSlotId;
+  const dimExemptId = dimExemptSlotId ?? scaffoldTargetId;
 
   function handleTap(e: React.PointerEvent<HTMLDivElement>) {
     if (!onSlotTap) return;
@@ -211,14 +215,13 @@ export default function SceneView({
 
       {renderTargets.map((rt) => {
         const entry = SPRITES[rt.spriteId];
-        const isScaffoldTarget = scaffoldTargetId === rt.id;
         return (
           <div
             key={rt.id}
             className="absolute"
             style={{
               ...boxStyle(rt.bbox),
-              filter: dimNonTargets && scaffoldTargetId && !isScaffoldTarget ? 'saturate(0.92)' : undefined,
+              filter: dimNonTargets && rt.id !== dimExemptId ? 'saturate(0.92)' : undefined,
             }}
           >
             {rt.visible && entry && <entry.Component fill={rt.fill} mirrored={rt.mirrored} scale={rt.scale} />}
