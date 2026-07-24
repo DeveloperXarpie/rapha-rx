@@ -29,10 +29,13 @@ function wrap(children: (fill: string) => React.ReactNode, defaultFill: string):
 
 const Bicycle = wrap((fill) => (
   <>
-    <circle cx="25" cy="70" r="18" fill="none" stroke="#333" strokeWidth="5" />
-    <circle cx="75" cy="70" r="18" fill="none" stroke="#333" strokeWidth="5" />
-    <path d="M25 70 L45 40 L68 40 L75 70 M45 40 L55 70 L25 70" fill="none" stroke={fill} strokeWidth="6" />
-    <path d="M40 32 L52 32 M68 40 L64 28 L74 26" fill="none" stroke={fill} strokeWidth="5" />
+    <circle cx="25" cy="70" r="18" fill="none" stroke="#333" strokeWidth="3" />
+    <circle cx="75" cy="70" r="18" fill="none" stroke="#333" strokeWidth="3" />
+    <path d="M25 70 L45 40 L68 40 L75 70 M45 40 L55 70 L25 70" fill="none" stroke={fill} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M40 32 L52 32 M68 40 L64 28 L74 26" fill="none" stroke={fill} strokeWidth="7" strokeLinecap="round" />
+    <path d="M44 40 L68 40 L58 54 Z" fill={fill} />
+    <circle cx="25" cy="70" r="5" fill={fill} />
+    <circle cx="75" cy="70" r="5" fill={fill} />
   </>
 ), '#C0392B');
 
@@ -115,9 +118,9 @@ const Bird = wrap((fill) => (
 
 const Kite = wrap((fill) => (
   <>
-    <path d="M50 8 L82 45 L50 92 L18 45 Z" fill={fill} />
-    <path d="M18 45 L82 45 M50 8 L50 92" stroke="#333" strokeWidth="1.5" />
-    <path d="M50 92 C46 96 54 100 50 104 C46 108 54 112 50 116" fill="none" stroke="#333" strokeWidth="2" />
+    <path d="M58 6 L88 42 L44 94 L12 40 Z" fill={fill} />
+    <path d="M12 40 L88 42 M58 6 L44 94" stroke="#333" strokeWidth="1.5" />
+    <path d="M44 94 L72 86 L68 96 L46 99 Z" fill={fill} />
   </>
 ), '#E91E8C');
 
