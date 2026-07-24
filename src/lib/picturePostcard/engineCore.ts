@@ -77,7 +77,7 @@ export function applyTrialResult(
   opts: TrialResultOpts,
 ): { row: PpEngineRow; levelOutcome: LevelOutcome | null } {
   const succeeded = opts.correct && !opts.omission;
-  let r: PpEngineRow = { ...row, updatedAt: Date.now(), lastPlayedDate: todayISO() };
+  const r: PpEngineRow = { ...row, updatedAt: Date.now(), lastPlayedDate: todayISO() };
 
   // staircase
   if (succeeded) {

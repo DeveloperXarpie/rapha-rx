@@ -35,7 +35,8 @@ async function writeDerivedDifficulty(row: PpEngineRow): Promise<void> {
 }
 
 function pushToFirestore(row: PpEngineRow): void {
-  const { trialHistory: _omit, ...slim } = row;
+  const slim: Partial<PpEngineRow> = { ...row };
+  delete slim.trialHistory;
   void (async () => {
     try {
       await setDoc(doc(db, 'ppEngine', row.userId), slim, { merge: true });
