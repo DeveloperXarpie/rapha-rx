@@ -4,7 +4,28 @@ import type { SceneDef } from './scenes';
 // Mirrors SceneView's per-class placement rules so markers, annotations, and
 // error-distance telemetry all line up with what's actually painted.
 
-/** Scene-normalised bbox a given change occupies on the MODIFIED scene. */
+/**
+ * Authored slot bboxes are proportionally small (real-world scale); sprites are
+ * painted inflated around their centre so they read clearly at postcard size.
+ * Everything that must align with the painted sprite (hit-testing, rings,
+ * annotations) uses the same factor. Centres are inflation-invariant, so
+ * error-distance telemetry is unaffected.
+ */
+export const SPRITE_RENDER_SCALE = 1.5;
+
+export function inflateBBox(
+  b: { x: number; y: number; w: number; h: number },
+  k: number = SPRITE_RENDER_SCALE,
+): { x: number; y: number; w: number; h: number } {
+  return {
+    x: b.x + (b.w * (1 - k)) / 2,
+    y: b.y + (b.h * (1 - k)) / 2,
+    w: b.w * k,
+    h: b.h * k,
+  };
+}
+
+/** Scene-normalised bbox a given change occupies on the MODIFIED scene (at painted size). */
 export function changeBBox(
   scene: SceneDef,
   change: AppliedChange,
@@ -12,9 +33,9 @@ export function changeBBox(
   const slot = scene.slots.find((s) => s.id === change.slotId);
   if (!slot) return null;
   if ((change.changeClass === 2 || change.changeClass === 3) && change.newPosition) {
-    return { x: change.newPosition.x, y: change.newPosition.y, w: slot.bbox.w, h: slot.bbox.h };
+    return inflateBBox({ x: change.newPosition.x, y: change.newPosition.y, w: slot.bbox.w, h: slot.bbox.h });
   }
-  return slot.bbox;
+  return inflateBBox(slot.bbox);
 }
 
 /** Scene-normalised centre of a change's target. */
@@ -37,5 +58,5 @@ export function annotationBBox(
   const slot = scene.slots.find((s) => s.id === change.slotId);
   if (!slot) return null;
   if (view === 'modified') return changeBBox(scene, change);
-  return slot.bbox;
+  return inflateBBox(slot.bbox);
 }

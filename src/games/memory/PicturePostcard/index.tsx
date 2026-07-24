@@ -468,10 +468,12 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
       ? Math.max(0, Math.min(100, (machine.msLeftInPhase / trial.params.encodeMs) * 100))
       : 0;
     return (
-      <div className="flex-1 flex flex-col gap-4 p-4">
-        <SceneView scene={scene} visibleSlotIds={trial.visibleSlotIds ?? []} className="scene-board" />
-        <div className="w-full h-4 rounded-full bg-gray-200 overflow-hidden">
-          <div className="h-full bg-primary-blue" style={{ width: `${pct}%` }} />
+      <div className="flex-1 flex flex-col gap-4 p-4 items-center">
+        <div className="w-full max-w-2xl flex flex-col gap-4">
+          <SceneView scene={scene} visibleSlotIds={trial.visibleSlotIds ?? []} className="scene-board" />
+          <div className="w-full h-4 rounded-full bg-gray-200 overflow-hidden">
+            <div className="h-full bg-primary-blue" style={{ width: `${pct}%` }} />
+          </div>
         </div>
       </div>
     );

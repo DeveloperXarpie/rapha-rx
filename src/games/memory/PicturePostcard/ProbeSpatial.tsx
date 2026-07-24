@@ -111,14 +111,14 @@ export default function ProbeSpatial({ trial, scene, machine, onResponse, onHint
           {t('pp.probe.m1', 'Find what changed in the postcard.')}
         </p>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 w-full max-w-xl mx-auto">
           <p className="text-body-md text-center">
             <span className="scene-ribbon-blue">{t('pp.probe.m1.remember', 'Remember')}</span>
           </p>
           <SceneView scene={scene} visibleSlotIds={trial.visibleSlotIds ?? []} className="scene-board" />
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 w-full max-w-xl mx-auto">
           <p className="text-body-md text-center">
             <span className="scene-ribbon-red">{t('pp.probe.m1.whatChanged', 'What changed?')}</span>
           </p>
@@ -151,8 +151,8 @@ export default function ProbeSpatial({ trial, scene, machine, onResponse, onHint
         {t('pp.probe.m2', 'Tap where the change happened.')}
       </p>
 
-      <div className="flex-1 flex items-center">
-        <div className="relative w-full">
+      <div className="flex-1 flex items-center justify-center">
+        <div className="relative w-full max-w-2xl mx-auto">
           <SceneView
             scene={scene}
             modifications={trial.changes}

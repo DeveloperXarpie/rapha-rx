@@ -83,7 +83,7 @@ export default function FeedbackView({ scene, trial, machine, paused, scoreDelta
           <h3 className="text-h2 font-bold text-body-text">{t('pp.feedback.correct', 'Well spotted!')}</h3>
           <span className="text-h2 font-bold text-emerald-green">+{scoreDelta}</span>
         </div>
-        <div className="relative">
+        <div className="relative w-full max-w-2xl mx-auto">
           <SceneView
             scene={scene}
             modifications={trial.changes}
@@ -106,7 +106,7 @@ export default function FeedbackView({ scene, trial, machine, paused, scoreDelta
       <h3 className="text-h2 font-bold text-body-text text-center">
         {t('pp.feedback.reveal', 'Here is what changed')}
       </h3>
-      <div className="relative">
+      <div className="relative w-full max-w-2xl mx-auto">
         <SceneView
           scene={scene}
           visibleSlotIds={trial.visibleSlotIds ?? []}

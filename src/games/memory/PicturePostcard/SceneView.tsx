@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { AppliedChange, TrialSpec } from '../../../lib/contentGenerators/picturePostcard';
 import { SPRITES } from './sprites';
 import type { SceneDef } from './scenes';
+import { inflateBBox } from './geometry';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -68,7 +69,12 @@ const PULSE_CSS = `
 }
 `;
 
-const VIGNETTE_GRADIENT = 'radial-gradient(circle at center, rgba(255,179,71,0.55) 0%, rgba(255,179,71,0) 72%)';
+/** Soft warm glow centred on the target within its quadrant (GDD tier 2). */
+function vignetteGradient(target: BBox, quadrant: BBox): string {
+  const cx = ((target.x + target.w / 2 - quadrant.x) / quadrant.w) * 100;
+  const cy = ((target.y + target.h / 2 - quadrant.y) / quadrant.h) * 100;
+  return `radial-gradient(ellipse 55% 55% at ${cx.toFixed(1)}% ${cy.toFixed(1)}%, rgba(255,179,71,0.30) 0%, rgba(255,179,71,0) 70%)`;
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -145,7 +151,9 @@ export default function SceneView({
       });
     }
 
-    return out;
+    // Paint (and therefore hit-test, pulse, dim) at the inflated render size so
+    // sprites read clearly at postcard scale; centres are unchanged.
+    return out.map((rt) => ({ ...rt, bbox: inflateBBox(rt.bbox) }));
   }, [scene, modifications, visibleSlotIds]);
 
   const targetsById = useMemo(() => new Map(renderTargets.map((r) => [r.id, r])), [renderTargets]);
@@ -181,7 +189,7 @@ export default function SceneView({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full select-none ${className ?? ''}`}
+      className={`relative w-full select-none overflow-hidden rounded-2xl ${className ?? ''}`}
       style={{ aspectRatio: '4 / 3' }}
       onPointerUp={handleTap}
     >
@@ -207,7 +215,7 @@ export default function SceneView({
         if (!entry) return null;
         const Sprite = entry.Component;
         return (
-          <div key={`lure-${i}`} className="absolute pointer-events-none" style={boxStyle(lure)}>
+          <div key={`lure-${i}`} className="absolute pointer-events-none" style={boxStyle(inflateBBox(lure))}>
             <Sprite />
           </div>
         );
@@ -233,8 +241,11 @@ export default function SceneView({
       })}
 
       {vignetteTarget && (
-        <div className="absolute pointer-events-none rounded-2xl overflow-hidden" style={boxStyle(quadrantBox(vignetteTarget.bbox))}>
-          <div className="w-full h-full" style={{ background: VIGNETTE_GRADIENT }} />
+        <div className="absolute pointer-events-none" style={boxStyle(quadrantBox(vignetteTarget.bbox))}>
+          <div
+            className="w-full h-full"
+            style={{ background: vignetteGradient(vignetteTarget.bbox, quadrantBox(vignetteTarget.bbox)) }}
+          />
         </div>
       )}
 
