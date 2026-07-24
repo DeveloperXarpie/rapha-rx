@@ -249,7 +249,7 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
                 "From here on, you'll pick your answer from a small set of pictures instead of tapping directly on the scene. Take your time - there's no rush.",
               )}
             </p>
-            <button type="button" onClick={dismissTip} className="btn-primary w-full">
+            <button type="button" onClick={dismissTip} className="btn-primary w-full min-h-[96px] min-w-[96px]">
               {t('btn.continue', 'Continue')}
             </button>
           </div>
@@ -326,7 +326,7 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
           <h3 className="text-h2 font-bold text-body-text">
             {correct ? t('pp.feedback.correct', 'Nicely spotted') : t('pp.feedback.tryNext', "Let's keep going")}
           </h3>
-          <button type="button" onClick={handleContinue} className="btn-primary w-full">
+          <button type="button" onClick={handleContinue} className="btn-primary w-full min-h-[96px] min-w-[96px]">
             {t('btn.continue', 'Continue')}
           </button>
         </div>
