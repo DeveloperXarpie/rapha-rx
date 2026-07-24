@@ -8,7 +8,7 @@ import { nextTrialKind, trialDi } from '../../../lib/picturePostcard/engineCore'
 import type { TrialKind } from '../../../lib/picturePostcard/engineCore';
 import { getLevelDef, effectiveParams } from '../../../lib/picturePostcard/ladder';
 import { generateTrial } from '../../../lib/contentGenerators/picturePostcard';
-import type { TrialSpec } from '../../../lib/contentGenerators/picturePostcard';
+import type { AppliedChange, TrialSpec } from '../../../lib/contentGenerators/picturePostcard';
 import { getPpPairsForUser } from '../../../lib/db';
 import type { PpEngineRow, PpPairHistoryRow } from '../../../lib/db';
 import { todayISO } from '../../../lib/dates';
@@ -16,7 +16,9 @@ import { initialState, reduce } from './trialMachine';
 import type { MachineState } from './trialMachine';
 import SceneView from './SceneView';
 import InterferenceTask from './InterferenceTask';
+import ProbeSpatial from './ProbeSpatial';
 import { getScene } from './scenes';
+import type { SceneDef } from './scenes';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,8 +31,16 @@ interface Props {
 export const interferenceEnabled = true;
 
 const TICK_MS = 100;
-const PROBE_PLACEHOLDER_MS = 1000; // Tasks 14/15 replace this with real M1/M2/M3 UI.
+const PROBE_PLACEHOLDER_MS = 1000; // Task 15 replaces this with the real M3 UI; M1/M2 are real as of Task 14.
 const COUNTED_TRIAL_DOTS = 10;
+const HINTS_PER_LEVEL = 3;
+
+interface ProbeTapLogEntry {
+  xNorm: number;
+  yNorm: number;
+  errorDistanceNorm: number | null; // distance from tap to the probed change's slot centre, in scene-normalised units
+  correctChangeIndex: number | null;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -49,6 +59,20 @@ function probeExpectFallback(mode: TrialSpec['probeMode']): string {
   if (mode === 'M1') return "You'll tap the one thing that changed";
   if (mode === 'M2') return "You'll tap every thing that changed";
   return "You'll choose the answer from a set of pictures";
+}
+
+/**
+ * Scene-normalised centre of a change's target — mirrors SceneView's own per-class
+ * placement rules (Task 13) / ProbeSpatial's module-private changeBBox (Task 14) so
+ * error-distance telemetry lines up with what's actually painted.
+ */
+function changeCentre(scene: SceneDef, change: AppliedChange): { x: number; y: number } | null {
+  const slot = scene.slots.find((s) => s.id === change.slotId);
+  if (!slot) return null;
+  const bbox = (change.changeClass === 2 || change.changeClass === 3) && change.newPosition
+    ? { x: change.newPosition.x, y: change.newPosition.y, w: slot.bbox.w, h: slot.bbox.h }
+    : slot.bbox;
+  return { x: bbox.x + bbox.w / 2, y: bbox.y + bbox.h / 2 };
 }
 
 function DotGridMask() {
@@ -82,6 +106,14 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
   const [machine, setMachine] = useState<MachineState | null>(null);
   const [showTip, setShowTip] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+
+  // Hint budget is 3 per LEVEL, not per trial. This component currently completes the
+  // level (via onLevelComplete) after a single trial, so a fresh ref per mount already
+  // gives the right "3 per level" behaviour today — see task-14-report.md for the
+  // multi-trial-per-level persistence caveat this leaves for a future task.
+  const hintBudgetRef = useRef(HINTS_PER_LEVEL);
+  // Every probe tap, correct or not, for Task 16's telemetry.
+  const tapLogRef = useRef<ProbeTapLogEntry[]>([]);
 
   // ── Mount: load engine state, generate one trial, seed the machine ─────────
   useEffect(() => {
@@ -146,15 +178,17 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     return () => clearInterval(id);
   }, [trial, showTip]);
 
-  // ── Probe placeholder: auto-resolve correct once ~1s of unpaused probe time has
-  // elapsed (Tasks 14/15 replace this). Driven off the machine's own msSinceProbeStart
-  // rather than a wall-clock setTimeout so it stays correct across pause/resume: that
-  // counter only advances on unpaused TICKs, so a pause mid-placeholder can't cause the
-  // auto-resolve to fire (or get silently dropped) while the scene is masked.
+  // ── Probe placeholder (M3 only): auto-resolve correct once ~1s of unpaused probe
+  // time has elapsed (Task 15 replaces this with the real M3 UI). Driven off the
+  // machine's own msSinceProbeStart rather than a wall-clock setTimeout so it stays
+  // correct across pause/resume: that counter only advances on unpaused TICKs, so a
+  // pause mid-placeholder can't cause the auto-resolve to fire (or get silently
+  // dropped) while the scene is masked. M1/M2 are real interactive UI as of Task 14
+  // and must never be auto-resolved by this timer.
   const phase = machine?.phase;
   const msSinceProbeStart = machine?.msSinceProbeStart ?? 0;
   useEffect(() => {
-    if (!trial || phase !== 'probe' || msSinceProbeStart < PROBE_PLACEHOLDER_MS) return;
+    if (!trial || phase !== 'probe' || trial.probeMode !== 'M3' || msSinceProbeStart < PROBE_PLACEHOLDER_MS) return;
     setMachine((prev) => {
       if (!prev || prev.phase !== 'probe') return prev;
       let next = prev;
@@ -168,6 +202,28 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
   function togglePause() {
     if (!trial) return;
     setMachine((prev) => (prev ? reduce(prev, trial, { type: prev.paused ? 'RESUME' : 'PAUSE' }) : prev));
+  }
+
+  // ── M1/M2 probe wiring (spec SS4.2-4.3) ─────────────────────────────────────
+  function handleProbeResponse(correctChangeIndex: number | null, tap: { xNorm: number; yNorm: number }) {
+    if (!trial || !machine || machine.phase !== 'probe') return;
+
+    // "The probed change" for telemetry: the tapped change itself when correct,
+    // otherwise whichever change the scaffold ladder is currently nudging toward.
+    const probedIndex = correctChangeIndex ?? trial.changes.findIndex((_, i) => !machine.foundChangeIds.includes(i));
+    const probedChange = probedIndex >= 0 ? trial.changes[probedIndex] : undefined;
+    const centre = probedChange ? changeCentre(getScene(trial.sceneId), probedChange) : null;
+    const errorDistanceNorm = centre ? Math.hypot(tap.xNorm - centre.x, tap.yNorm - centre.y) : null;
+
+    tapLogRef.current.push({ xNorm: tap.xNorm, yNorm: tap.yNorm, errorDistanceNorm, correctChangeIndex });
+
+    setMachine((prev) => (prev ? reduce(prev, trial, { type: 'RESPONSE', correctChangeIndex }) : prev));
+  }
+
+  function handleHint() {
+    if (!trial || !machine || machine.phase !== 'probe') return;
+    if (machine.hintsUsed >= hintBudgetRef.current) return;
+    setMachine((prev) => (prev ? reduce(prev, trial, { type: 'HINT' }) : prev));
   }
 
   async function dismissTip() {
@@ -308,11 +364,27 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
   }
 
   function renderProbe() {
+    if (!trial || !machine) return null;
+
+    if (trial.probeMode === 'M3') {
+      // Task 15 replaces this with the real recognition-choice UI.
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
+          <p className="text-h2 font-semibold text-body-text">{t('pp.probe.placeholder', 'What changed?')}</p>
+          <p className="text-h3 text-caption-text">{t('pp.probe.placeholderHint', 'Resolving…')}</p>
+        </div>
+      );
+    }
+
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
-        <p className="text-h2 font-semibold text-body-text">{t('pp.probe.placeholder', 'What changed?')}</p>
-        <p className="text-h3 text-caption-text">{t('pp.probe.placeholderHint', 'Resolving…')}</p>
-      </div>
+      <ProbeSpatial
+        trial={trial}
+        scene={getScene(trial.sceneId)}
+        machine={machine}
+        onResponse={handleProbeResponse}
+        onHint={handleHint}
+        hintsLeft={Math.max(0, hintBudgetRef.current - machine.hintsUsed)}
+      />
     );
   }
 
