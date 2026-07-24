@@ -1786,8 +1786,7 @@ Spec SS4.1 phase 5, SS4.5, SS2.3, SS9. This is the task where the engine contrac
 
 - [ ] **Step 1: Implement telemetry.ts, FeedbackView, StarCard; wire the completion sequence.**
 - [ ] **Step 2: Lint/build clean.**
-- [ ] **Step 3: Manual verification of the ordering contract** (temporary registry edit): play 10 counted trials to a star card; confirm the card waits for Continue; confirm refresh mid-trial then reload resumes at a fresh trial with counters intact (Dexie devtools: `ppEngine` row `countedTrialsInLevel` persisted); confirm exit via x mid-probe writes an omission (`consecutiveErrors` bumped).
-- [ ] **Step 4: Commit** — `git commit -m "feat: picture-postcard feedback, star card, engine commit ordering, telemetry"`
+- [ ] **Step 3: Commit** — `git commit -m "feat: picture-postcard feedback, star card, engine commit ordering, telemetry"` (ordering-contract behaviours are covered by the user's final smoke test, not agent browser-driving)
 
 ---
 
@@ -1876,11 +1875,11 @@ Spec SS2.1, SS2.2, SS2.4. All five touch points + GameShell changes + locales.
 
 - [ ] **Step 1: Full test suite** — `npm test` → all green.
 - [ ] **Step 2: Lint + build** — `npm run lint`, `npm run build` → clean.
-- [ ] **Step 3: Manual smoke test on localhost** (repo release protocol + spec-specific):
+- [ ] **Step 3: Manual smoke test on localhost — PERFORMED BY THE USER** (agent runs `npm run dev` at most; never drives the browser). Checklist for the user:
   1. Fresh profile -> questionnaire -> session starts; play Picture Postcard from rotation; ready/encoding/retention/probe/feedback all render; no console errors.
   2. Session resume: mid-session refresh -> Resume button appears -> resuming returns to the session (existing games unaffected).
   3. Star card appears after 10 counted trials and waits for Continue; rotation happens after, not instead.
-  4. Warm-up: first trial of a new session is easier (verify `isWarmup` in the emitted event via console/network or a temporary log).
+  4. Warm-up: first trial of a new session is easier.
   5. No scene repeats within one session.
   6. Pause during encoding masks the scene.
   7. Existing games still play, adjust difficulty, and show level badges.
