@@ -5,7 +5,7 @@ import { SPRITES } from '../../../games/memory/PicturePostcard/sprites';
 // spec SS5.2 build-time validation + SS5.3 lure-separation feasibility
 describe('scene library validation (spec SS5.2)', () => {
   it('has at least 1 scene now, 8 by Task 10, each with >= 20 slots', () => {
-    expect(SCENES.length).toBeGreaterThanOrEqual(1);
+    expect(SCENES.length).toBe(8);
     for (const scene of SCENES) {
       expect(scene.slots.length, `${scene.id} slot count`).toBeGreaterThanOrEqual(20);
     }
