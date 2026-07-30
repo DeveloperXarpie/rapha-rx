@@ -44,6 +44,8 @@ function RingMarker({ bbox, variant }: { bbox: { x: number; y: number; w: number
 
 export default function FeedbackView({ scene, trial, machine, paused, scoreDelta, onDone }: FeedbackViewProps) {
   const { t } = useTranslation();
+  // Photo trials only remove objects, so "what changed" copy is wrong for them.
+  const removalOnly = trial.changes.every((c) => c.changeClass === 1);
   const correct = machine.outcome?.correct ?? false;
 
   // Pause-aware, non-skippable window: counts down only while unpaused, fires once.
@@ -104,7 +106,9 @@ export default function FeedbackView({ scene, trial, machine, paused, scoreDelta
   return (
     <div className="flex-1 flex flex-col gap-4 p-4">
       <h3 className="text-h2 font-bold text-body-text text-center">
-        {t('pp.feedback.reveal', 'Here is what changed')}
+        {removalOnly
+          ? t('pp.feedback.missing', 'This is what was missing')
+          : t('pp.feedback.reveal', 'Here is what changed')}
       </h3>
       <div className="relative w-full max-w-2xl mx-auto">
         <SceneView

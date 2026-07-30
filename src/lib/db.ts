@@ -79,6 +79,10 @@ export interface PpEngineRow {
   prevSessionTrials: number;          // for adaptive warm-up count (spec SS3.3)
   scenesThisSession: string[];
   tipCardL41Shown: boolean;
+  /** Onboarding card for the photo levels. Not indexed, so no Dexie version bump is
+   *  needed - the ppEngine store is declared as 'userId' and nothing else. Existing
+   *  rows read undefined, which is falsy, so returning players see it once. */
+  tipCardPhotoShown?: boolean;
   lastPlayedDate: string;             // ISO date (UTC)
   updatedAt: number;
 }

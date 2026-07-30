@@ -392,5 +392,20 @@
   "pp.category.teapot": "ಟೀಪಾಟ್",
   "pp.category.tree": "ಮರ",
   "pp.category.umbrella": "ಛತ್ರಿ",
-  "pp.category.wateringcan": "ನೀರಿನ ಕ್ಯಾನ್"
+  "pp.category.wateringcan": "ನೀರಿನ ಕ್ಯಾನ್",
+  "pp.tip.photo": "ನಿಮಗೆ ಒಂದು ಚಿತ್ರ ಕಾಣಿಸುತ್ತದೆ. ಅದರಲ್ಲಿರುವ ಎಲ್ಲವನ್ನೂ ಗಮನಿಸಿ. ಸ್ವಲ್ಪ ಹೊತ್ತಿನಲ್ಲಿ ಕೆಲವು ವಸ್ತುಗಳು ಮಾಯವಾಗುತ್ತವೆ - ಪ್ರತಿ ಕಾಣೆಯಾದ ವಸ್ತು ಇದ್ದ ಖಾಲಿ ಜಾಗವನ್ನು ಮುಟ್ಟಿ. ನಿಧಾನವಾಗಿ ಮಾಡಿ.",
+  "pp.probe.expect.M2.removal": "ಪ್ರತಿ ಕಾಣೆಯಾದ ವಸ್ತು ಇದ್ದ ಖಾಲಿ ಜಾಗವನ್ನು ನೀವು ಮುಟ್ಟುತ್ತೀರಿ",
+  "pp.probe.tapMissing": "ಏನಾದರೂ ಕಾಣೆಯಾಗಿರುವ ಜಾಗವನ್ನು ಮುಟ್ಟಿ.",
+  "pp.feedback.missing": "ಇದು ಕಾಣೆಯಾಗಿತ್ತು",
+  "pp.theme.postOffice": "ಅಂಚೆ ಕಚೇರಿ",
+  "pp.category.weighingScale": "ತೂಕದ ಯಂತ್ರ",
+  "pp.category.bell": "ಗಂಟೆ",
+  "pp.category.parcel": "ಪಾರ್ಸಲ್",
+  "pp.category.magnifier": "ಭೂತಗನ್ನಡಿ",
+  "pp.category.rubberStamp": "ಮುದ್ರೆ",
+  "pp.category.inkPad": "ಶಾಯಿ ಪ್ಯಾಡ್",
+  "pp.category.satchel": "ಅಂಚೆ ಚೀಲ",
+  "pp.category.postcard": "ಪೋಸ್ಟ್‌ಕಾರ್ಡ್",
+  "pp.category.letterOpener": "ಪತ್ರ ತೆರೆಯುವ ಚಾಕು",
+  "pp.category.key": "ಕೀಲಿ"
 }

@@ -71,6 +71,8 @@ export function HintButton({ hintsLeft, onHint, label }: { hintsLeft: number; on
 
 export default function ProbeSpatial({ trial, scene, machine, onResponse, onHint, hintsLeft }: ProbeSpatialProps) {
   const { t } = useTranslation();
+  // Photo trials only remove objects, so "what changed" copy is wrong for them.
+  const removalOnly = trial.changes.every((c) => c.changeClass === 1);
 
   const firstUnfoundChange = useMemo(
     () => trial.changes.find((_, i) => !machine.foundChangeIds.includes(i)),
@@ -108,7 +110,9 @@ export default function ProbeSpatial({ trial, scene, machine, onResponse, onHint
   return (
     <div className="flex-1 flex flex-col gap-4 p-4">
       <p className="text-h2 font-semibold text-body-text text-center">
-        {t('pp.probe.m2', 'Tap where the change happened.')}
+        {removalOnly
+          ? t('pp.probe.tapMissing', 'Tap where something is missing.')
+          : t('pp.probe.m2', 'Tap where the change happened.')}
       </p>
 
       <div className="flex-1 flex items-center justify-center">

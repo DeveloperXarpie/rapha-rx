@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../../../store';
 import type { LevelConfig } from '../../types';
 import type { LevelResult } from '../../../components/GameShell';
-import { loadEngine, markSceneUsed, markTipShown, commitTrial } from '../../../lib/picturePostcard/engine';
+import { loadEngine, markSceneUsed, markTipShown, markPhotoTipShown, commitTrial } from '../../../lib/picturePostcard/engine';
 import { nextTrialKind, trialDi } from '../../../lib/picturePostcard/engineCore';
 import type { TrialKind, LevelOutcome } from '../../../lib/picturePostcard/engineCore';
 import { getLevelDef, effectiveParams } from '../../../lib/picturePostcard/ladder';
@@ -60,9 +60,16 @@ function toPairHistoryEntry(row: PpPairHistoryRow): { sceneId: string; changeCla
   };
 }
 
-function probeExpectFallback(mode: TrialSpec['probeMode']): string {
-  if (mode === 'M2') return "You'll tap every thing that changed";
-  return "You'll choose the answer from a set of pictures";
+function probeExpectFallback(mode: TrialSpec['probeMode'], removalOnly: boolean): string {
+  if (mode === 'M3') return "You'll choose the answer from a set of pictures";
+  return removalOnly
+    ? "You'll tap the empty spot where each missing thing used to be"
+    : "You'll tap every thing that changed";
+}
+
+/** Photo trials only ever remove objects, so "what changed" copy is wrong for them. */
+function isRemovalOnly(trial: TrialSpec): boolean {
+  return trial.probeMode === 'M2' && trial.changes.every((c) => c.changeClass === 1);
 }
 
 function DotGridMask() {
@@ -93,6 +100,7 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
   const [trial, setTrial] = useState<TrialSpec | null>(null);
   const [machine, setMachine] = useState<MachineState | null>(null);
   const [showTip, setShowTip] = useState(false);
+  const [showPhotoTip, setShowPhotoTip] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const [starOutcome, setStarOutcome] = useState<(LevelOutcome & { level: number }) | null>(null);
 
@@ -141,6 +149,7 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
       if (cancelled) return;
 
       const tipNeeded = loadedRow.currentLevel === 41 && !loadedRow.tipCardL41Shown;
+      const photoTipNeeded = !!getLevelDef(loadedRow.currentLevel).sceneId && !loadedRow.tipCardPhotoShown;
 
       const trialKind = nextTrialKind(loadedRow);
       const di = trialDi(loadedRow, trialKind);
@@ -177,6 +186,7 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
       setTrial(newTrial);
       setMachine(initialState(newTrial));
       setShowTip(tipNeeded);
+      setShowPhotoTip(photoTipNeeded);
     }
 
     mount().catch(() => {
@@ -215,12 +225,12 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
 
   // ── 100ms machine clock ─────────────────────────────────────────────────────
   useEffect(() => {
-    if (!trial || showTip || !imagesReady) return;
+    if (!trial || showTip || showPhotoTip || !imagesReady) return;
     const id = setInterval(() => {
       setMachine((prev) => (prev ? reduce(prev, trial, { type: 'TICK', ms: TICK_MS }) : prev));
     }, TICK_MS);
     return () => clearInterval(id);
-  }, [trial, showTip, imagesReady]);
+  }, [trial, showTip, showPhotoTip, imagesReady]);
 
   // Track the soft-timer remainder while the probe runs so scoring can use the
   // value at the moment of resolution (msLeftInPhase is Infinity when no timer).
@@ -266,6 +276,13 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     if (!trial || !machine || machine.phase !== 'probe') return;
     if (machine.hintsUsed >= hintBudgetRef.current) return;
     setMachine((prev) => (prev ? reduce(prev, trial, { type: 'HINT' }) : prev));
+  }
+
+  async function dismissPhotoTip() {
+    if (!row) return;
+    const updated = await markPhotoTipShown(row);
+    setRow(updated);
+    setShowPhotoTip(false);
   }
 
   async function dismissTip() {
@@ -412,6 +429,31 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     </div>
   );
 
+  // ── Photo-level onboarding card, shown once before the very first trial ─────
+  // Levels 1-3 are every player's first contact with the game and nothing else
+  // teaches that the action is to tap where something is missing.
+
+  if (showPhotoTip) {
+    return (
+      <div className="flex-1 flex flex-col">
+        {header}
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="card max-w-md w-full flex flex-col gap-6 items-center p-8 text-center">
+            <p className="text-h3 text-body-text">
+              {t(
+                'pp.tip.photo',
+                "You'll see a picture. Look at everything in it. In a moment some things will be gone - tap the empty spot where each missing thing used to be. Take your time.",
+              )}
+            </p>
+            <button type="button" onClick={dismissPhotoTip} className="btn-primary w-full min-h-[96px] min-w-[96px]">
+              {t('btn.continue', 'Continue')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ── L41 one-time tip card, shown before the trial starts ───────────────────
 
   if (showTip) {
@@ -467,7 +509,9 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
             </p>
           )}
           <p className="text-h3 text-body-text">
-            {t(`pp.probe.expect.${trial.probeMode}`, probeExpectFallback(trial.probeMode))}
+            {isRemovalOnly(trial)
+              ? t('pp.probe.expect.M2.removal', probeExpectFallback('M2', true))
+              : t(`pp.probe.expect.${trial.probeMode}`, probeExpectFallback(trial.probeMode, false))}
           </p>
         </div>
       </div>

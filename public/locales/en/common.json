@@ -392,5 +392,20 @@
   "pp.category.teapot": "teapot",
   "pp.category.tree": "tree",
   "pp.category.umbrella": "umbrella",
-  "pp.category.wateringcan": "watering can"
+  "pp.category.wateringcan": "watering can",
+  "pp.tip.photo": "You'll see a picture. Look at everything in it. In a moment some things will be gone - tap the empty spot where each missing thing used to be. Take your time.",
+  "pp.probe.expect.M2.removal": "You'll tap the empty spot where each missing thing used to be",
+  "pp.probe.tapMissing": "Tap where something is missing.",
+  "pp.feedback.missing": "This is what was missing",
+  "pp.theme.postOffice": "Post office",
+  "pp.category.weighingScale": "weighing scale",
+  "pp.category.bell": "bell",
+  "pp.category.parcel": "parcel",
+  "pp.category.magnifier": "magnifying glass",
+  "pp.category.rubberStamp": "rubber stamp",
+  "pp.category.inkPad": "ink pad",
+  "pp.category.satchel": "post bag",
+  "pp.category.postcard": "postcard",
+  "pp.category.letterOpener": "letter opener",
+  "pp.category.key": "key"
 }

@@ -19,7 +19,7 @@ export function freshEngineRow(userId: string): PpEngineRow {
     consecutiveCorrect: 0, consecutiveErrors: 0, streak: 0,
     frustrationGuardUsedInLevel: 0,
     sessionStamp: null, trialsThisSession: 0, prevSessionTrials: 0,
-    scenesThisSession: [], tipCardL41Shown: false,
+    scenesThisSession: [], tipCardL41Shown: false, tipCardPhotoShown: false,
     lastPlayedDate: todayISO(), updatedAt: Date.now(),
   };
 }

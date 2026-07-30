@@ -392,5 +392,20 @@
   "pp.category.teapot": "चायदानी",
   "pp.category.tree": "पेड़",
   "pp.category.umbrella": "छाता",
-  "pp.category.wateringcan": "पानी का कनस्तर"
+  "pp.category.wateringcan": "पानी का कनस्तर",
+  "pp.tip.photo": "आपको एक तस्वीर दिखेगी। उसमें सब कुछ ध्यान से देखिए। थोड़ी देर में कुछ चीज़ें गायब हो जाएँगी - जहाँ हर गायब चीज़ थी, उस खाली जगह पर छूइए। आराम से कीजिए।",
+  "pp.probe.expect.M2.removal": "जहाँ हर गायब चीज़ थी, उस खाली जगह पर आप छूएँगे",
+  "pp.probe.tapMissing": "जहाँ कुछ गायब है वहाँ छूइए।",
+  "pp.feedback.missing": "यह गायब था",
+  "pp.theme.postOffice": "डाकघर",
+  "pp.category.weighingScale": "तराज़ू",
+  "pp.category.bell": "घंटी",
+  "pp.category.parcel": "पार्सल",
+  "pp.category.magnifier": "आवर्धक काँच",
+  "pp.category.rubberStamp": "मुहर",
+  "pp.category.inkPad": "स्याही पैड",
+  "pp.category.satchel": "डाक थैला",
+  "pp.category.postcard": "पोस्टकार्ड",
+  "pp.category.letterOpener": "पत्र खोलने वाला चाकू",
+  "pp.category.key": "चाबी"
 }

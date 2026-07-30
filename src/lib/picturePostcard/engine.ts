@@ -78,6 +78,12 @@ export async function markTipShown(row: PpEngineRow): Promise<PpEngineRow> {
   return updated;
 }
 
+export async function markPhotoTipShown(row: PpEngineRow): Promise<PpEngineRow> {
+  const updated: PpEngineRow = { ...row, tipCardPhotoShown: true, updatedAt: Date.now() };
+  await putPpEngine(updated);
+  return updated;
+}
+
 export async function hydrateFromFirestore(userId: string): Promise<void> {
   try {
     const snap = await getDoc(doc(db, 'ppEngine', userId));
