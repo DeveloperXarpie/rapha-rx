@@ -23,6 +23,8 @@ export interface LevelDef {
   interference: boolean;
   /** When set, the generator uses this scene instead of picking from the pool. */
   sceneId?: string;
+  /** When set, one authored salience band per change, replacing weighted sampling. */
+  changeComposition?: (1 | 2 | 3)[];
 }
 
 export const DI_STEP = 0.08;
@@ -43,6 +45,19 @@ export const M3_ELIGIBLE_CLASSES: ChangeClass[] = [1, 2, 4, 5];
  */
 export const PINNED_SCENE_BY_LEVEL: Record<number, string> = {
   1: 'post-office', 2: 'post-office', 3: 'post-office',
+};
+
+/**
+ * Per-change salience bands for the pinned photo levels, so a trial that hides the
+ * satchel is comparable to one that hides the key.
+ *
+ * Uniform sampling would make difficulty a coin flip within a level, which is unfair to
+ * the player and swamps the between-level signal the staircase reads.
+ */
+export const CHANGE_COMPOSITION_BY_LEVEL: Record<number, (1 | 2 | 3)[]> = {
+  1: [3, 2],
+  2: [3, 2, 1],
+  3: [3, 2, 2, 1],
 };
 
 /**
@@ -122,6 +137,7 @@ function buildLevel(n: number): LevelDef {
     softTimerMs: TIER_SOFT_TIMER[t],
     interference: tier >= 5,
     sceneId: PINNED_SCENE_BY_LEVEL[n],
+    changeComposition: CHANGE_COMPOSITION_BY_LEVEL[n],
   };
 }
 

@@ -69,6 +69,27 @@ describe('trial generator', () => {
     expect(t.sceneId).toBe('post-office');
   });
 
+  it('photo trials hide the authored salience mix, with no repeats', () => {
+    const scene = SCENES.find((s) => s.id === 'post-office')!;
+    const salienceOf = (slotId: string) => scene.slots.find((s) => s.id === slotId)!.salience;
+    const expected: Record<number, number[]> = { 1: [2, 3], 2: [1, 2, 3], 3: [1, 2, 2, 3] };
+
+    for (const level of [1, 2, 3]) {
+      for (let i = 0; i < 30; i++) {
+        const t = gen(level);
+        const ids = t.changes.map((c) => c.slotId);
+        expect(new Set(ids).size, `level ${level} repeats a slot`).toBe(ids.length);
+        expect(ids.map(salienceOf).sort()).toEqual(expected[level]);
+      }
+    }
+  });
+
+  it('photo trials vary which items they hide', () => {
+    const seen = new Set<string>();
+    for (let i = 0; i < 60; i++) for (const c of gen(3).changes) seen.add(c.slotId);
+    expect(seen.size).toBeGreaterThanOrEqual(6);
+  });
+
   it('relaxes constraints rather than throwing when everything is excluded', () => {
     const all = SCENES.map((s) => s.id);
     expect(() => gen(1, { scenesThisSession: all })).not.toThrow();

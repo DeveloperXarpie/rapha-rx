@@ -165,6 +165,31 @@ function applyChangeClass(scene: SceneDef, slot: ObjectSlot, cls: ChangeClass, r
   }
 }
 
+/**
+ * Removal-only change set drawn to an authored salience composition.
+ *
+ * Falls back to any remaining slot when a band is exhausted, so it can never return
+ * fewer changes than the composition asks for while slots remain.
+ */
+function buildCompositionChanges(
+  visible: ObjectSlot[],
+  composition: (1 | 2 | 3)[],
+  rng: () => number,
+): AppliedChange[] {
+  const used = new Set<string>();
+  const out: AppliedChange[] = [];
+  for (const band of composition) {
+    const remaining = visible.filter((s) => !used.has(s.id));
+    const pool = remaining.filter((s) => s.salience === band);
+    const from = pool.length > 0 ? pool : remaining;
+    if (from.length === 0) break;
+    const target = from[Math.floor(rng() * from.length)];
+    used.add(target.id);
+    out.push({ changeClass: 1, slotId: target.id });
+  }
+  return out;
+}
+
 function buildChanges(
   scene: SceneDef,
   visible: ObjectSlot[],
@@ -314,7 +339,9 @@ export function generateTrial(opts: {
   const weights = probeMode === 'M3'
     ? m3RenormalisedWeights(levelDef.changeTypeWeights)                   // rule 3 (M3 renormalisation)
     : levelDef.changeTypeWeights;
-  const changes = buildChanges(scene, visible, weights, params.changes, rng); // rules 2/3
+  const changes = levelDef.changeComposition
+    ? buildCompositionChanges(visible, levelDef.changeComposition, rng)
+    : buildChanges(scene, visible, weights, params.changes, rng); // rules 2/3
 
   const lurePlacements = placeLures(scene, changes, params.lureLevel, rng);   // rule 5
 
