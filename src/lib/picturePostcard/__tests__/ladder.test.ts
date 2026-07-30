@@ -41,12 +41,19 @@ describe('ladder (spec A5 validation)', () => {
       }
     }
   });
-  it('probe modes follow the tier table (T1 M1; T2 M1/M2; T3 M2; T4 M2/M3; T5 M3)', () => {
-    expect(getLevelDef(5).probeModeWeights).toEqual({ M1: 1 });
-    expect(getLevelDef(15).probeModeWeights).toEqual({ M1: 0.5, M2: 0.5 });
+  it('probe modes follow the tier table (T1-T3 M2; T4 M2/M3; T5 M3)', () => {
+    expect(getLevelDef(5).probeModeWeights).toEqual({ M2: 1 });
+    expect(getLevelDef(15).probeModeWeights).toEqual({ M2: 1 });
     expect(getLevelDef(25).probeModeWeights).toEqual({ M2: 1 });
     expect(getLevelDef(35).probeModeWeights).toEqual({ M2: 0.5, M3: 0.5 });
     expect(getLevelDef(45).probeModeWeights).toEqual({ M3: 1 });
+  });
+  it('never offers a probe mode that reveals the original scene during the probe', () => {
+    for (const def of LADDER) {
+      for (const [mode, w] of Object.entries(def.probeModeWeights)) {
+        if ((w ?? 0) > 0) expect(['M2', 'M3']).toContain(mode);
+      }
+    }
   });
   it('soft timer none/none/60s/60s/45s; interference from tier 5', () => {
     expect(getLevelDef(10).softTimerMs).toBeNull();

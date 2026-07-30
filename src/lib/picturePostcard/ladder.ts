@@ -1,5 +1,9 @@
 export type ChangeClass = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-export type ProbeMode = 'M1' | 'M2' | 'M3';
+// M1 (side-by-side "spot the difference") was removed: showing the original
+// alongside the modified scene during the probe turns a memory task into a
+// perceptual one. Tiers 1-2 now use M2 and take their scaffolding from the
+// longer encode / shorter delay the curves already give at low levels.
+export type ProbeMode = 'M2' | 'M3';
 
 export interface TrialParams {
   objects: number;
@@ -54,8 +58,8 @@ export function effectiveParams(level: number, di: number): TrialParams {
 }
 
 const TIER_PROBE_WEIGHTS: Partial<Record<ProbeMode, number>>[] = [
-  { M1: 1 },                // tier 1
-  { M1: 0.5, M2: 0.5 },     // tier 2
+  { M2: 1 },                // tier 1
+  { M2: 1 },                // tier 2
   { M2: 1 },                // tier 3
   { M2: 0.5, M3: 0.5 },     // tier 4
   { M3: 1 },                // tier 5

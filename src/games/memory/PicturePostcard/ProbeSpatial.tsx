@@ -65,10 +65,9 @@ export function HintButton({ hintsLeft, onHint, label }: { hintsLeft: number; on
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-// Spec SS4.2-4.3 — M1 (single-change "spot the difference" across two stacked
-// scenes) and M2 (tap-in-place on the modified scene alone) probe views, with the
-// tier-1..3 spatial scaffold ladder. Tier 4 (peek/reveal) is feedback-phase work
-// owned by Task 16, not rendered here.
+// Spec SS4.2-4.3 — the M2 probe view (tap-in-place on the modified scene alone),
+// with the tier-1..3 spatial scaffold ladder. Tier 4 (peek/reveal) is
+// feedback-phase work owned by Task 16, not rendered here.
 
 export default function ProbeSpatial({ trial, scene, machine, onResponse, onHint, hintsLeft }: ProbeSpatialProps) {
   const { t } = useTranslation();
@@ -104,47 +103,8 @@ export default function ProbeSpatial({ trial, scene, machine, onResponse, onHint
     </div>
   );
 
-  if (trial.probeMode === 'M1') {
-    return (
-      <div className="flex-1 flex flex-col gap-4 p-4 overflow-y-auto">
-        <p className="text-h2 font-semibold text-body-text text-center">
-          {t('pp.probe.m1', 'Find what changed in the postcard.')}
-        </p>
-
-        <div className="flex flex-col gap-2 w-full max-w-xl mx-auto">
-          <p className="text-body-md text-center">
-            <span className="scene-ribbon-blue">{t('pp.probe.m1.remember', 'Remember')}</span>
-          </p>
-          <SceneView scene={scene} visibleSlotIds={trial.visibleSlotIds ?? []} className="scene-board" />
-        </div>
-
-        <div className="flex flex-col gap-2 w-full max-w-xl mx-auto">
-          <p className="text-body-md text-center">
-            <span className="scene-ribbon-red">{t('pp.probe.m1.whatChanged', 'What changed?')}</span>
-          </p>
-          <div className="relative">
-            <SceneView
-              scene={scene}
-              modifications={trial.changes}
-              lures={trial.lurePlacements}
-              visibleSlotIds={trial.visibleSlotIds ?? []}
-              onSlotTap={resolveTap}
-              dimNonTargets={dimNonTargets}
-              dimExemptSlotId={scaffoldTargetSlotId}
-              vignetteSlotId={vignetteSlotId}
-              pulseSlotId={pulseSlotId}
-              className="scene-board"
-            />
-            {foundMarkers.map((bbox, i) => <FoundMarker key={i} bbox={bbox} />)}
-          </div>
-        </div>
-
-        {hintButton}
-      </div>
-    );
-  }
-
-  // M2 — modified scene only.
+  // M2 — modified scene only. The original is never on screen during the probe;
+  // it was shown in the encoding phase and must be recalled from memory.
   return (
     <div className="flex-1 flex flex-col gap-4 p-4">
       <p className="text-h2 font-semibold text-body-text text-center">

@@ -60,7 +60,6 @@ function toPairHistoryEntry(row: PpPairHistoryRow): { sceneId: string; changeCla
 }
 
 function probeExpectFallback(mode: TrialSpec['probeMode']): string {
-  if (mode === 'M1') return "You'll tap the one thing that changed";
   if (mode === 'M2') return "You'll tap every thing that changed";
   return "You'll choose the answer from a set of pictures";
 }
