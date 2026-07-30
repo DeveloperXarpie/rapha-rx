@@ -36,8 +36,8 @@ TONE_B_SHIFT = 3.5
 #   grow       expand the seed rect by this fraction before grabCut, for items whose
 #              authored box clips a thin protruding part (a handle, a strap)
 TUNING = {
-    'scale':         {'iters': 8},
-    'bell':          {},
+    'scale':         {'iters': 10, 'grow': 0.05},
+    'bell':          {'grow': 0.10},
     'parcel':        {},
     'magnifier':     {'grow': 0.06},
     'stamp':         {},
