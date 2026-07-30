@@ -21,6 +21,8 @@ export interface LevelDef {
   probeModeWeights: Partial<Record<ProbeMode, number>>;
   softTimerMs: number | null;
   interference: boolean;
+  /** When set, the generator uses this scene instead of picking from the pool. */
+  sceneId?: string;
 }
 
 export const DI_STEP = 0.08;
@@ -31,6 +33,17 @@ export const FIRST_APPEARANCE: Record<ChangeClass, number> = {
 };
 
 export const M3_ELIGIBLE_CLASSES: ChangeClass[] = [1, 2, 4, 5];
+
+/**
+ * Levels bound to a specific scene rather than drawing from the random pool.
+ *
+ * The post-office photo scene supports change class 1 only, so it must never be
+ * reachable above the levels that ask for removals alone. pickScene also excludes every
+ * pinned scene from its pool, so this is the sole route to it.
+ */
+export const PINNED_SCENE_BY_LEVEL: Record<number, string> = {
+  1: 'post-office', 2: 'post-office', 3: 'post-office',
+};
 
 // GDD SS4.3 curves — authoritative over the tier table (spec A5)
 function curveParams(n: number): TrialParams {
@@ -90,6 +103,7 @@ function buildLevel(n: number): LevelDef {
     probeModeWeights: TIER_PROBE_WEIGHTS[t],
     softTimerMs: TIER_SOFT_TIMER[t],
     interference: tier >= 5,
+    sceneId: PINNED_SCENE_BY_LEVEL[n],
   };
 }
 

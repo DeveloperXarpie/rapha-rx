@@ -304,7 +304,10 @@ export function generateTrial(opts: {
 }): TrialSpec {
   const { levelDef, params, scenesThisSession, pairHistory, rng = Math.random } = opts;
 
-  const scene = pickScene(levelDef, scenesThisSession, pairHistory, rng); // rule 1
+  // Rule 1, with a pinned override: level-bound scenes bypass the pool entirely, so
+  // session-uniqueness and the 30-day pair rule do not apply to them.
+  const pinned = levelDef.sceneId ? SCENES.find((s) => s.id === levelDef.sceneId) : undefined;
+  const scene = pinned ?? pickScene(levelDef, scenesThisSession, pairHistory, rng);
   const probeMode = sampleWeighted(rng, levelDef.probeModeWeights);       // rule 4
   const visible = pickVisibleSlots(scene, params.objects, rng);           // rule 2
 

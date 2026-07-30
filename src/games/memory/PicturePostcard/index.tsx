@@ -151,11 +151,16 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
         pairHistory,
       });
 
-      const updatedRow = await markSceneUsed(
-        loadedRow,
-        newTrial.sceneId,
-        newTrial.changes.map((c) => c.changeClass),
-      );
+      // Pinned scenes are not drawn from the pool, so recording them would only poison
+      // scene selection and the 30-day pair cooldown for the vector scenes.
+      const usedScene = getScene(newTrial.sceneId);
+      const updatedRow = usedScene.pinned
+        ? loadedRow
+        : await markSceneUsed(
+          loadedRow,
+          newTrial.sceneId,
+          newTrial.changes.map((c) => c.changeClass),
+        );
       if (cancelled) return;
 
       diRef.current = di;

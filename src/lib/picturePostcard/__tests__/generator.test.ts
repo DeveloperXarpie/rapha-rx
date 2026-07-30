@@ -20,9 +20,47 @@ describe('trial generator', () => {
     expect(t.lurePlacements).toHaveLength(0);
   });
   it('avoids scenes used this session', () => {
-    const used = SCENES.slice(0, 7).map((s) => s.id);
-    for (let i = 0; i < 10; i++) expect(gen(1, { scenesThisSession: used }).sceneId).toBe(SCENES[7].id);
+    // Level 10, not level 1: levels 1-3 are pinned to the photo scene and bypass the
+    // pool entirely, so they cannot exercise session exclusion.
+    const pool = SCENES.filter((s) => !s.pinned);
+    const used = pool.slice(0, pool.length - 1).map((s) => s.id);
+    const expected = pool[pool.length - 1].id;
+    for (let i = 0; i < 10; i++) {
+      expect(gen(10, { scenesThisSession: used }).sceneId).toBe(expected);
+    }
   });
+  it('levels 1-3 always use the pinned photo scene', () => {
+    for (const level of [1, 2, 3]) {
+      for (let i = 0; i < 20; i++) {
+        expect(gen(level).sceneId).toBe('post-office');
+      }
+    }
+  });
+
+  it('the pinned photo scene is never chosen at any other level', () => {
+    for (const level of [4, 10, 27, 45, 80, 100]) {
+      for (let i = 0; i < 20; i++) {
+        expect(gen(level).sceneId).not.toBe('post-office');
+      }
+    }
+  });
+
+  it('photo trials only ever apply class-1 removals', () => {
+    for (const level of [1, 2, 3]) {
+      for (let i = 0; i < 20; i++) {
+        for (const c of gen(level).changes) expect(c.changeClass).toBe(1);
+      }
+    }
+  });
+
+  it('pinning ignores session and pair history', () => {
+    const t = gen(1, {
+      scenesThisSession: ['post-office'],
+      pairHistory: [{ sceneId: 'post-office', changeClass: 1, lastUsedDate: todayISO() }],
+    });
+    expect(t.sceneId).toBe('post-office');
+  });
+
   it('relaxes constraints rather than throwing when everything is excluded', () => {
     const all = SCENES.map((s) => s.id);
     expect(() => gen(1, { scenesThisSession: all })).not.toThrow();
