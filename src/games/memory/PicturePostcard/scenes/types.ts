@@ -7,21 +7,33 @@ export interface SlotVariants {
 export interface ObjectSlot {
   id: string;
   category: string;            // i18n key suffix pp.category.<category>
-  spriteId: string;
-  baseFill: string;            // the sprite's authored colour for this slot
   bbox: { x: number; y: number; w: number; h: number }; // scene-normalised 0-1
   salience: 1 | 2 | 3;
   centrality: 1 | 2 | 3;
-  variants: SlotVariants;
-  altPositions: [{ x: number; y: number }, { x: number; y: number }];
-  lures: [string, string, string]; // sprite ids ordered most->least similar (lureLevel 3->1)
+
+  // Render payload - vector scenes set spriteId + baseFill, raster scenes set imageSrc.
+  spriteId?: string;
+  baseFill?: string;           // the sprite's authored colour for this slot
+  imageSrc?: string;           // public path to a transparent cutout
+
+  // Vector-only. A slot without these cannot take change classes 2 and 4-7; the
+  // generator's supportsClass() enforces that rather than the renderer guessing.
+  variants?: SlotVariants;
+  altPositions?: [{ x: number; y: number }, { x: number; y: number }];
+  lures?: [string, string, string]; // sprite ids ordered most->least similar (lureLevel 3->1)
 }
 
 export interface SceneDef {
   id: string;
   theme: string;               // i18n key suffix pp.theme.<theme>
   background: BackgroundLayer[];
-  slots: ObjectSlot[];         // >= 20
+  backgroundImage?: string;    // raster scenes; when set, `background` is []
+  /** Painted-size multiplier. Vector sprites are authored small (SPRITE_RENDER_SCALE);
+   *  raster cutouts are authored at true size and use 1. */
+  renderScale?: number;
+  /** Pinned scenes are bound to specific levels and never enter the random pool. */
+  pinned?: boolean;
+  slots: ObjectSlot[];         // >= 20 for vector scenes
 }
 
 export interface BackgroundLayer {

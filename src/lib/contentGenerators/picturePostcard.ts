@@ -98,39 +98,65 @@ function pickVisibleSlots(scene: SceneDef, count: number, rng: () => number): Ob
   return chosen;
 }
 
-/** Rule 3: which slots a given change class may legally target. */
-function eligiblePool(cls: ChangeClass, visible: ObjectSlot[], invisible: ObjectSlot[], used: Set<string>): ObjectSlot[] {
-  if (cls === 2) return invisible.filter((s) => !used.has(s.id));
-  if (cls === 7) return visible.filter((s) => !used.has(s.id) && SPRITES[s.spriteId]?.mirrorable);
-  return visible.filter((s) => !used.has(s.id));
+/**
+ * Whether a slot carries the data a given change class needs. Raster slots only carry a
+ * bbox and an image, so this is what confines photo scenes to removal without any
+ * scene-kind branching downstream.
+ */
+export function supportsClass(s: ObjectSlot, cls: ChangeClass): boolean {
+  switch (cls) {
+    case 1: return true;
+    case 2: return !!s.variants && !!s.altPositions;
+    case 3: return !!s.altPositions;
+    case 4: return !!s.variants && s.variants.colours.length > 0;
+    case 5: return !!s.variants;
+    case 6: return !!s.variants;
+    case 7: return !!s.spriteId && !!SPRITES[s.spriteId]?.mirrorable;
+    default: return false;
+  }
 }
 
-/** Rule 2/3: compute the per-class payload for a change already targeted at `slot`. */
-function applyChangeClass(scene: SceneDef, slot: ObjectSlot, cls: ChangeClass, rng: () => number): AppliedChange {
+/** Rule 3: which slots a given change class may legally target. */
+function eligiblePool(cls: ChangeClass, visible: ObjectSlot[], invisible: ObjectSlot[], used: Set<string>): ObjectSlot[] {
+  const pool = cls === 2 ? invisible : visible;
+  return pool.filter((s) => !used.has(s.id) && supportsClass(s, cls));
+}
+
+/**
+ * Rule 2/3: compute the per-class payload for a change already targeted at `slot`.
+ * Returns null when the slot lacks the payload; eligiblePool should already have
+ * excluded it, so null means buildChanges retries rather than emitting a broken change.
+ */
+function applyChangeClass(scene: SceneDef, slot: ObjectSlot, cls: ChangeClass, rng: () => number): AppliedChange | null {
+  void scene;
   switch (cls) {
     case 1:
       return { changeClass: 1, slotId: slot.id };
     case 2: {
+      if (!slot.altPositions || !slot.variants) return null;
       const pos = slot.altPositions[Math.floor(rng() * slot.altPositions.length)];
       return { changeClass: 2, slotId: slot.id, addedSpriteId: slot.variants.alternate, newPosition: pos };
     }
     case 3: {
+      if (!slot.altPositions) return null;
       const pos = slot.altPositions[Math.floor(rng() * slot.altPositions.length)];
       return { changeClass: 3, slotId: slot.id, newPosition: pos };
     }
     case 4: {
+      if (!slot.variants) return null;
       const fill = slot.variants.colours[Math.floor(rng() * slot.variants.colours.length)];
       return { changeClass: 4, slotId: slot.id, newFill: fill };
     }
     case 5:
+      if (!slot.variants) return null;
       return { changeClass: 5, slotId: slot.id, newSpriteId: slot.variants.alternate };
     case 6: {
+      if (!slot.variants) return null;
       const [lo, hi] = slot.variants.scales;
       return { changeClass: 6, slotId: slot.id, newScale: rng() < 0.5 ? lo : hi };
     }
     case 7:
     default:
-      void scene;
       return { changeClass: 7, slotId: slot.id, mirrored: true };
   }
 }
@@ -164,6 +190,7 @@ function buildChanges(
       if (!fallback) break; // truly nothing left to change
       const target = fallback.pool[Math.floor(rng() * fallback.pool.length)];
       applied = applyChangeClass(scene, target, fallback.cls, rng);
+      if (!applied) break;
     }
     used.add(applied.slotId);
     changes.push(applied);
@@ -183,13 +210,14 @@ function placeLures(
 
   const targets = changes
     .map((c) => scene.slots.find((sl) => sl.id === c.slotId))
-    .filter((s): s is ObjectSlot => !!s);
+    .filter((s): s is ObjectSlot => !!s && !!s.lures);
   if (targets.length === 0) return lures;
 
   const lureIndex = Math.min(2, Math.max(0, 3 - lureLevel));
   for (let i = 0; i < lureLevel; i++) {
     const source = targets[i % targets.length];
-    const spriteId = source.lures[lureIndex];
+    const spriteId = source.lures?.[lureIndex];
+    if (!spriteId) continue;
     const w = source.bbox.w;
     const h = source.bbox.h;
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -217,29 +245,37 @@ function buildM3(slot: ObjectSlot, change: AppliedChange, rng: () => number): Tr
   const name = M3_QUESTION_NAME[change.changeClass];
   if (!name) return undefined;
 
+  // M3 needs the full vector payload. Raster slots never reach here - photo levels are
+  // tier 1, which is M2-only - but the guard keeps the type honest.
+  if (!slot.spriteId || !slot.baseFill || !slot.variants || !slot.lures) return undefined;
+  const spriteId = slot.spriteId;
+  const baseFill = slot.baseFill;
+  const variants = slot.variants;
+  const lures = slot.lures;
+
   let options: M3Option[];
   if (change.changeClass === 4) {
     options = [
-      { spriteId: slot.spriteId, fill: slot.baseFill, correct: slot.baseFill === change.newFill },
-      ...slot.variants.colours.map((fill) => ({ spriteId: slot.spriteId, fill, correct: fill === change.newFill })),
+      { spriteId, fill: baseFill, correct: baseFill === change.newFill },
+      ...variants.colours.map((fill) => ({ spriteId, fill, correct: fill === change.newFill })),
     ];
   } else if (change.changeClass === 1) {
     options = [
-      { spriteId: slot.spriteId, fill: slot.baseFill, correct: true },
-      ...slot.lures.map((spriteId) => ({ spriteId, fill: slot.baseFill, correct: false })),
+      { spriteId, fill: baseFill, correct: true },
+      ...lures.map((id) => ({ spriteId: id, fill: baseFill, correct: false })),
     ];
   } else if (change.changeClass === 2) {
     options = [
-      { spriteId: change.addedSpriteId ?? slot.variants.alternate, fill: slot.baseFill, correct: true },
-      ...slot.lures.map((spriteId) => ({ spriteId, fill: slot.baseFill, correct: false })),
+      { spriteId: change.addedSpriteId ?? variants.alternate, fill: baseFill, correct: true },
+      ...lures.map((id) => ({ spriteId: id, fill: baseFill, correct: false })),
     ];
   } else {
     // class 5: original + variants.alternate + 2 lures
     options = [
-      { spriteId: slot.spriteId, fill: slot.baseFill, correct: false },
-      { spriteId: slot.variants.alternate, fill: slot.baseFill, correct: true },
-      { spriteId: slot.lures[0], fill: slot.baseFill, correct: false },
-      { spriteId: slot.lures[1], fill: slot.baseFill, correct: false },
+      { spriteId, fill: baseFill, correct: false },
+      { spriteId: variants.alternate, fill: baseFill, correct: true },
+      { spriteId: lures[0], fill: baseFill, correct: false },
+      { spriteId: lures[1], fill: baseFill, correct: false },
     ];
   }
 

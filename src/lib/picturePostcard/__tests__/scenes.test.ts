@@ -14,15 +14,15 @@ describe('scene library validation (spec SS5.2)', () => {
     describe(scene.id, () => {
       it('every slot references known sprites (base, alternate, lures)', () => {
         for (const s of scene.slots) {
-          expect(SPRITES[s.spriteId], `${s.id} sprite`).toBeDefined();
-          expect(SPRITES[s.variants.alternate], `${s.id} alternate`).toBeDefined();
-          for (const l of s.lures) expect(SPRITES[l], `${s.id} lure ${l}`).toBeDefined();
+          expect(SPRITES[s.spriteId!], `${s.id} sprite`).toBeDefined();
+          expect(SPRITES[s.variants!.alternate], `${s.id} alternate`).toBeDefined();
+          for (const l of s.lures!) expect(SPRITES[l], `${s.id} lure ${l}`).toBeDefined();
         }
       });
       it('colour-change eligibility: >= 3 alternate fills, all distinct from base (M3 4-option rule)', () => {
         for (const s of scene.slots) {
-          expect(s.variants.colours.length, s.id).toBeGreaterThanOrEqual(3);
-          expect(new Set([s.baseFill, ...s.variants.colours]).size).toBe(s.variants.colours.length + 1);
+          expect(s.variants!.colours.length, s.id).toBeGreaterThanOrEqual(3);
+          expect(new Set([s.baseFill!, ...s.variants!.colours]).size).toBe(s.variants!.colours.length + 1);
         }
       });
       it('slot ids unique; bboxes and altPositions inside the scene', () => {
@@ -32,7 +32,7 @@ describe('scene library validation (spec SS5.2)', () => {
           expect(s.bbox.x + s.bbox.w).toBeLessThanOrEqual(1);
           expect(s.bbox.y).toBeGreaterThanOrEqual(0);
           expect(s.bbox.y + s.bbox.h).toBeLessThanOrEqual(1);
-          for (const p of s.altPositions) {
+          for (const p of s.altPositions!) {
             expect(p.x).toBeGreaterThanOrEqual(0);
             expect(p.x + s.bbox.w).toBeLessThanOrEqual(1);
             expect(p.y).toBeGreaterThanOrEqual(0);
@@ -45,7 +45,7 @@ describe('scene library validation (spec SS5.2)', () => {
         expect(scene.slots.filter((s) => s.centrality === 3).length).toBeGreaterThanOrEqual(4);
       });
       it('mirror changes only reachable via mirrorable sprites: >= 5 mirrorable slots per scene', () => {
-        expect(scene.slots.filter((s) => SPRITES[s.spriteId].mirrorable).length).toBeGreaterThanOrEqual(5);
+        expect(scene.slots.filter((s) => SPRITES[s.spriteId!].mirrorable).length).toBeGreaterThanOrEqual(5);
       });
     });
   }

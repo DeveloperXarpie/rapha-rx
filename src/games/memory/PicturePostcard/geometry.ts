@@ -32,10 +32,11 @@ export function changeBBox(
 ): { x: number; y: number; w: number; h: number } | null {
   const slot = scene.slots.find((s) => s.id === change.slotId);
   if (!slot) return null;
+  const k = scene.renderScale ?? SPRITE_RENDER_SCALE;
   if ((change.changeClass === 2 || change.changeClass === 3) && change.newPosition) {
-    return inflateBBox({ x: change.newPosition.x, y: change.newPosition.y, w: slot.bbox.w, h: slot.bbox.h });
+    return inflateBBox({ x: change.newPosition.x, y: change.newPosition.y, w: slot.bbox.w, h: slot.bbox.h }, k);
   }
-  return inflateBBox(slot.bbox);
+  return inflateBBox(slot.bbox, k);
 }
 
 /** Scene-normalised centre of a change's target. */
@@ -58,5 +59,5 @@ export function annotationBBox(
   const slot = scene.slots.find((s) => s.id === change.slotId);
   if (!slot) return null;
   if (view === 'modified') return changeBBox(scene, change);
-  return inflateBBox(slot.bbox);
+  return inflateBBox(slot.bbox, scene.renderScale ?? SPRITE_RENDER_SCALE);
 }

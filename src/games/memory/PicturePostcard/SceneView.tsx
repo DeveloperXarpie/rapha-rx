@@ -31,8 +31,10 @@ export interface SceneViewProps {
 interface RenderTarget {
   id: string;
   bbox: BBox;
-  spriteId: string;
-  fill: string;
+  /** Vector slots carry spriteId + fill; raster slots carry imageSrc (see Task 7). */
+  spriteId?: string;
+  imageSrc?: string;
+  fill?: string;
   mirrored?: boolean;
   scale?: number;
   /** false = removed by a class-1 change: not painted, but still hit-testable. */
@@ -222,7 +224,7 @@ export default function SceneView({
       })}
 
       {renderTargets.map((rt) => {
-        const entry = SPRITES[rt.spriteId];
+        const entry = rt.spriteId ? SPRITES[rt.spriteId] : undefined;
         return (
           <div
             key={rt.id}
