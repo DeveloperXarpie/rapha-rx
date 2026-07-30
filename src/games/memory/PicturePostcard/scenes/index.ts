@@ -7,8 +7,9 @@ import { seaside } from './seaside';
 import { kitchen } from './kitchen';
 import { garden } from './garden';
 import { cafe } from './cafe';
+import { postOffice } from './postOffice';
 
-export const SCENES: SceneDef[] = [park, marketIndian, templeStreet, teaStall, seaside, kitchen, garden, cafe];
+export const SCENES: SceneDef[] = [park, marketIndian, templeStreet, teaStall, seaside, kitchen, garden, cafe, postOffice];
 
 export function getScene(id: string): SceneDef {
   const s = SCENES.find((sc) => sc.id === id);

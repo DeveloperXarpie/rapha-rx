@@ -76,10 +76,14 @@ function pickScene(
     && candidateClasses.includes(h.changeClass)
     && daysBetweenISO(h.lastUsedDate, today) < 30);
 
-  const sessionFiltered = SCENES.filter((s) => !scenesThisSession.includes(s.id));
+  // Pinned scenes are bound to specific levels and must never be drawn here. The photo
+  // scene supports change class 1 only, so serving it at a level that asks for a
+  // recolour or an M3 question would produce a trial that cannot be probed.
+  const poolScenes = SCENES.filter((s) => !s.pinned);
+  const sessionFiltered = poolScenes.filter((s) => !scenesThisSession.includes(s.id));
   let pool = sessionFiltered.filter((s) => !conflicted(s));
   if (pool.length === 0) pool = sessionFiltered;       // relax the 30-day pair rule
-  if (pool.length === 0) pool = SCENES;                // relax the session rule too
+  if (pool.length === 0) pool = poolScenes;            // relax the session rule too
   return pool[Math.floor(rng() * pool.length)];
 }
 

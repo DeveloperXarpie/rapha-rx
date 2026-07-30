@@ -2,15 +2,20 @@ import { describe, it, expect } from 'vitest';
 import { SCENES } from '../../../games/memory/PicturePostcard/scenes';
 import { SPRITES } from '../../../games/memory/PicturePostcard/sprites';
 
+// Raster scenes carry no sprites, variants or lures. These assertions describe the
+// vector scene contract only.
+const VECTOR_SCENES = SCENES.filter((s) => !s.backgroundImage);
+
 // spec SS5.2 build-time validation + SS5.3 lure-separation feasibility
 describe('scene library validation (spec SS5.2)', () => {
-  it('has at least 1 scene now, 8 by Task 10, each with >= 20 slots', () => {
-    expect(SCENES.length).toBe(8);
-    for (const scene of SCENES) {
+  it('has 8 vector scenes plus 1 photo scene, each vector scene with >= 20 slots', () => {
+    expect(SCENES.length).toBe(9);
+    expect(VECTOR_SCENES.length).toBe(8);
+    for (const scene of VECTOR_SCENES) {
       expect(scene.slots.length, `${scene.id} slot count`).toBeGreaterThanOrEqual(20);
     }
   });
-  for (const scene of SCENES) {
+  for (const scene of VECTOR_SCENES) {
     describe(scene.id, () => {
       it('every slot references known sprites (base, alternate, lures)', () => {
         for (const s of scene.slots) {
@@ -49,4 +54,46 @@ describe('scene library validation (spec SS5.2)', () => {
       });
     });
   }
+});
+
+describe('post-office photo scene', () => {
+  const photo = SCENES.find((s) => s.id === 'post-office');
+
+  it('is registered, pinned, and raster', () => {
+    expect(photo).toBeDefined();
+    expect(photo!.pinned).toBe(true);
+    expect(photo!.renderScale).toBe(1);
+    expect(photo!.backgroundImage).toBe('/pp/scenes/post-office/background.webp');
+    expect(photo!.background).toHaveLength(0);
+  });
+
+  it('has exactly the ten marked items, each with an image and no vector payload', () => {
+    expect(photo!.slots).toHaveLength(10);
+    expect(photo!.slots.map((s) => s.id).sort()).toEqual([
+      'bell', 'ink-pad', 'key', 'letter-opener', 'magnifier',
+      'parcel', 'postcard', 'satchel', 'scale', 'stamp',
+    ]);
+    for (const s of photo!.slots) {
+      expect(s.imageSrc, s.id).toBe(`/pp/scenes/post-office/items/${s.id}.webp`);
+      expect(s.spriteId, s.id).toBeUndefined();
+      expect(s.variants, s.id).toBeUndefined();
+      expect(s.lures, s.id).toBeUndefined();
+    }
+  });
+
+  it('has bboxes inside the frame', () => {
+    for (const s of photo!.slots) {
+      expect(s.bbox.x, s.id).toBeGreaterThanOrEqual(0);
+      expect(s.bbox.y, s.id).toBeGreaterThanOrEqual(0);
+      expect(s.bbox.x + s.bbox.w, s.id).toBeLessThanOrEqual(1);
+      expect(s.bbox.y + s.bbox.h, s.id).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('can satisfy every salience composition the photo levels ask for', () => {
+    const count = (n: number) => photo!.slots.filter((s) => s.salience === n).length;
+    expect(count(3)).toBeGreaterThanOrEqual(1); // L1/L2/L3 each need one
+    expect(count(2)).toBeGreaterThanOrEqual(2); // L3 needs two
+    expect(count(1)).toBeGreaterThanOrEqual(1); // L2/L3 each need one
+  });
 });
