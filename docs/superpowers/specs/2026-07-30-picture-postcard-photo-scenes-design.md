@@ -272,11 +272,12 @@ the encode window silently corrupts it. A 400ms first decode is 13% of the level
 encode budget.
 
 The fix uses the 1500ms `READY_MS` phase that already exists. During `ready`, every URL
-in the trial is loaded and `await img.decode()`-ed; the `ready -> encoding` transition is
-gated on completion. Decoded `HTMLImageElement`s are held in a module-level `Map` that
-outlives the retention phase's unmount, so the probe does not re-decode. A `preloadMs`
-telemetry field is emitted; if it exceeds ~1200ms the `ready` phase extends rather than
-the `encoding` phase shrinking.
+in the trial is loaded and `await img.decode()`-ed, and the trial **clock itself** is held
+until they resolve. Holding the clock rather than only the phase transition means a slow
+network simply lengthens `ready`; `encoding` always gets its full authored duration.
+Decoded `HTMLImageElement`s are held in a module-level `Map` that outlives the retention
+phase's unmount, so the probe does not re-decode. A broken or missing asset resolves
+rather than rejecting, so it can never wedge a trial.
 
 ## 6. Trial generation and ladder integration
 
@@ -348,8 +349,13 @@ action is "tap where something is missing", and no string anywhere currently tea
 that.
 
 The L41 card persists through `PpEngineRow.tipCardL41Shown`. The new card needs its own
-flag, so `PpEngineRow` gains `tipCardPhotoShown` and `BrainTrainingDB` takes a **new
-`.version()` block** - per the project rule, existing versions are never mutated.
+flag, so `PpEngineRow` gains `tipCardPhotoShown`, defaulted in `freshEngineRow`.
+
+No Dexie version block is needed: the `ppEngine` store is declared as `'userId'`, so
+`userId` is the only index and `tipCardPhotoShown` is a plain unindexed field. Existing
+rows read it as `undefined`, which is falsy, so returning players see the card once -
+the desired behaviour. The project rule about never mutating a `.version()` block still
+stands and simply does not apply here.
 
 ## 8. Why removal only
 
