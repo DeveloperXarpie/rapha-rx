@@ -23,8 +23,23 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/index.html',
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
         runtimeCaching: [
+          {
+            // Photo scenes are precached today (one scene, ~212 KB) via the webp glob
+            // above. Workbox precaching is all-or-nothing on install, so at eight or
+            // nine scenes a care-home wifi stall would leave a partially installed
+            // worker under registerType 'autoUpdate'. This rule is in place before that
+            // happens: draw the precache line at two scenes and let the rest come
+            // through here.
+            urlPattern: /\/pp\/scenes\/.+\.webp$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'pp-scenes',
+              expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 180 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             urlPattern: /\/locales\/.+\.json$/,
             handler: 'CacheFirst',
