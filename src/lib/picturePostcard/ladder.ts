@@ -45,6 +45,22 @@ export const PINNED_SCENE_BY_LEVEL: Record<number, string> = {
   1: 'post-office', 2: 'post-office', 3: 'post-office',
 };
 
+/**
+ * Authored objects / hidden counts for the pinned photo levels.
+ *
+ * Not curve-derived: the curve tops out at 4 changes (level 100), so these sit inside
+ * the game's own difficulty range rather than above it. `objects` is 10 because the
+ * photo scene has exactly ten items and shows all of them during encode.
+ *
+ * Deliberately NOT DI-shifted - encode duration and retention delay carry the adaptive
+ * load on these levels instead. See the spec's known concerns.
+ */
+const PHOTO_LEVEL_PARAMS: Record<number, { objects: number; changes: number }> = {
+  1: { objects: 10, changes: 2 },
+  2: { objects: 10, changes: 3 },
+  3: { objects: 10, changes: 4 },
+};
+
 // GDD SS4.3 curves — authoritative over the tier table (spec A5)
 function curveParams(n: number): TrialParams {
   const x = n / 100;
@@ -57,17 +73,19 @@ function curveParams(n: number): TrialParams {
   };
 }
 
-/** Curves evaluated at the DI-shifted level coordinate (spec A7). */
+/**
+ * Curves evaluated at the DI-shifted level coordinate (spec A7), with the authored
+ * photo-level overrides applied at the TRUE level so DI cannot move the hidden count.
+ *
+ * This is the only runtime source of trial parameters. LevelDef.params is derived from
+ * it rather than the other way round - overriding LevelDef.params alone would be dead
+ * code, because nothing at runtime reads it.
+ */
 export function effectiveParams(level: number, di: number): TrialParams {
   const n = Math.min(100, Math.max(1, level + di));
-  const x = n / 100;
-  return {
-    objects: Math.round(5 + 13 * Math.pow(x, 0.85)),
-    encodeMs: Math.round(8000 - 5000 * Math.pow(x, 0.7)),
-    delayMs: Math.round(500 + 9500 * Math.pow(x, 1.2)),
-    changes: 1 + Math.floor(n / 28),
-    lureLevel: Math.floor(n / 26),
-  };
+  const base = curveParams(n);
+  const override = PHOTO_LEVEL_PARAMS[Math.round(Math.min(100, Math.max(1, level)))];
+  return override ? { ...base, ...override } : base;
 }
 
 const TIER_PROBE_WEIGHTS: Partial<Record<ProbeMode, number>>[] = [
@@ -98,7 +116,7 @@ function buildLevel(n: number): LevelDef {
   return {
     level: n,
     tier,
-    params: curveParams(n),
+    params: effectiveParams(n, 0),
     changeTypeWeights: changeTypeWeights(n),
     probeModeWeights: TIER_PROBE_WEIGHTS[t],
     softTimerMs: TIER_SOFT_TIMER[t],

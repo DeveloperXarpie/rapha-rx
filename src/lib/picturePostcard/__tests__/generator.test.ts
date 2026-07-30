@@ -12,8 +12,16 @@ const gen = (level: number, extra: Partial<Parameters<typeof generateTrial>[0]> 
   });
 
 describe('trial generator', () => {
-  it('L1: one class-1 change, M2 probe, no lures', () => {
+  it('L1: two class-1 changes on the photo scene, M2 probe, no lures', () => {
     const t = gen(1);
+    expect(t.changes).toHaveLength(2); // photo level: authored hidden count, not the curve
+    expect(t.changes[0].changeClass).toBe(1);
+    expect(t.probeMode).toBe('M2');
+    expect(t.lurePlacements).toHaveLength(0);
+  });
+
+  it('L4: one class-1 change on a vector scene, M2 probe, no lures', () => {
+    const t = gen(4);
     expect(t.changes).toHaveLength(1);
     expect(t.changes[0].changeClass).toBe(1);
     expect(t.probeMode).toBe('M2');
