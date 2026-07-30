@@ -2,8 +2,8 @@ import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AppliedChange, TrialSpec } from '../../../lib/contentGenerators/picturePostcard';
 import { SPRITES } from './sprites';
-import type { SceneDef } from './scenes';
-import { inflateBBox } from './geometry';
+import type { ObjectSlot, SceneDef } from './scenes';
+import { inflateBBox, SPRITE_RENDER_SCALE } from './geometry';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -100,42 +100,51 @@ export default function SceneView({
     const modBySlot = new Map(modifications.map((m) => [m.slotId, m]));
     const out: RenderTarget[] = [];
 
+    // The render payload every class starts from. Vector slots contribute spriteId and
+    // fill; raster slots contribute imageSrc. Classes that rewrite one of those override
+    // it below.
+    const base = (slot: ObjectSlot): RenderTarget => ({
+      id: slot.id,
+      bbox: slot.bbox,
+      spriteId: slot.spriteId,
+      imageSrc: slot.imageSrc,
+      fill: slot.baseFill,
+      visible: true,
+    });
+
     for (const slot of scene.slots) {
       if (!visibleSlotIds.includes(slot.id)) continue;
       const mod = modBySlot.get(slot.id);
 
       if (!mod) {
-        out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: slot.baseFill, visible: true });
+        out.push(base(slot));
         continue;
       }
 
       switch (mod.changeClass) {
         case 1: // removed — no paint, still hit-testable at its original bbox
-          out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: slot.baseFill, visible: false });
+          out.push({ ...base(slot), visible: false });
           break;
         case 3: // translocated
           out.push({
-            id: slot.id,
+            ...base(slot),
             bbox: { ...slot.bbox, x: mod.newPosition?.x ?? slot.bbox.x, y: mod.newPosition?.y ?? slot.bbox.y },
-            spriteId: slot.spriteId,
-            fill: slot.baseFill,
-            visible: true,
           });
           break;
         case 4: // recoloured
-          out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: mod.newFill ?? slot.baseFill, visible: true });
+          out.push({ ...base(slot), fill: mod.newFill ?? slot.baseFill });
           break;
         case 5: // sprite substituted
-          out.push({ id: slot.id, bbox: slot.bbox, spriteId: mod.newSpriteId ?? slot.spriteId, fill: slot.baseFill, visible: true });
+          out.push({ ...base(slot), spriteId: mod.newSpriteId ?? slot.spriteId });
           break;
         case 6: // rescaled
-          out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: slot.baseFill, scale: mod.newScale, visible: true });
+          out.push({ ...base(slot), scale: mod.newScale });
           break;
         case 7: // mirrored
-          out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: slot.baseFill, mirrored: mod.mirrored, visible: true });
+          out.push({ ...base(slot), mirrored: mod.mirrored });
           break;
         default:
-          out.push({ id: slot.id, bbox: slot.bbox, spriteId: slot.spriteId, fill: slot.baseFill, visible: true });
+          out.push(base(slot));
       }
     }
 
@@ -145,17 +154,18 @@ export default function SceneView({
       const originSlot = scene.slots.find((s) => s.id === mod.slotId);
       if (!originSlot || !mod.addedSpriteId || !mod.newPosition) continue;
       out.push({
+        ...base(originSlot),
         id: mod.slotId,
         bbox: { x: mod.newPosition.x, y: mod.newPosition.y, w: originSlot.bbox.w, h: originSlot.bbox.h },
         spriteId: mod.addedSpriteId,
-        fill: originSlot.baseFill,
-        visible: true,
       });
     }
 
     // Paint (and therefore hit-test, pulse, dim) at the inflated render size so
-    // sprites read clearly at postcard scale; centres are unchanged.
-    return out.map((rt) => ({ ...rt, bbox: inflateBBox(rt.bbox) }));
+    // sprites read clearly at postcard scale; centres are unchanged. Raster scenes set
+    // renderScale 1 - their cutouts are already authored at true size.
+    const k = scene.renderScale ?? SPRITE_RENDER_SCALE;
+    return out.map((rt) => ({ ...rt, bbox: inflateBBox(rt.bbox, k) }));
   }, [scene, modifications, visibleSlotIds]);
 
   const targetsById = useMemo(() => new Map(renderTargets.map((r) => [r.id, r])), [renderTargets]);
@@ -197,6 +207,21 @@ export default function SceneView({
     >
       <style>{PULSE_CSS}</style>
 
+      {scene.backgroundImage && (
+        <img
+          src={scene.backgroundImage}
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          // `fill`, not `cover`: the plate is authored at exactly 4:3, so there is
+          // nothing to crop, and `cover` would silently shift every authored bbox.
+          // Absolute positioning is required because .scene-board has p-3 padding and a
+          // normal-flow child would be inset 12px away from the items.
+          style={{ objectFit: 'fill' }}
+        />
+      )}
+
       {scene.background.map((b, i) => (
         <div
           key={`bg-${i}`}
@@ -234,7 +259,27 @@ export default function SceneView({
               filter: dimNonTargets && rt.id !== dimExemptId ? 'saturate(0.92)' : undefined,
             }}
           >
-            {rt.visible && entry && <entry.Component fill={rt.fill} mirrored={rt.mirrored} scale={rt.scale} />}
+            {/* Raster items stay MOUNTED when hidden and go invisible instead. Removing
+                the element would drop its decoded bitmap, risking a decode stall when
+                feedback reveals it - and SceneView relies on removed slots staying in
+                renderTargets so handleTap can still resolve a tap on the empty spot. */}
+            {rt.imageSrc && (
+              <img
+                src={rt.imageSrc}
+                alt=""
+                aria-hidden
+                draggable={false}
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                style={{
+                  objectFit: 'fill',
+                  visibility: rt.visible ? 'visible' : 'hidden',
+                  transform: rt.mirrored ? 'scaleX(-1)' : undefined,
+                }}
+              />
+            )}
+            {!rt.imageSrc && rt.visible && entry && (
+              <entry.Component fill={rt.fill} mirrored={rt.mirrored} scale={rt.scale} />
+            )}
             {pulseSlotId === rt.id && (
               <div className="absolute inset-0 pp-scene-pulse-overlay pointer-events-none rounded-full bg-white/40" />
             )}
