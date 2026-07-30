@@ -24,6 +24,7 @@ import FeedbackView from './FeedbackView';
 import StarCard from './StarCard';
 import { changeCentre } from './geometry';
 import { getScene } from './scenes';
+import { useSceneImages } from './useSceneImages';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -94,6 +95,12 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
   const [showTip, setShowTip] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const [starOutcome, setStarOutcome] = useState<(LevelOutcome & { level: number }) | null>(null);
+
+  // Raster scenes must finish decoding before the encode timer starts, or part of the
+  // memorisation window is spent looking at a blank board. Holding the CLOCK (rather
+  // than just the phase transition) means a slow network lengthens `ready` instead,
+  // and `encoding` always gets its full authored duration.
+  const imagesReady = useSceneImages(trial ? getScene(trial.sceneId) : null);
 
   // Hint budget is 3 per LEVEL, not per trial. This component currently completes the
   // level (via onLevelComplete) after a single trial, so a fresh ref per mount already
@@ -208,12 +215,12 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
 
   // ── 100ms machine clock ─────────────────────────────────────────────────────
   useEffect(() => {
-    if (!trial || showTip) return;
+    if (!trial || showTip || !imagesReady) return;
     const id = setInterval(() => {
       setMachine((prev) => (prev ? reduce(prev, trial, { type: 'TICK', ms: TICK_MS }) : prev));
     }, TICK_MS);
     return () => clearInterval(id);
-  }, [trial, showTip]);
+  }, [trial, showTip, imagesReady]);
 
   // Track the soft-timer remainder while the probe runs so scoring can use the
   // value at the moment of resolution (msLeftInPhase is Infinity when no timer).
@@ -451,7 +458,9 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-6 p-6 text-center">
         <div className="card max-w-md w-full flex flex-col gap-4 items-center p-8">
-          <h3 className="text-h2 font-bold text-body-text">{t('pp.ready.title', 'Look carefully')}</h3>
+          <h3 className="text-h2 font-bold text-body-text">
+            {imagesReady ? t('pp.ready.title', 'Look carefully') : t('pp.loading', 'Loading…')}
+          </h3>
           {kind === 'counted' && (
             <p className="text-h3 text-caption-text">
               {t('pp.trialOf', 'Trial {{i}} of 10', { i: row!.countedTrialsInLevel + 1 })}
