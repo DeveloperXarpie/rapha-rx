@@ -17,11 +17,17 @@ import type { SceneDef } from './types';
  * back-left, the potted plants, the pigeonhole shelf, the postbox, the wall pictures,
  * the ceiling fan, the notice board - are permanently visible and are never probed.
  *
- * bbox values come from assets-src/picture-postcard/post-office/boxes.json. Regenerate
- * with scripts/pp-seed-boxes.py and verify with scripts/pp-preview.py before editing
- * them by hand - the preview's contact-point check catches a misplaced item.
+ * bbox values come from assets-src/picture-postcard/post-office/boxes.resolved.json,
+ * which scripts/pp-cut-scene.py writes on every run. They are NOT boxes.json: that file
+ * holds the authored seed rects, and a silhouette routinely runs a little past its seed
+ * (the satchel's flap most of all). The cutout is emitted at the resolved box, so
+ * painting it into the seed box would squash it. Re-copy after any re-cut.
+ *
+ * Each item also has a shadow layer, sharing the slot's visibility so that removing an
+ * item removes its shadow. See SHADOW_INFLATE in geometry.ts for how it is positioned.
  */
 const ITEM = (id: string) => `/pp/scenes/post-office/items/${id}.webp`;
+const SHADOW = (id: string) => `/pp/scenes/post-office/items/${id}.shadow.webp`;
 
 export const postOffice: SceneDef = {
   id: 'post-office',
@@ -31,25 +37,25 @@ export const postOffice: SceneDef = {
   renderScale: 1,
   pinned: true,
   slots: [
-    { id: 'scale', category: 'weighingScale', imageSrc: ITEM('scale'),
-      bbox: { x: 0.0620, y: 0.3720, w: 0.1820, h: 0.1098 }, salience: 3, centrality: 2 },
-    { id: 'bell', category: 'bell', imageSrc: ITEM('bell'),
-      bbox: { x: 0.4360, y: 0.4290, w: 0.0620, h: 0.0580 }, salience: 1, centrality: 3 },
-    { id: 'parcel', category: 'parcel', imageSrc: ITEM('parcel'),
-      bbox: { x: 0.1592, y: 0.5506, w: 0.1942, h: 0.1669 }, salience: 3, centrality: 2 },
-    { id: 'magnifier', category: 'magnifier', imageSrc: ITEM('magnifier'),
-      bbox: { x: 0.2977, y: 0.6719, w: 0.1638, h: 0.1335 }, salience: 2, centrality: 3 },
-    { id: 'stamp', category: 'rubberStamp', imageSrc: ITEM('stamp'),
-      bbox: { x: 0.4444, y: 0.5971, w: 0.0657, h: 0.1153 }, salience: 2, centrality: 3 },
-    { id: 'ink-pad', category: 'inkPad', imageSrc: ITEM('ink-pad'),
-      bbox: { x: 0.5182, y: 0.5971, w: 0.0981, h: 0.1284 }, salience: 2, centrality: 3 },
-    { id: 'satchel', category: 'satchel', imageSrc: ITEM('satchel'),
-      bbox: { x: 0.6163, y: 0.5890, w: 0.2528, h: 0.2569 }, salience: 3, centrality: 2 },
-    { id: 'postcard', category: 'postcard', imageSrc: ITEM('postcard'),
-      bbox: { x: 0.4424, y: 0.7377, w: 0.1739, h: 0.0809 }, salience: 2, centrality: 3 },
-    { id: 'letter-opener', category: 'letterOpener', imageSrc: ITEM('letter-opener'),
-      bbox: { x: 0.2492, y: 0.8135, w: 0.2811, h: 0.0941 }, salience: 1, centrality: 2 },
-    { id: 'key', category: 'key', imageSrc: ITEM('key'),
-      bbox: { x: 0.7579, y: 0.8722, w: 0.1284, h: 0.0698 }, salience: 1, centrality: 1 },
+    { id: 'scale', category: 'weighingScale', imageSrc: ITEM('scale'), shadowSrc: SHADOW('scale'),
+      bbox: { x: 0.0615, y: 0.3711, w: 0.1816, h: 0.1179 }, salience: 3, centrality: 2 },
+    { id: 'bell', category: 'bell', imageSrc: ITEM('bell'), shadowSrc: SHADOW('bell'),
+      bbox: { x: 0.4358, y: 0.4282, w: 0.0615, h: 0.0608 }, salience: 1, centrality: 3 },
+    { id: 'parcel', category: 'parcel', imageSrc: ITEM('parcel'), shadowSrc: SHADOW('parcel'),
+      bbox: { x: 0.1588, y: 0.5497, w: 0.1941, h: 0.1777 }, salience: 3, centrality: 2 },
+    { id: 'magnifier', category: 'magnifier', imageSrc: ITEM('magnifier'), shadowSrc: SHADOW('magnifier'),
+      bbox: { x: 0.2977, y: 0.6713, w: 0.1637, h: 0.1326 }, salience: 2, centrality: 3 },
+    { id: 'stamp', category: 'rubberStamp', imageSrc: ITEM('stamp'), shadowSrc: SHADOW('stamp'),
+      bbox: { x: 0.4441, y: 0.5967, w: 0.0691, h: 0.1298 }, salience: 2, centrality: 3 },
+    { id: 'ink-pad', category: 'inkPad', imageSrc: ITEM('ink-pad'), shadowSrc: SHADOW('ink-pad'),
+      bbox: { x: 0.5180, y: 0.5967, w: 0.0994, h: 0.1354 }, salience: 2, centrality: 3 },
+    { id: 'satchel', category: 'satchel', imageSrc: ITEM('satchel'), shadowSrc: SHADOW('satchel'),
+      bbox: { x: 0.6160, y: 0.5884, w: 0.2597, h: 0.2716 }, salience: 3, centrality: 2 },
+    { id: 'postcard', category: 'postcard', imageSrc: ITEM('postcard'), shadowSrc: SHADOW('postcard'),
+      bbox: { x: 0.4420, y: 0.7376, w: 0.1761, h: 0.1077 }, salience: 2, centrality: 3 },
+    { id: 'letter-opener', category: 'letterOpener', imageSrc: ITEM('letter-opener'), shadowSrc: SHADOW('letter-opener'),
+      bbox: { x: 0.2486, y: 0.8131, w: 0.2811, h: 0.0958 }, salience: 1, centrality: 2 },
+    { id: 'key', category: 'key', imageSrc: ITEM('key'), shadowSrc: SHADOW('key'),
+      bbox: { x: 0.7576, y: 0.8720, w: 0.1285, h: 0.0691 }, salience: 1, centrality: 1 },
   ],
 };

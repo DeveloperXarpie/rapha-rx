@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { AppliedChange, TrialSpec } from '../../../lib/contentGenerators/picturePostcard';
 import { SPRITES } from './sprites';
 import type { ObjectSlot, SceneDef } from './scenes';
-import { inflateBBox, SPRITE_RENDER_SCALE } from './geometry';
+import { inflateBBox, SHADOW_INFLATE, SPRITE_RENDER_SCALE } from './geometry';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,6 +34,7 @@ interface RenderTarget {
   /** Vector slots carry spriteId + fill; raster slots carry imageSrc (see Task 7). */
   spriteId?: string;
   imageSrc?: string;
+  shadowSrc?: string;
   fill?: string;
   mirrored?: boolean;
   scale?: number;
@@ -108,6 +109,7 @@ export default function SceneView({
       bbox: slot.bbox,
       spriteId: slot.spriteId,
       imageSrc: slot.imageSrc,
+      shadowSrc: slot.shadowSrc,
       fill: slot.baseFill,
       visible: true,
     });
@@ -233,6 +235,25 @@ export default function SceneView({
             height: `${b.h * 100}%`,
             background: b.fill,
             borderRadius: b.kind === 'ellipse' ? '50%' : 0,
+          }}
+        />
+      ))}
+
+      {/* Every shadow paints before every item, not just before its own. The layers are
+          inflated past their slots, so they overlap neighbouring slots - interleaving
+          them would let the key's shadow fall across the satchel. */}
+      {renderTargets.map((rt) => rt.shadowSrc && (
+        <img
+          key={`shadow-${rt.id}`}
+          src={rt.shadowSrc}
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="absolute pointer-events-none"
+          style={{
+            ...boxStyle(inflateBBox(rt.bbox, SHADOW_INFLATE)),
+            objectFit: 'fill',
+            visibility: rt.visible ? 'visible' : 'hidden',
           }}
         />
       ))}

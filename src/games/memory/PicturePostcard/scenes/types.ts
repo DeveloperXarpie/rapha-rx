@@ -15,6 +15,10 @@ export interface ObjectSlot {
   spriteId?: string;
   baseFill?: string;           // the sprite's authored colour for this slot
   imageSrc?: string;           // public path to a transparent cutout
+  /** Raster-only contact shadow, painted under the cutout and hidden with it. Covers
+   *  the slot's bbox inflated by SHADOW_INFLATE, because a shadow falls outside its
+   *  caster. Optional: a slot without one simply casts none. */
+  shadowSrc?: string;
 
   // Vector-only. A slot without these cannot take change classes 2 and 4-7; the
   // generator's supportsClass() enforces that rather than the renderer guessing.

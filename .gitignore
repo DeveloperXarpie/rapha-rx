@@ -31,3 +31,4 @@ dist-ssr
 # Loose source images dropped in the repo root - the committed copies live in assets-src/
 /*.png
 /*.jpg
+__pycache__/

@@ -1,0 +1,10 @@
+# Build-time only. These run the photo-scene asset pipeline (pp-*.py); the cutouts they
+# produce are committed under public/pp/, so none of this reaches the app bundle.
+#
+#   pip install -r scripts/requirements.txt
+#
+# rembg pulls onnxruntime and downloads a ~180 MB model on first use, cached in ~/.u2net.
+opencv-python>=4.8
+numpy>=1.24
+pillow>=10.0
+rembg[cpu]>=2.0

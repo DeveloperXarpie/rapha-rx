@@ -7,11 +7,16 @@ import type { SceneDef } from './scenes';
  */
 const CACHE = new Map<string, HTMLImageElement>();
 
-/** Every image URL a scene paints: the background plate first, then each cutout. */
+/** Every image URL a scene paints: the background plate first, then each cutout and its
+ *  shadow. Shadows count: they are painted during the encoding phase like anything else,
+ *  so a decode still in flight would eat into the measured encode window. */
 export function sceneImageUrls(scene: SceneDef): string[] {
   if (!scene.backgroundImage) return [];
   const urls = [scene.backgroundImage];
-  for (const slot of scene.slots) if (slot.imageSrc) urls.push(slot.imageSrc);
+  for (const slot of scene.slots) {
+    if (slot.imageSrc) urls.push(slot.imageSrc);
+    if (slot.shadowSrc) urls.push(slot.shadowSrc);
+  }
   return urls;
 }
 

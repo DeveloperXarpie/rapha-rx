@@ -13,6 +13,16 @@ import type { SceneDef } from './scenes';
  */
 export const SPRITE_RENDER_SCALE = 1.5;
 
+/**
+ * How far a raster slot's contact-shadow layer extends past its bbox. A shadow falls
+ * outside the object casting it, so the shadow asset is cut from a window this much
+ * larger than the item's.
+ *
+ * Must match SHADOW_INFLATE in scripts/pp-cut-scene.py, which is what decides how much
+ * of the plate each shadow file actually covers.
+ */
+export const SHADOW_INFLATE = 1.6;
+
 export function inflateBBox(
   b: { x: number; y: number; w: number; h: number },
   k: number = SPRITE_RENDER_SCALE,

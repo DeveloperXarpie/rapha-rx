@@ -1,7 +1,7 @@
 """Composite the post-office cutouts onto the clean plate and check they sit on a surface.
 
 Writes four contact sheets:
-  pp-preview-composite.png   the scene as the app will render it
+  pp-preview-composite.png   the scene as the app will render it (shadows included)
   pp-preview-labelled.png    the same, with each bbox stroked and labelled
   pp-preview-sidebyside.png  base | composite at matched scale
   pp-preview-rendersize.png  the composite at the true 670 CSS px render width
@@ -57,6 +57,24 @@ EXPECTED_SURFACE = {
 def composite(clean_bgr, boxes):
     h, w = clean_bgr.shape[:2]
     out = clean_bgr.astype(np.float32).copy()
+
+    # Shadows first, all of them, exactly as SceneView paints them: the layers reach
+    # past their slots, so interleaving would let one item's shadow fall over another.
+    for slot, b in boxes.items():
+        f = OUT / 'items' / f'{slot}.shadow.webp'
+        if not f.exists():
+            continue
+        arr = np.asarray(Image.open(f).convert('RGBA'))
+        ih, iw = arr.shape[:2]
+        x = int((b['x'] + b['w'] / 2) * w - iw / 2)
+        y = int((b['y'] + b['h'] / 2) * h - ih / 2)
+        if x < 0 or y < 0 or y + ih > h or x + iw > w:
+            print(f'  {slot}: shadow overflows the frame, skipped', file=sys.stderr)
+            continue
+        a = arr[:, :, 3:4].astype(np.float32) / 255.0
+        rgb = cv2.cvtColor(arr[:, :, :3], cv2.COLOR_RGB2BGR).astype(np.float32)
+        out[y:y + ih, x:x + iw] = out[y:y + ih, x:x + iw] * (1 - a) + rgb * a
+
     for slot, b in boxes.items():
         item = Image.open(OUT / 'items' / f'{slot}.webp').convert('RGBA')
         arr = np.asarray(item)
@@ -115,7 +133,8 @@ def main() -> None:
 
     clean = cv2.imread(str(SRC / 'clean.webp'))
     base = cv2.imread(str(SRC / 'base.webp'))
-    boxes = json.loads((SRC / 'boxes.json').read_text(encoding='utf-8'))
+    # The RESOLVED boxes, which is what postOffice.ts paints into - see pp-cut-scene.py.
+    boxes = json.loads((SRC / 'boxes.resolved.json').read_text(encoding='utf-8'))
     h, w = clean.shape[:2]
 
     comp = composite(clean, boxes)
