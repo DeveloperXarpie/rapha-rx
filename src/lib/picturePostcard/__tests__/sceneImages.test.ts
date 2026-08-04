@@ -3,11 +3,12 @@ import { sceneImageUrls } from '../../../games/memory/PicturePostcard/useSceneIm
 import { SCENES, getScene } from '../../../games/memory/PicturePostcard/scenes';
 
 describe('sceneImageUrls', () => {
-  it('returns the plate plus every item cutout for a raster scene', () => {
+  it('returns the plate plus every item cutout and its shadow for a raster scene', () => {
     const urls = sceneImageUrls(getScene('post-office'));
-    expect(urls).toHaveLength(11);
+    expect(urls).toHaveLength(21);
     expect(urls[0]).toBe('/pp/scenes/post-office/background.webp');
     expect(urls).toContain('/pp/scenes/post-office/items/key.webp');
+    expect(urls).toContain('/pp/scenes/post-office/items/key.shadow.webp');
     expect(new Set(urls).size).toBe(urls.length);
   });
 
