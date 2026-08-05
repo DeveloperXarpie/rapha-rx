@@ -292,3 +292,22 @@ export function getGardenSequencerParams(score: number): GardenSequencerDynamicP
     anchorFirstStep: score < 0.4,
   };
 }
+
+export interface TrainYardDynamicParams {
+  /** How long the station names stay visible before the blind drops. */
+  signMs: number;
+  /** How long the blind is held down between the names going and the dispatch starting. */
+  retentionHoldMs: number;
+  /** Swaps the four distinct hues for four close warm ones. */
+  similarColours: boolean;
+  lives: number;
+}
+
+export function getTrainYardParams(score: number): TrainYardDynamicParams {
+  return {
+    signMs: Math.round(lerp(8000, 3000, score)),
+    retentionHoldMs: Math.round(lerp(1500, 4000, score)),
+    similarColours: score >= 0.6,
+    lives: 3,
+  };
+}

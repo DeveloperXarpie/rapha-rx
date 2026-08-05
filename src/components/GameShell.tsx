@@ -273,6 +273,14 @@ function computePerformanceRatio(gameId: string, result: LevelResult): number {
     return firstCorrect / Math.max(1, total);
   }
 
+  if (gameId === 'train-yard') {
+    // A train that was sent to the wrong station never counts as first-try, even once it
+    // later reaches the right one — the measure is recall, not persistence.
+    const firstTryCorrect = (m.firstTryCorrect as number) ?? 0;
+    const resets          = (m.resets          as number) ?? 0;
+    return Math.max(0, Math.min(1, firstTryCorrect / 4 - resets * 0.1));
+  }
+
   if (gameId === 'garden-sequencer') {
     const firstCorrect = (m.firstAttemptCorrect as number) ?? 0;
     const resets       = (m.resetCount          as number) ?? 0;

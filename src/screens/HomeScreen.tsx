@@ -29,6 +29,7 @@ const GAME_BY_CATEGORY: Record<GameCategory, { id: string; nameKey: string; icon
     { id: 'shopping-list-recall', nameKey: 'game.shoppingListRecall', icon: '🛒', imageSrc: '/placeholders/games/shopping-list-recall.svg' },
     { id: 'sequence-repeat',      nameKey: 'game.sequenceRepeat',     icon: '🎨', imageSrc: '/placeholders/games/sequence-repeat.svg' },
     { id: 'picture-postcard',     nameKey: 'game.picturePostcard',    icon: '📮', imageSrc: '/placeholders/games/picture-postcard.svg' },
+    { id: 'train-yard',           nameKey: 'game.trainYard',          icon: '🚂', imageSrc: '/placeholders/games/train-yard.svg' },
   ],
   attention: [
     { id: 'spot-focus',    nameKey: 'game.spotFocus',    icon: '👁️', imageSrc: '/placeholders/games/spot-focus.svg' },

@@ -32,3 +32,6 @@ dist-ssr
 /*.png
 /*.jpg
 __pycache__/
+
+# Design handoff scratch (source PSDs/exports, not shipped)
+design_handoff_train_yard_dispatcher/

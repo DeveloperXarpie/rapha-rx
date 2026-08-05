@@ -35,7 +35,7 @@ Kept:
 
 - Encoding -> retention -> dispatch -> round end
 - 3 hearts as the only fail condition
-- RESET, free, returns every train to its lane
+- RESET, free, restarts the round's dispatch
 - Round-complete card
 - The retention blind, the random nudge, and every dispatch effect except the score numeral
 - Reduced-motion handling
@@ -53,6 +53,9 @@ One round = four trains dispatched = one `onLevelComplete` call.
 | `src/lib/dynamicDifficulty.ts` | `TrainYardDynamicParams` type and `getTrainYardParams(score)` |
 | `src/components/GameShell.tsx` | a `computePerformanceRatio` case for `'train-yard'` |
 | `public/locales/{en,hi,kn}/common.json` | `ty.*` caption and station-name keys |
+| `src/session/SessionManager.tsx` | add to the memory rotation pool |
+| `src/screens/DailyQuestionnaire.tsx` | add to its own copy of that pool (the map is duplicated - worth consolidating separately) |
+| `src/screens/HomeScreen.tsx` | add to the memory game tile list |
 
 ### Difficulty parameters
 
@@ -105,10 +108,11 @@ once it later reaches the right station, so the ratio measures recall, not persi
 | `Station.tsx` | station sprite, sign, revealed/hidden/invite states |
 | `Train.tsx` | train sprite, lane/arm/run/back/done states, selection ring, nudge halo, steam |
 | `Blind.tsx` | the retention cover and its progress dots |
-| `effects.tsx` | gold ring bloom, confetti, dim-dip with cross |
+| `effectModel.ts` | effect data: the id sequence, the confetti recipe, lifetimes |
+| `effects.tsx` | gold ring bloom, confetti, dim-dip with cross, floating tick |
 | `palette.ts` | both colour sets, the station-name pool |
 | `sprites.ts` | sprite manifest: url and natural size per asset |
-| `styles.css` | the `ty-*` keyframes |
+| `styles.tsx` | the `ty-*` keyframes, as an inline `<style>` - the house convention |
 
 Plus `src/lib/useImagesReady.ts`, a generic `(urls: string[]) => boolean` decode gate.
 Picture Postcard's `useSceneImages` is the same idea bound to a `SceneDef`; it is left alone, and the
@@ -116,24 +120,53 @@ duplication is logged as a follow-up rather than refactored under this work.
 
 ### Canvas
 
+The whole run sits 80-90px higher than the handoff's, which put the station row deep in the board and
+parked the waiting trains flush against its bottom edge. The crossing band keeps its exact 285px
+height and the spur its 193px, so the lattice geometry is unchanged; only the lane run is shortened.
+`MOUTH_Y` is 272, `ZIG_TOP` 465, `ZIG_BOT` 750 and `LANE_Y` 1022. The board stays 1180 tall because
+the plate can only give up 295 rows of empty grass, which puts its own floor at 1171.
+
 The 800 x 1276 design canvas (HUD 800 x 96, board 800 x 1180) is laid out in design pixels and
 scaled to the GameShell content area with a single `transform: scale(s)`, `s = min(w/800, h/1276)`,
 centred. All handoff coordinates are used unchanged.
 
-The HUD bar keeps its navy geometry and holds only the heart cluster. The board's right-hand column,
-vacated by the Upcoming Trains panel, takes scenery from the sprite sheet (water tower, house,
-crates) so the board does not read as lopsided. Scenery is `pointer-events: none` and paints below
-every interactive layer; the RESET control keeps its `z-index: 7`.
+The HUD bar keeps its navy geometry and holds only the heart cluster.
+
+The board sits on a painted plate, `board-grass.webp`, built by
+`design_handoff_train_yard_dispatcher/source-art/make-board.py`. The plate carries its own trees,
+rocks, flowers, house, water tower, crates, fence and two signals down both edges.
+
+The supplied artwork is 941 x 1672 against the board's 800 x 1180. Cropping would slice a tree off at
+the board edge and stretching would squash every tree, so the script removes exactly 284 rows of
+empty grass and scales the rest uniformly - 1388 rows at the width's own scale factor land on 1180.
+This plate is busy enough that those rows come from six separate bands, found by masking every prop
+over 500px and looking for rows no prop touches; interior joins take a crossfade so the grass texture
+does not step. One tree is erased where the RESET button has to go, because no gap in the left strip
+is tall enough to take the control and its position comes from the handoff.
+
+The overlay adds only what the plate leaves empty: seventeen signals, levers, bushes and flowers in
+the gaps between adjacent columns, centred on 256, 396 and 536. Raising the run closed the apron
+above the station roofs, so the props that sat there are gone. Every plate prop sits at x < 176 or x > 643, which is what makes those gaps
+safe. A check script measures every plate prop and tests all 25 overlay boxes, controls and stations
+against them; the only remaining overlap is the instruction banner clipping one tree corner and two
+flower clusters, which is a UI card over the scene rather than stacked artwork.
+
+Scenery is `pointer-events: none` and paints below every interactive layer; the RESET control keeps
+its `z-index: 7`.
 
 ## Art
 
-Assets are cropped from `public/train-assets/Train_Station_Game_assets.png` (1536 x 1461) by a one-off
-Python/PIL script into alpha-trimmed PNGs under `public/train-assets/sprites/`. The script lives in
-the scratchpad; the PNGs are committed.
+Assets are cropped from the 1536 x 1461 art sheet by
+`design_handoff_train_yard_dispatcher/source-art/extract-sprites.py` into alpha-trimmed PNGs under
+`public/train-assets/sprites/`. Both the script and the PNGs are committed.
 
-Cropped: four station buildings, the straight track tile, tree, bush, flowers, rock, house, water
-tower, crates, fence, heart. The four `Train_*.png` top-down sprites are used as-is in the
-70 x 112 train slot.
+Cropped: four station buildings, one seamless sleeper period of straight track, tree, flowers, rock,
+house, water tower, crates, fence, signal, lever, heart, and the RESET glyph on its own (the button
+face in the art carries an English label, so the runtime draws the button and takes its label from
+i18n). The sheet has no standalone bush - the only ones are tucked against each station's base - so
+one is lifted out of the red station's bottom-left corner by keeping the largest green blob there,
+which drops the stonework behind it. The four `Train_*.png` top-down sprites are used as-is, sized
+62 wide.
 
 Two consequences of using raster art:
 
@@ -144,13 +177,27 @@ Two consequences of using raster art:
    rectangle given in the handoff.
 2. **Diagonals.** The straight track tile is repeated along each segment and rotated to that
    segment's own angle, so sleepers stay perpendicular and rail gauge does not collapse. The same
-   tile is used at 26px for the eight verticals and 17px for the sixteen diagonals.
+   tile is used at 40px for the eight verticals and 24px for the sixteen diagonals - see the bed
+   widths note below.
 
 Trains follow the handoff's three-leg route with `offset-path` / `offset-distance` and
 `offset-rotate: auto 90deg`, so they visibly stay on drawn rails.
 
-Baloo 2 is not in the app's type stack. The game uses the app's existing Inter / Noto stack at the
-handoff's sizes and weights rather than adding a font dependency for one screen.
+Baloo 2 is already imported by `src/styles/index.css` and used by the app's headings, so the game
+uses it at the handoff's sizes and weights with no new font dependency.
+
+The source sheet lives at `design_handoff_train_yard_dispatcher/source-art/`, outside `public/`:
+Workbox precaches every PNG under `public/`, and the 1536x1461 sheet is build input the app never
+serves. `extract-sprites.py` sits beside it and regenerates the crops.
+
+Track bed widths are 40 (verticals) and 24 (diagonals) rather than the handoff's 26 and 17. The
+raster tile's sleeper period is narrower relative to its width than the SVG track's was, so the beds
+are scaled up to keep the art's own proportions; the ratio between the two, and so the narrow waist
+each column takes through the crossing band, is preserved. The verticals overrun the band by 12px
+and paint over the diagonals' square ends.
+
+Stations are sized by height (132) and anchored by their base at `MOUTH_Y + 26`, so all four tunnel
+mouths land on one line whatever each crop's aspect ratio.
 
 ## Phases
 
@@ -191,8 +238,28 @@ Correct and wrong dispatch follow the handoff's timelines exactly, minus the sco
 The random nudge nominates one waiting train when dispatch opens and again after each successful
 dispatch; it clears on any train tap and never points at a station.
 
-RESET returns every train to its lane and clears the selection. It does not restore lives, and it
-increments the `resets` metric.
+RESET restarts the round's dispatch: every train back to its lane and every sign blank again. It is
+disabled mid-animation, so it cannot be used to cancel a dispatch that is about to be wrong, and it
+neither restores lives nor clears the record of which lanes have already been sent wrong. The
+handoff scoped RESET against the undo history; with undo cut, "start the dispatch over" is the
+reading that still does something useful.
+
+The floating tick at the tunnel mouth is kept. In the prototype it renders both `+100` and
+"Not this one" - only the score branch is cut, because the tick carries the game's only
+wrong-dispatch words.
+
+**One tap per train, not two.** The handoff had the player tap a train and then its station. That
+first tap carries no memory load - the train is right there under their finger - so the game puts the
+next waiting train forward already selected, and the player answers with a single tap on a station.
+The chosen train takes the selection ring, the bob and the nudge glow together, so what is being
+asked about is unmistakable.
+
+A fresh train is put forward when dispatch opens, after every successful dispatch, after a wrong
+one's return run, and after a RESET - so the prompt is live for every remaining train and there is no
+state in which none is selected. Tapping a different waiting train switches to it; tapping the
+current one does nothing, since there is no useful "nothing selected" state to fall back to.
+
+While a train is in flight nothing is selected, and the caption reads `ty.caption.sending`.
 
 ### Round end
 
@@ -244,8 +311,11 @@ the bob, sign glow and nudge pulse are suppressed - the nudge keeps its static h
 
 ## Open risks
 
-1. The `similarColours` tier is achieved with a CSS filter over the four-colour art, not a second
-   art set. It may read poorly; the fallback is to drop the lever.
-2. The 800 x 1276 canvas is tall. On a short viewport the scale-to-fit factor may make the trains
-   small. If the smoke test shows this, the fallback is to fit width and scroll vertically rather
-   than shrink.
+1. The `similarColours` tier is achieved with a CSS `hue-rotate` filter over the four-colour art,
+   not a second art set. The filter recolours every pixel of the sprite, not just the body, so it
+   may read poorly. Unverified until the smoke test; the fallback is to drop the lever and lean on
+   the sign-time and retention-hold levers instead.
+2. The 800 x 1276 canvas is tall. Fitting it to a short viewport shrinks every touch target: at a
+   scale of ~0.55 a station is about 72 real pixels on its short edge, under the app's 80px minimum.
+   Trains carry a tap pad wider than the sprite to compensate, but stations do not. If this reads as
+   too small on the target tablet, the fallback is to fit width and scroll the board vertically.

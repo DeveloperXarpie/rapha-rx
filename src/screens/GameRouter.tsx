@@ -4,7 +4,7 @@ import {
   getTodayDifficulty, scoreToLevel,
   getRememberMatchParams, getSpotFocusParams, getMorningRoutineParams, getWordSearchParams,
   getShoppingListParams, getSequenceRepeatParams, getFocusFilterParams,
-  getRecipeBuilderParams, getGardenSequencerParams,
+  getRecipeBuilderParams, getGardenSequencerParams, getTrainYardParams,
 } from '../lib/dynamicDifficulty';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import GameShell, { type LevelResult } from '../components/GameShell';
@@ -22,6 +22,7 @@ import MorningRoutineQuest from '../games/executive/MorningRoutineQuest';
 import RecipeBuilder from '../games/executive/RecipeBuilder';
 import GardenSequencer from '../games/executive/GardenSequencer';
 import PicturePostcard from '../games/memory/PicturePostcard';
+import TrainYard from '../games/memory/TrainYard';
 
 // (all games now use the dynamic difficulty system — no static level imports needed)
 
@@ -45,6 +46,7 @@ type GameEntry = {
 const GAME_REGISTRY: Record<string, GameEntry> = {
   'remember-match':         { component: RememberMatch,       category: 'memory'    },
   'picture-postcard':       { component: PicturePostcard,     category: 'memory'    },
+  'train-yard':             { component: TrainYard,           category: 'memory'    },
   'shopping-list-recall':   { component: ShoppingListRecall,  category: 'memory'    },
   'sequence-repeat':        { component: SequenceRepeat,      category: 'memory'    },
   'spot-focus':             { component: SpotFocus,           category: 'attention' },
@@ -134,6 +136,14 @@ function generateContentForGame(gameId: string, score: number): { levelConfig: L
 
   if (gameId === 'recipe-builder') {
     const params = getRecipeBuilderParams(score);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: undefined,
+    };
+  }
+
+  if (gameId === 'train-yard') {
+    const params = getTrainYardParams(score);
     return {
       levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
       generatedContent: undefined,
