@@ -168,14 +168,16 @@ Open risks.
 src/games/attention/GardenKeeper/
   index.tsx      component: phase machine, timers, spawner, tap handling, HUD, cards
   geometry.ts    canvas constants, BED, buildBed(), depth/size/hit/z-index maths
-  sprites.tsx    CSS-primitive drawing: (species, stage, size) → JSX
+  sprites.ts     CSS-primitive drawing: (species, stage, size) → style strings
   model.ts       cycle records, stage advancement, spawn selection, result maths
   styles.tsx     gk-* keyframes as an inline <style> block
   palette.ts     flower colourways, dried browns, distractor pool
 ```
 
-`model.ts` holds no React. The stage advancement and the result maths are the parts most likely to
-be wrong and the only parts testable without a DOM.
+`model.ts` and `sprites.ts` hold no React. The stage advancement, the result maths and the drawing
+layer are the parts most likely to be wrong, and keeping them free of JSX is what makes them
+testable in vitest's node environment. `art()` therefore returns CSS text per layer and the
+component turns those into elements.
 
 ### Canvas
 
