@@ -67,14 +67,20 @@ function Backdrop() {
           pointerEvents: 'none', userSelect: 'none',
         }}
       />
-      {/* Lantern on the grass to the left of the bed, clear of the planting rectangle. */}
+      {/*
+        Lantern standing on the grass verge at the top left, among the border flowers.
+        It has to clear the planting rectangle, which starts at BED.x = 110, and the plate
+        leaves only a narrow margin either side of the soil - so this is the one spot on
+        the board where it is both visible and out of the way.
+      */}
       <img
         src={LANTERN_URL}
         alt=""
         draggable={false}
         style={{
-          position: 'absolute', left: 8, top: BOARD_H - 300, width: 104,
-          pointerEvents: 'none', userSelect: 'none', opacity: 0.96,
+          position: 'absolute', left: 6, top: 150, width: 118,
+          pointerEvents: 'none', userSelect: 'none',
+          filter: 'drop-shadow(0 6px 10px rgba(20,40,12,.35))',
         }}
       />
     </>
@@ -147,12 +153,14 @@ function Hud({ state, params, t }: { state: RoundState; params: GardenKeeperDyna
  * the whole plant is one <img> anchored at the soil line, and the growth and droop
  * animations pivot there via transformOrigin.
  */
-function PlantView({ plant, stage, active, remain, fx, reduced, onTap, playing }: {
+function PlantView({ plant, stage, active, until, windowMs, fx, reduced, onTap, playing }: {
   plant: Plant;
   stage: Stage | null;
   active: boolean;
-  /** Fraction of the thirst window still open, 1 down to 0. Drives the ring. */
-  remain: number;
+  /** Wall-clock deadline of this plant's thirst window, or null when it has none. */
+  until: number | null;
+  /** Full length of the window, so the ring knows what fraction is left. */
+  windowMs: number;
   /** Transient per-plant feedback: a shake for a wrong tap, a bounce for a good one. */
   fx: 'shake' | 'watered' | undefined;
   reduced: boolean;
@@ -161,11 +169,34 @@ function PlantView({ plant, stage, active, remain, fx, reduced, onTap, playing }
 }) {
   const recede = recedeFor(plant.depth);
   const ringSize = plant.hit * 1.24;
+  const ringRef = useRef<HTMLDivElement>(null);
 
-  // Green while there is time, amber past halfway, red in the last fifth. The colour is
-  // the second channel after the arc length, so the state reads even in peripheral vision.
-  const ringCol = ringColour(remain);
-  const deg = ringSweepDeg(remain);
+  /**
+   * The ring is animated by writing CSS custom properties straight onto its node on every
+   * animation frame, not by re-rendering.
+   *
+   * Driving it from React state meant it could only move as often as the round ticked -
+   * 10 times a second - which read as visibly jagged. Raising the tick rate would have
+   * re-rendered the whole bed 60 times a second to move one arc.
+   *
+   * This keeps the property that made the ticker attractive in the first place: `remain`
+   * is still computed from the same wall-clock deadline the reducer scores against, so a
+   * throttled tab cannot leave the ring disagreeing with whether a tap counted.
+   */
+  useEffect(() => {
+    const el = ringRef.current;
+    if (!el || !active || until === null) return;
+
+    let raf = 0;
+    const frame = () => {
+      const remain = (until - Date.now()) / windowMs;
+      el.style.setProperty('--gk-deg', `${ringSweepDeg(remain)}deg`);
+      el.style.setProperty('--gk-col', ringColour(remain));
+      raf = requestAnimationFrame(frame);
+    };
+    frame();
+    return () => cancelAnimationFrame(raf);
+  }, [active, until, windowMs]);
 
   // Figure and ground: the plant asking for water is the only thing at full saturation.
   const filter = active
@@ -211,18 +242,22 @@ function PlantView({ plant, stage, active, remain, fx, reduced, onTap, playing }
         throttled, and the player would see a ring that disagrees with whether their tap
         counted.
       */}
-      <div style={{
-        position: 'absolute', left: '50%', top: '62%', transform: 'translate(-50%,-50%)',
-        width: ringSize, height: ringSize, borderRadius: '50%',
-        pointerEvents: 'none',
-        opacity: active ? 1 : 0,
-        background: `conic-gradient(${ringCol} 0deg ${deg}deg, ${COLOURS.ringTrack} ${deg}deg 360deg)`,
-        WebkitMask: 'radial-gradient(circle, transparent 0 60%, #000 61%)',
-        mask: 'radial-gradient(circle, transparent 0 60%, #000 61%)',
-        ...(active && !reduced
-          ? { animation: `gk-ringin 260ms ${EASE} both` }
-          : { transition: 'opacity 260ms ease' }),
-      }} />
+      <div
+        ref={ringRef}
+        style={{
+          position: 'absolute', left: '50%', top: '62%', transform: 'translate(-50%,-50%)',
+          width: ringSize, height: ringSize, borderRadius: '50%',
+          pointerEvents: 'none',
+          opacity: active ? 1 : 0,
+          // The two custom properties are rewritten every frame by the effect above.
+          background: `conic-gradient(var(--gk-col, ${COLOURS.ringFull}) 0deg var(--gk-deg, 360deg), ${COLOURS.ringTrack} var(--gk-deg, 360deg) 360deg)`,
+          WebkitMask: 'radial-gradient(circle, transparent 0 60%, #000 61%)',
+          mask: 'radial-gradient(circle, transparent 0 60%, #000 61%)',
+          ...(active && !reduced
+            ? { animation: `gk-ringin 260ms ${EASE} both` }
+            : { transition: 'opacity 260ms ease' }),
+        }}
+      />
 
       <div style={{
         position: 'absolute', left: 0, bottom: 0, width: '100%', height: plant.hit,
@@ -303,14 +338,6 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
   const [plants] = useState<Plant[]>(() => buildBed(params));
   const [state, dispatch] = useReducer(roundReducer, params, initialRoundState);
   const [effects, setEffects] = useState<Effect[]>([]);
-  /**
-   * Wall-clock read, refreshed by the same 100ms ticker that advances the round.
-   *
-   * The rings need a live `now` to compute how much of each window is left. Reading
-   * Date.now() during render would be impure and would not re-render on its own, so the
-   * ticker pushes it into state instead.
-   */
-  const [now, setNow] = useState(0);
   /** Transient per-plant tap feedback, keyed by plant id. */
   const [plantFx, setPlantFx] = useState<Record<string, 'shake' | 'watered' | undefined>>({});
 
@@ -392,12 +419,9 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
     dispatch({ type: 'start', now: startedAt, plantIds: flowerIds, params });
     // Round end runs on its own deadline timer, never on the display ticker.
     endRef.current = window.setTimeout(() => finish('time'), params.roundDurationMs);
-    setNow(startedAt);
-    tickRef.current = window.setInterval(() => {
-      const t = Date.now();
-      setNow(t);
-      dispatch({ type: 'tick', now: t });
-    }, 100);
+    // 100ms is plenty for the round clock and the stage transitions. The countdown rings
+    // no longer ride on this: they animate themselves per frame.
+    tickRef.current = window.setInterval(() => dispatch({ type: 'tick', now: Date.now() }), 100);
     // First sprout after 900ms, then on a steady interval for the rest of the round.
     kickRef.current = window.setTimeout(() => {
       spawnOnce();
@@ -506,18 +530,14 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
             {plants.map((plant) => {
               const c = state.cycles[plant.id];
               const active = c?.stage === 'sprouted';
-              // Same wall-clock deadline the reducer scores against, so the ring can
-              // never disagree with whether a tap landed in time.
-              const remain = active && c.until !== null
-                ? (c.until - now) / params.thirstWindowMs
-                : 0;
               return (
                 <PlantView
                   key={plant.id}
                   plant={plant}
                   stage={c?.stage ?? null}
                   active={active}
-                  remain={remain}
+                  until={active ? c.until : null}
+                  windowMs={params.thirstWindowMs}
                   fx={plantFx[plant.id]}
                   reduced={reduced}
                   playing={state.phase === 'playing'}
