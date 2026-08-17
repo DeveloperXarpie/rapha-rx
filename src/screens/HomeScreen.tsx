@@ -36,6 +36,7 @@ const GAME_BY_CATEGORY: Record<GameCategory, { id: string; nameKey: string; icon
     { id: 'spot-focus',    nameKey: 'game.spotFocus',    icon: '👁️', imageSrc: '/placeholders/games/spot-focus.svg' },
     { id: 'word-search',   nameKey: 'game.wordSearch',   icon: '🔤', imageSrc: '/placeholders/games/word-search.svg' },
     { id: 'focus-filter',  nameKey: 'game.focusFilter',  icon: '🔎', imageSrc: '/placeholders/games/focus-filter.svg' },
+    { id: 'garden-keeper', nameKey: 'game.gardenKeeper', icon: '🌻', imageSrc: '/placeholders/games/garden-keeper.svg' },
   ],
   executive: [
     { id: 'morning-routine-quest', nameKey: 'game.morningRoutine', icon: '☀️', imageSrc: '/placeholders/games/morning-routine-quest.svg' },

@@ -7,6 +7,7 @@ import { adjustDifficulty, scoreLevelLabel } from '../lib/dynamicDifficulty';
 import { useAppStore } from '../store';
 import { Button } from './ui/Button';
 import type { LevelConfig } from '../games/types';
+import { gardenKeeperPerformance } from '../games/attention/GardenKeeper/model';
 
 export interface LevelResult {
   levelId: string;
@@ -299,6 +300,16 @@ function computePerformanceRatio(gameId: string, result: LevelResult): number {
     const serveRatio  = itemsServed / Math.max(1, itemsRequested);
     const wastePenalty = Math.min(0.3, dishesBurnt * 0.05);
     return Math.max(0, Math.min(1, serveRatio - wastePenalty));
+  }
+
+  if (gameId === 'garden-keeper') {
+    // A deliberate divergence from the house pattern of inlining each game's ratio: this
+    // maths is unit-tested against the round model, and a second copy here would drift.
+    return gardenKeeperPerformance({
+      watered: (m.watered as number) ?? 0,
+      targetCount: (m.targetCount as number) ?? 1,
+      falseTaps: (m.falseTaps as number) ?? 0,
+    });
   }
 
   if (gameId === 'market-memory') {

@@ -5,7 +5,7 @@ import {
   getRememberMatchParams, getSpotFocusParams, getMorningRoutineParams, getWordSearchParams,
   getShoppingListParams, getSequenceRepeatParams, getFocusFilterParams,
   getRecipeBuilderParams, getGardenSequencerParams, getTrainYardParams,
-  getServeGuestsParams, getMarketMemoryParams,
+  getServeGuestsParams, getMarketMemoryParams, getGardenKeeperParams,
 } from '../lib/dynamicDifficulty';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import GameShell, { type LevelResult } from '../components/GameShell';
@@ -19,6 +19,7 @@ import SequenceRepeat from '../games/memory/SequenceRepeat';
 import SpotFocus from '../games/attention/SpotFocus';
 import WordSearch from '../games/attention/WordSearch';
 import FocusFilter from '../games/attention/FocusFilter';
+import GardenKeeper from '../games/attention/GardenKeeper';
 import MorningRoutineQuest from '../games/executive/MorningRoutineQuest';
 import RecipeBuilder from '../games/executive/RecipeBuilder';
 import GardenSequencer from '../games/executive/GardenSequencer';
@@ -56,6 +57,7 @@ const GAME_REGISTRY: Record<string, GameEntry> = {
   'spot-focus':             { component: SpotFocus,           category: 'attention' },
   'word-search':            { component: WordSearch,          category: 'attention' },
   'focus-filter':           { component: FocusFilter,         category: 'attention' },
+  'garden-keeper':          { component: GardenKeeper,        category: 'attention' },
   'morning-routine-quest':  { component: MorningRoutineQuest, category: 'executive' },
   'recipe-builder':         { component: RecipeBuilder,       category: 'executive' },
   'garden-sequencer':       { component: GardenSequencer,     category: 'executive' },
@@ -157,6 +159,14 @@ function generateContentForGame(gameId: string, score: number): { levelConfig: L
 
   if (gameId === 'market-memory') {
     const params = getMarketMemoryParams(score);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: undefined,
+    };
+  }
+
+  if (gameId === 'garden-keeper') {
+    const params = getGardenKeeperParams(score);
     return {
       levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
       generatedContent: undefined,

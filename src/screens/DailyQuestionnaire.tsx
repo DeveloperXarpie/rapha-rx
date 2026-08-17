@@ -8,7 +8,7 @@ import type { GameCategory } from '../styles/tokens';
 
 const GAME_BY_CATEGORY: Record<GameCategory, string[]> = {
   memory:    ['remember-match', 'shopping-list-recall', 'sequence-repeat', 'picture-postcard', 'train-yard', 'market-memory'],
-  attention: ['spot-focus', 'word-search', 'focus-filter'],
+  attention: ['spot-focus', 'word-search', 'focus-filter', 'garden-keeper'],
   executive: ['morning-routine-quest', 'recipe-builder', 'garden-sequencer'],
 };
 

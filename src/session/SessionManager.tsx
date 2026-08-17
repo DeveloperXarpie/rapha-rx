@@ -7,7 +7,7 @@ const ALL_CATEGORIES: GameCategory[] = ['memory', 'attention', 'executive'];
 
 const GAME_BY_CATEGORY: Record<GameCategory, string[]> = {
   memory:    ['remember-match', 'shopping-list-recall', 'sequence-repeat', 'picture-postcard', 'train-yard', 'market-memory'],
-  attention: ['spot-focus', 'focus-filter', 'word-search'],
+  attention: ['spot-focus', 'focus-filter', 'word-search', 'garden-keeper'],
   executive: ['morning-routine-quest', 'recipe-builder', 'garden-sequencer'],
 };
 

@@ -16,10 +16,26 @@ export const FLOWER_SPECIES = [
 export type FlowerSpecies = (typeof FLOWER_SPECIES)[number];
 
 export const COLOURS = {
-  hudTop: '#5B2E8E',
-  hudBot: '#3F1F66',
-  hudEdge: '#2A1246',
-  hudLabel: '#D8C4F0',
+  hudTop: '#2C5580',
+  hudBot: '#1E3E63',
+  hudEdge: '#14304F',
+  hudLabel: '#9FC0DE',
+  clockLow: '#FFB4A8',
+
+  heartFilled: '#D7443C',
+  heartSpent: 'rgba(255,255,255,.22)',
+
+  barTrack: 'rgba(10,28,48,.55)',
+  barFillA: '#8FD65C',
+  barFillB: '#62B33C',
+
+  cardSurface: '#FFF9EA',
+  cardHeading: '#2E4A1E',
+  legendBrown: '#6B5334',
+  legendBlue: '#2F6BA8',
+  warning: '#C13A33',
+  buttonGreen: '#6BA83C',
+  buttonGreenEdge: '#4E7C29',
 
   skyTop: '#9FD8F0',
   skyBot: '#CFEBF7',
