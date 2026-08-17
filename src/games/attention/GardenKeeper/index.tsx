@@ -494,6 +494,28 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
     }, 900);
   }, [pushEffect, flashPlant, t, finish, params.targetCount]);
 
+  // ─── Presentation ───────────────────────────────────────────────────────────
+
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.5);
+
+  useEffect(() => {
+    function measure() {
+      const el = wrapRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      // Width comes from the layout; height cannot, because this sits inside a flex column
+      // that sizes to its content. Measuring against the viewport avoids that circularity.
+      const availH = Math.max(360, window.innerHeight - rect.top - 16);
+      setScale(Math.min(rect.width / CANVAS_W, availH / CANVAS_H));
+    }
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (wrapRef.current) ro.observe(wrapRef.current);
+    window.addEventListener('resize', measure);
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
+  }, []);
+
   const handleNext = useCallback(() => {
     if (reported.current || !state.outcome) return;
     reported.current = true;
@@ -514,22 +536,22 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
   }
 
   return (
-    // The canvas is transformed, so it no longer contributes its scaled height to
-    // layout. The spacer reserves it, or the game overlaps whatever GameShell renders
-    // below it.
-    <div style={{ containerType: 'inline-size', width: '100%' }}>
+    // Same scale-to-fit wrapper as Train Yard and Market Memory, rather than the plan's
+    // container-query version. That one scaled to 100cqw with a top-left origin, so the
+    // board filled whatever width it was handed - much larger than the other games on a
+    // wide screen - and sat hard against the left edge. This measures against both the
+    // available width and the remaining viewport height, takes the smaller, and centres.
+    <div ref={wrapRef} style={{ width: '100%', height: CANVAS_H * scale, overflow: 'hidden' }}>
       <GardenKeeperStyles />
-      <div style={{ position: 'relative', width: '100%', height: `calc(100cqw * ${CANVAS_H} / ${CANVAS_W})` }}>
-        <div
-          style={{
-            position: 'absolute', top: 0, left: 0,
-            width: CANVAS_W, height: CANVAS_H,
-            transform: `scale(calc(100cqw / ${CANVAS_W}))`,
-            transformOrigin: 'top left',
-            fontFamily: "'Baloo 2', sans-serif",
-            userSelect: 'none',
-          }}
-        >
+      <div
+        style={{
+          width: CANVAS_W, height: CANVAS_H, margin: '0 auto',
+          transform: `scale(${scale})`, transformOrigin: 'top center',
+          position: 'relative',
+          fontFamily: "'Baloo 2', sans-serif",
+          userSelect: 'none',
+        }}
+      >
           <Hud state={state} params={params} t={t} />
 
           <div style={{ position: 'relative', width: CANVAS_W, height: BOARD_H, overflow: 'hidden' }}>
@@ -707,7 +729,6 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
             )}
           </div>
         </div>
-      </div>
     </div>
   );
 }
