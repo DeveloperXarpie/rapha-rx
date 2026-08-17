@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { getGardenKeeperParams } from '../../../../lib/dynamicDifficulty';
-import { BED, buildBed, columnsFor, hitSize, spriteFor, zIndexFor, recedeFor } from '../geometry';
-import { FLOWER_SPECIES } from '../palette';
+import {
+  BED, buildBed, columnsFor, hitSize, recedeFor, ringColour, ringSweepDeg, spriteFor, zIndexFor,
+} from '../geometry';
+import { COLOURS, FLOWER_SPECIES } from '../palette';
 
 /** Deterministic generator: cycles a fixed ramp so jitter, picks and shuffles are pinned. */
 function seededRng() {
@@ -107,5 +109,36 @@ describe('depth helpers', () => {
 
   it('caps the depth bonus so it can never reach the active band', () => {
     expect(zIndexFor({ y: BED.y + 100000 }, false)).toBe(7);
+  });
+});
+
+describe('countdown ring', () => {
+  it('sweeps a full circle at the start of the window and nothing at the end', () => {
+    expect(ringSweepDeg(1)).toBe(360);
+    expect(ringSweepDeg(0)).toBe(0);
+    expect(ringSweepDeg(0.5)).toBe(180);
+  });
+
+  it('clamps a late tick instead of sweeping past a full circle', () => {
+    // The ticker can fire after `until`, which makes remain negative, or before the
+    // deadline is stamped, which makes it exceed 1. Neither may wrap the arc.
+    expect(ringSweepDeg(-0.4)).toBe(0);
+    expect(ringSweepDeg(1.8)).toBe(360);
+  });
+
+  it('runs green, then amber, then red as the window closes', () => {
+    expect(ringColour(1)).toBe(COLOURS.ringFull);
+    expect(ringColour(0.51)).toBe(COLOURS.ringFull);
+    expect(ringColour(0.5)).toBe(COLOURS.ringLow);
+    expect(ringColour(0.23)).toBe(COLOURS.ringLow);
+    expect(ringColour(0.22)).toBe(COLOURS.ringCritical);
+    expect(ringColour(0)).toBe(COLOURS.ringCritical);
+  });
+
+  it('gives all three states distinct colours', () => {
+    // Colour is the second channel after arc length. If two states shared a colour the
+    // redundancy would be gone for anyone reading colour first.
+    const seen = new Set([ringColour(1), ringColour(0.4), ringColour(0.1)]);
+    expect(seen.size).toBe(3);
   });
 });

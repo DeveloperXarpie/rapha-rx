@@ -1,5 +1,5 @@
 import type { GardenKeeperDynamicParams } from '../../../lib/dynamicDifficulty';
-import { FLOWER_SPECIES, type FlowerSpecies } from './palette';
+import { COLOURS, FLOWER_SPECIES, type FlowerSpecies } from './palette';
 
 // ─── Canvas ───────────────────────────────────────────────────────────────────
 
@@ -59,6 +59,25 @@ export function columnsFor(plantCount: number): number {
 /** The plant asking for water always paints above the bed. */
 export function zIndexFor(plant: Pick<Plant, 'y'>, active: boolean): number {
   return (active ? 20 : 1) + Math.min(6, Math.round((plant.y - BED.y) / 140));
+}
+
+// ─── Countdown ring ───────────────────────────────────────────────────────────
+
+/**
+ * Ring colour for the fraction of the thirst window still open.
+ *
+ * The swept arc is the primary signal and colour is the second, so this stays legible to
+ * someone who cannot separate green from amber. Thresholds are the prototype's.
+ */
+export function ringColour(remain: number): string {
+  if (remain > 0.5) return COLOURS.ringFull;
+  if (remain > 0.22) return COLOURS.ringLow;
+  return COLOURS.ringCritical;
+}
+
+/** Degrees of arc still filled, clamped so a late tick cannot sweep past a full circle. */
+export function ringSweepDeg(remain: number): number {
+  return Math.max(0, Math.min(1, remain)) * 360;
 }
 
 /** Sprite file for a plant, relative to the public root. */

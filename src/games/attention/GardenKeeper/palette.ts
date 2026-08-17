@@ -51,10 +51,11 @@ export const COLOURS = {
   ink: '#4A3A22',
   inkDeep: '#3A2C18',
 
-  ringTrack: 'rgba(255,255,255,.35)',
-  ringFull: '#7ED957',
-  ringLow: '#F0A92B',
-  ringCritical: '#D7443C',
+  /** The unspent part of the countdown ring. */
+  ringTrack: 'rgba(255,255,255,.22)',
+  ringFull: '#8FD65C',
+  ringLow: '#FFC24D',
+  ringCritical: '#FF7A6B',
 
   heart: '#D7443C',
   success: '#3F7E2B',

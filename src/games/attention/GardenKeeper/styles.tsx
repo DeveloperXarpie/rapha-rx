@@ -49,6 +49,23 @@ export const KEYFRAMES = `
   to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
 }
 
+@keyframes gk-ringin {
+  from { opacity: 0; transform: translate(-50%,-50%) scale(.72); }
+  to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+}
+
+@keyframes gk-halo {
+  0%   { transform: translate(-50%,-50%) scale(1);    opacity: .85; }
+  50%  { transform: translate(-50%,-50%) scale(1.07); opacity: 1; }
+  100% { transform: translate(-50%,-50%) scale(1);    opacity: .85; }
+}
+
+@keyframes gk-watered {
+  0%   { transform: translate(-50%, -100%) scale(1); }
+  40%  { transform: translate(-50%, -100%) scale(1.12); }
+  100% { transform: translate(-50%, -100%) scale(1); }
+}
+
 @keyframes gk-pulse {
   0%   { box-shadow: 0 0 0 0 rgba(126,217,87,0); }
   50%  { box-shadow: 0 0 0 12px rgba(126,217,87,.45); }
