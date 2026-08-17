@@ -3,7 +3,20 @@ import type { GardenKeeperDynamicParams } from '../../../lib/dynamicDifficulty';
 /** How long a missed plant stays browned and drooping before it returns to seed. */
 export const DRIED_HOLD_MS = 2600;
 
-export type Stage = 'seed' | 'sprouted' | 'dried';
+/**
+ * A flower's life cycle.
+ *
+ * - `seed`      a bare sprout, dormant. The spawner can raise it.
+ * - `sprouted`  in bloom and thirsty, ring closing. The only waterable stage.
+ * - `thriving`  in bloom and watered. Watering buys it life, it does not reset it to a
+ *               sprout: the flower stays up until its own timer runs out.
+ * - `dried`     wilted, briefly, before returning to seed.
+ *
+ * Both `sprouted` and `thriving` end at `dried`. The difference is what it cost: a
+ * `sprouted` window that closes is a miss and is counted, whereas a `thriving` flower
+ * reaching the end of its life is just the cycle turning, and is not.
+ */
+export type Stage = 'seed' | 'sprouted' | 'thriving' | 'dried';
 export type Outcome = 'complete' | 'time' | 'hearts';
 
 export interface CycleRecord {
@@ -35,7 +48,7 @@ export type RoundAction =
   | { type: 'start'; now: number; plantIds: string[]; params: GardenKeeperDynamicParams }
   | { type: 'tick'; now: number }
   | { type: 'sprout'; now: number; id: string; thirstWindowMs: number }
-  | { type: 'water'; now: number; id: string }
+  | { type: 'water'; now: number; id: string; bloomHoldMs: number }
   | { type: 'falseTap' }
   | { type: 'resume'; now: number }
   | { type: 'finish'; now: number; outcome: Outcome };
@@ -92,6 +105,12 @@ export function roundReducer(s: RoundState, a: RoundAction): RoundState {
           cycles[id] = { stage: 'dried', thirstyAt: null, until: a.now + DRIED_HOLD_MS, seq: c.seq };
           driedNow++;
           changed = true;
+        } else if (c.stage === 'thriving') {
+          // A watered flower reaching the end of its extended life. It wilts like any
+          // other, but it is not a miss: the player did everything asked of it, so this
+          // must not touch driedUp.
+          cycles[id] = { stage: 'dried', thirstyAt: null, until: a.now + DRIED_HOLD_MS, seq: c.seq };
+          changed = true;
         } else if (c.stage === 'dried') {
           cycles[id] = { stage: 'seed', thirstyAt: null, until: null, seq: c.seq };
           changed = true;
@@ -120,9 +139,14 @@ export function roundReducer(s: RoundState, a: RoundAction): RoundState {
       const c = s.cycles[a.id];
       // Watering is valid only while the plant is sprouted and its ring is still closing.
       if (!c || c.stage !== 'sprouted' || c.thirstyAt === null) return s;
+      // Watering extends the flower's life rather than resetting it to a sprout: it stays
+      // in bloom, drops its ring, and lives until its own timer wilts it.
       return {
         ...s,
-        cycles: { ...s.cycles, [a.id]: { stage: 'seed', thirstyAt: null, until: null, seq: c.seq } },
+        cycles: {
+          ...s.cycles,
+          [a.id]: { stage: 'thriving', thirstyAt: null, until: a.now + a.bloomHoldMs, seq: c.seq },
+        },
         watered: s.watered + 1,
         reactions: [...s.reactions, a.now - c.thirstyAt],
       };
@@ -140,7 +164,7 @@ export function roundReducer(s: RoundState, a: RoundAction): RoundState {
       // dried: the player never had the chance the score would be assuming.
       const cycles: Record<string, CycleRecord> = { ...s.cycles };
       for (const [id, c] of Object.entries(s.cycles)) {
-        if (c.stage === 'sprouted' && c.until !== null && a.now >= c.until) {
+        if ((c.stage === 'sprouted' || c.stage === 'thriving') && c.until !== null && a.now >= c.until) {
           cycles[id] = { stage: 'seed', thirstyAt: null, until: null, seq: c.seq };
         }
       }

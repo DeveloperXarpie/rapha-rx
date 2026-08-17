@@ -33,7 +33,10 @@ export function wiltedUrl(species: FlowerSpecies): string {
  *
  * - `seed`      a bare sprout. Dormant, carries no ring, and is not worth a tap.
  * - `sprouted`  the species in bloom, wearing the countdown ring. This is the target.
- * - `dried`     the species wilted. The window closed unwatered.
+ * - `thriving`  the same bloom, watered, with no ring. Watering buys the flower life
+ *               rather than resetting it, so it must not drop back to a sprout.
+ * - `dried`     the species wilted, whether its window closed unwatered or its bloom
+ *               simply ran out.
  *
  * A wilted distractor uses the same wilted bitmap as a dried flower, and that is
  * deliberate rather than a collision: a flower the player let die *becomes* something
@@ -42,7 +45,7 @@ export function wiltedUrl(species: FlowerSpecies): string {
  */
 export function spriteUrl(kind: PlantKind, species: FlowerSpecies, stage: Stage): string {
   if (kind === 'wilted') return wiltedUrl(species);
-  if (stage === 'sprouted') return bloomUrl(species);
+  if (stage === 'sprouted' || stage === 'thriving') return bloomUrl(species);
   if (stage === 'dried') return wiltedUrl(species);
   return SPROUT_URL;
 }

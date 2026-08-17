@@ -9,6 +9,7 @@ describe('getGardenKeeperParams', () => {
       targetCount: 8,
       spawnIntervalMs: 3000,
       thirstWindowMs: 6000,
+      bloomHoldMs: 11000,
       maxConcurrentThirsty: 1,
       roundDurationMs: 90000,
       lives: 3,
@@ -22,6 +23,7 @@ describe('getGardenKeeperParams', () => {
       targetCount: 20,
       spawnIntervalMs: 1200,
       thirstWindowMs: 2800,
+      bloomHoldMs: 6500,
       maxConcurrentThirsty: 3,
       roundDurationMs: 90000,
       lives: 3,
@@ -54,6 +56,15 @@ describe('getGardenKeeperParams', () => {
       const p = getGardenKeeperParams(Math.min(1, s));
       const windows = Math.floor((p.roundDurationMs - 900) / p.spawnIntervalMs) * p.maxConcurrentThirsty;
       expect(windows).toBeGreaterThan(p.targetCount);
+    }
+  });
+
+  it('always leaves a watered flower in bloom longer than it was thirsty', () => {
+    // The bloom is the reward for a correct tap. If it were shorter than the window the
+    // player had to react in, watering would feel like it bought nothing.
+    for (let s = 0; s <= 1.0001; s += 0.05) {
+      const p = getGardenKeeperParams(Math.min(1, s));
+      expect(p.bloomHoldMs).toBeGreaterThan(p.thirstWindowMs);
     }
   });
 

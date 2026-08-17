@@ -337,6 +337,13 @@ export interface GardenKeeperDynamicParams {
   spawnIntervalMs: number;
   /** How long a sprouted plant stays waterable before it dries up. */
   thirstWindowMs: number;
+  /**
+   * How long a watered flower stays in bloom before its own timer wilts it.
+   *
+   * Watering buys life rather than resetting the plant to a sprout, so this is the
+   * reward for a correct tap: the longer it is, the longer the bed stays in flower.
+   */
+  bloomHoldMs: number;
   /** Ceiling on simultaneously sprouted plants. */
   maxConcurrentThirsty: number;
   roundDurationMs: number;
@@ -358,6 +365,7 @@ export function getGardenKeeperParams(score: number): GardenKeeperDynamicParams 
     targetCount: lerpInt(8, 20, s),
     spawnIntervalMs: lerpInt(3000, 1200, s),
     thirstWindowMs: lerpInt(6000, 2800, s),
+    bloomHoldMs: lerpInt(11000, 6500, s),
     maxConcurrentThirsty: s < 0.4 ? 1 : s < 0.75 ? 2 : 3,
     roundDurationMs: 90000,
     lives: 3,

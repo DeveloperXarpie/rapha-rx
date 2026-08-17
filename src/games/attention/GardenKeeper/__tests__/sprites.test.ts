@@ -44,6 +44,12 @@ describe('spriteUrl', () => {
     expect(spriteUrl('flower', 'rose', 'sprouted')).toBe('/garden-assets/rose-bloom.png');
   });
 
+  it('keeps a watered flower in bloom, not back at a sprout', () => {
+    // Watering extends the flower's life. Dropping it to the sprout bitmap would show
+    // the player their correct tap undoing itself.
+    expect(spriteUrl('flower', 'rose', 'thriving')).toBe('/garden-assets/rose-bloom.png');
+  });
+
   it('shows the species wilted once its window closed', () => {
     expect(spriteUrl('flower', 'rose', 'dried')).toBe('/garden-assets/rose-wilted.png');
   });
@@ -51,7 +57,7 @@ describe('spriteUrl', () => {
   it('always shows a distractor wilted, whatever stage it is nominally in', () => {
     // Distractors never cycle, so no stage of theirs may ever produce a bloom - that
     // would present an untappable plant as a target and cost the player a heart.
-    for (const stage of ['seed', 'sprouted', 'dried'] as const) {
+    for (const stage of ['seed', 'sprouted', 'thriving', 'dried'] as const) {
       expect(spriteUrl('wilted', 'daisy', stage)).toBe('/garden-assets/daisy-wilted.png');
     }
   });

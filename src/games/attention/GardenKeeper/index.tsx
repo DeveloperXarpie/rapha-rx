@@ -508,7 +508,7 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
           delay: Math.round(180 + i * 34 + rnd(0, 22)),
         }, FALL_MS + 180 + i * 34);
       }
-      dispatch({ type: 'water', now: Date.now(), id: plant.id });
+      dispatch({ type: 'water', now: Date.now(), id: plant.id, bloomHoldMs: params.bloomHoldMs });
       if (s.watered + 1 >= params.targetCount) window.setTimeout(() => finish('complete'), 620);
       return;
     }
@@ -521,7 +521,7 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
         : t('gk.toast.notReady', 'Not ready yet'),
       colour: '#DCEBF7',
     }, 900);
-  }, [pushEffect, flashPlant, t, finish, params.targetCount]);
+  }, [pushEffect, flashPlant, t, finish, params.targetCount, params.bloomHoldMs]);
 
   // ─── Presentation ───────────────────────────────────────────────────────────
 

@@ -39,9 +39,18 @@ describe('sprout', () => {
   });
 
   it('increments seq on every sprout so the entry animation restarts', () => {
+    // The full loop: sprout, water, thrive, wilt, back to seed, sprout again. A watered
+    // flower cannot be re-sprouted directly - it has to live out its bloom first.
+    const wateredAt = T0 + 1500;
+    const wiltsAt = wateredAt + P.bloomHoldMs;
     let s = sprouted();
-    s = roundReducer(s, { type: 'water', now: T0 + 1500, id: 'p0' });
-    s = roundReducer(s, { type: 'sprout', now: T0 + 4000, id: 'p0', thirstWindowMs: P.thirstWindowMs });
+    s = roundReducer(s, { type: 'water', now: wateredAt, id: 'p0', bloomHoldMs: P.bloomHoldMs });
+    s = roundReducer(s, { type: 'tick', now: wiltsAt });
+    s = roundReducer(s, { type: 'tick', now: wiltsAt + DRIED_HOLD_MS });
+    expect(s.cycles.p0.stage).toBe('seed');
+    s = roundReducer(s, {
+      type: 'sprout', now: wiltsAt + DRIED_HOLD_MS + 500, id: 'p0', thirstWindowMs: P.thirstWindowMs,
+    });
     expect(s.cycles.p0.seq).toBe(2);
   });
 });
@@ -91,18 +100,78 @@ describe('tick', () => {
 });
 
 describe('water', () => {
-  it('scores a sprouted plant, records the reaction, and returns it to seed', () => {
-    const s = roundReducer(sprouted(), { type: 'water', now: T0 + 2600, id: 'p0' });
+  const watered = (at = T0 + 2600) =>
+    roundReducer(sprouted(), { type: 'water', now: at, id: 'p0', bloomHoldMs: P.bloomHoldMs });
+
+  it('scores a sprouted plant and records the reaction', () => {
+    const s = watered();
     expect(s.watered).toBe(1);
     expect(s.reactions).toEqual([1600]);
-    expect(s.cycles.p0).toEqual({ stage: 'seed', thirstyAt: null, until: null, seq: 1 });
+  });
+
+  it('buys the flower life instead of resetting it to a sprout', () => {
+    // Watering extends the bloom. Sending it straight back to `seed` would make a
+    // correct tap look identical to letting the flower die, which is the opposite of
+    // what the player just did.
+    const s = watered();
+    expect(s.cycles.p0).toEqual({
+      stage: 'thriving', thirstyAt: null, until: T0 + 2600 + P.bloomHoldMs, seq: 1,
+    });
+  });
+
+  it('cannot be watered again while it is thriving', () => {
+    const s = watered();
+    const again = roundReducer(s, { type: 'water', now: T0 + 3000, id: 'p0', bloomHoldMs: P.bloomHoldMs });
+    expect(again).toBe(s);
+    expect(again.watered).toBe(1);
   });
 
   it('refuses to score a seed or a dried plant, and costs nothing', () => {
-    const seed = roundReducer(started(), { type: 'water', now: T0 + 500, id: 'p1' });
+    const seed = roundReducer(started(), { type: 'water', now: T0 + 500, id: 'p1', bloomHoldMs: P.bloomHoldMs });
     expect(seed.watered).toBe(0);
     expect(seed.lives).toBe(3);
     expect(seed.reactions).toEqual([]);
+  });
+});
+
+describe('thriving', () => {
+  const watered = roundReducer(sprouted(), { type: 'water', now: T0 + 2600, id: 'p0', bloomHoldMs: P.bloomHoldMs });
+  const wiltsAt = T0 + 2600 + P.bloomHoldMs;
+
+  it('stays in bloom for the whole hold', () => {
+    const s = roundReducer(watered, { type: 'tick', now: wiltsAt - 1 });
+    expect(s.cycles.p0.stage).toBe('thriving');
+  });
+
+  it('wilts when its own timer runs out', () => {
+    const s = roundReducer(watered, { type: 'tick', now: wiltsAt });
+    expect(s.cycles.p0).toEqual({
+      stage: 'dried', thirstyAt: null, until: wiltsAt + DRIED_HOLD_MS, seq: 1,
+    });
+  });
+
+  it('does not count as a miss when it wilts', () => {
+    // The player watered it. Reaching the end of a life they paid for is the cycle
+    // turning, not a lapse of attention, and driedUp is the inattention measure.
+    const s = roundReducer(watered, { type: 'tick', now: wiltsAt });
+    expect(s.driedUp).toBe(0);
+    expect(s.lives).toBe(3);
+  });
+
+  it('returns to seed after wilting, so the plant can cycle again', () => {
+    let s = roundReducer(watered, { type: 'tick', now: wiltsAt });
+    s = roundReducer(s, { type: 'tick', now: wiltsAt + DRIED_HOLD_MS });
+    expect(s.cycles.p0.stage).toBe('seed');
+  });
+
+  it('is never chosen by the spawner while it is up', () => {
+    expect(pickSproutId(watered.cycles, 9, () => 0)).not.toBe('p0');
+  });
+
+  it('does not occupy a thirsty slot, since it is not asking for water', () => {
+    // Concurrency caps how many rings are open at once. A thriving flower has no ring,
+    // so holding a slot would quietly starve the bed at maxConcurrentThirsty of 1.
+    expect(pickSproutId(watered.cycles, 1, () => 0)).toBe('p1');
   });
 });
 
