@@ -48,13 +48,24 @@ leave the dead one" needs no explanation, whereas "do not water the toadstool" d
 
 | Original spec | Replaced by |
 |---|---|
-| Distractor pool `[weedA, weedB, weedA, bee, ladybird, snail, caterpillar, mushroom, carnivore]` (section on distractor allocation) | The wilted sprite of a species not currently used as a target |
+| Distractor pool `[weedA, weedB, weedA, bee, ladybird, snail, caterpillar, mushroom, carnivore]` (section on distractor allocation) | The wilted sprite of any species, drawn freely (see note below) |
 | `falseTaps` described as "taps on a weed, insect or toadstool" | Taps on a wilted flower |
 | Sprite size `base = 82` for insects, `96` for everything else | Uniform `base = 96`; there are no insects |
 | Idle motion for insects, looping per instance | Removed. Wilted flowers do not move. |
 | Legend row `gk.legend.avoid` - "Never water weeds, bugs or toadstools" | "Leave the wilted flowers alone" |
 | Distractor filter `saturate(0.62) brightness(1 - recede)` | Removed. The wilted art is already desaturated; a second desaturation would flatten it. Recede haze still applies. |
 | CSS-drawn plant artwork as a pure `art()` function returning style strings | Raster sprites from `public/garden-assets/`, catalogued in `sprites.ts` |
+
+### Species are drawn freely for both kinds
+
+An earlier draft of this amendment said a distractor uses "a species not currently used as
+a target". That is unworkable: at the top of the curve a bed holds 11 blooms and 13 wilted
+plants, and there are only ten species, so disjoint sets cannot exist.
+
+Species are therefore drawn independently for both kinds, and the same species may appear
+bloomed in one spot and wilted in another. This is the better design anyway - a wilted rose
+beside a blooming rose is the hardest useful discrimination, and it is exactly the one the
+mechanic is asking the player to make.
 
 Everything else in the original spec stands unchanged: the bed layout, the countdown ring,
 the thirst cycle, the heart economy, the difficulty axes and their curves, the round
