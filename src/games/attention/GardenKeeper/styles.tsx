@@ -67,12 +67,32 @@ export const KEYFRAMES = `
 }
 
 /* The can tips in, pours, and lifts away. Rotation is baked into every frame with the
-   centring translate, so the animation owns transform for the element's whole life. */
+   centring translate, so the animation owns transform for the element's whole life.
+
+   The rotation is negative because the can's spout is on its left: counter-clockwise
+   tips the spout down to pour. Positive lifts the spout and dips the handle, which is
+   the can pouring out of its own back. */
 @keyframes gk-pour {
-  0%   { opacity: 0; transform: translate(-50%,-50%) rotate(-6deg) scale(.82); }
-  22%  { opacity: 1; transform: translate(-50%,-50%) rotate(26deg) scale(1); }
-  62%  { opacity: 1; transform: translate(-50%,-50%) rotate(30deg) scale(1); }
-  100% { opacity: 0; transform: translate(-50%,-56%) rotate(10deg) scale(.94); }
+  0%   { opacity: 0; transform: translate(-50%,-50%) rotate(6deg) scale(.82); }
+  22%  { opacity: 1; transform: translate(-50%,-50%) rotate(-26deg) scale(1); }
+  62%  { opacity: 1; transform: translate(-50%,-50%) rotate(-30deg) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-56%) rotate(-10deg) scale(.94); }
+}
+
+/* A droplet leaving the spout: falls along its own vector, stretching slightly as it
+   goes, the way a falling drop reads. */
+@keyframes gk-fall {
+  0%   { opacity: 0; transform: translate(-50%,-50%) translate(0,0) scaleY(.8); }
+  18%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%,-50%) translate(var(--fx), var(--fy)) scaleY(1.5); }
+}
+
+@keyframes gk-fall-ro {
+  0%   { opacity: 0; }
+  25%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 @keyframes gk-pour-ro {

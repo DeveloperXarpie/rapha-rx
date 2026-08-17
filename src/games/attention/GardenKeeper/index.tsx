@@ -26,12 +26,19 @@ import { EASE, EASE_OUT, GardenKeeperStyles } from './styles';
 type Effect =
   | { id: number; kind: 'drop'; x: number; y: number; dx: number; dy: number; delay: number }
   | { id: number; kind: 'toast'; x: number; y: number; text: string; colour: string }
-  /** The completion mark: the can tips over the plant, and a star confirms the score. */
+  /** The completion mark: the can tips over the plant and pours onto it. */
   | { id: number; kind: 'can'; x: number; y: number }
-  | { id: number; kind: 'star'; x: number; y: number };
+  | { id: number; kind: 'pourdrop'; x: number; y: number; fx: number; fy: number; delay: number };
 
 const POUR_MS = 900;
-const STAR_MS = 780;
+const FALL_MS = 620;
+/**
+ * Where the spout tip sits relative to the can's centre once it has tipped to -30deg.
+ * Measured off the rendered sprite rather than guessed: rotate the 132px-wide can by 30
+ * degrees counter-clockwise and take the leftmost opaque extremity.
+ */
+const SPOUT_DX = -62;
+const SPOUT_DY = 16;
 
 let FX_SEQ = 0;
 function nextFxId(): number {
@@ -485,9 +492,22 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
           delay: Math.round(rnd(0, 90)),
         }, 760);
       }
-      // The completion mark: the can tips over the plant, then a star confirms the score.
-      pushEffect({ id: nextFxId(), kind: 'can', x, y: plant.y - plant.size * 0.95 }, POUR_MS);
-      pushEffect({ id: nextFxId(), kind: 'star', x: plant.x, y: plant.y - plant.size * 1.15 }, STAR_MS);
+      // The completion mark: the can tips over the plant and pours onto it.
+      const canY = plant.y - plant.size * 0.95;
+      pushEffect({ id: nextFxId(), kind: 'can', x, y: canY }, POUR_MS);
+
+      // A stream from the spout, staggered across the part of the pour where the can is
+      // actually tipped, so the water leaves it rather than preceding it.
+      const spoutX = x + SPOUT_DX;
+      const spoutY = canY + SPOUT_DY;
+      const fallTo = plant.y - plant.size * 0.35 - spoutY;
+      for (let i = 0; i < 12; i++) {
+        pushEffect({
+          id: nextFxId(), kind: 'pourdrop', x: spoutX, y: spoutY,
+          fx: rnd(6, 34), fy: fallTo + rnd(-10, 14),
+          delay: Math.round(180 + i * 34 + rnd(0, 22)),
+        }, FALL_MS + 180 + i * 34);
+      }
       dispatch({ type: 'water', now: Date.now(), id: plant.id });
       if (s.watered + 1 >= params.targetCount) window.setTimeout(() => finish('complete'), 620);
       return;
@@ -597,22 +617,18 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
                   animation: `${reduced ? 'gk-pour-ro' : 'gk-pour'} ${POUR_MS}ms ${EASE} both`,
                 }}
               />
-            ) : e.kind === 'star' ? (
+            ) : e.kind === 'pourdrop' ? (
               <div
                 key={e.id}
-                aria-hidden="true"
                 style={{
-                  position: 'absolute', left: e.x, top: e.y, zIndex: 32, pointerEvents: 'none',
-                  fontSize: 52, lineHeight: 1,
-                  filter: 'drop-shadow(0 3px 4px rgba(20,40,12,.45))',
-                  animation: `${reduced ? 'gk-star-ro' : 'gk-star'} ${STAR_MS}ms ${EASE} both`,
+                  position: 'absolute', left: e.x, top: e.y, zIndex: 31, pointerEvents: 'none',
+                  width: 11, height: 15, background: '#7FC7F0',
+                  borderRadius: '50% 50% 50% 50% / 62% 62% 38% 38%',
+                  ['--fx' as string]: `${e.fx}px`,
+                  ['--fy' as string]: `${e.fy}px`,
+                  animation: `${reduced ? 'gk-fall-ro' : 'gk-fall'} ${FALL_MS}ms ease-in ${e.delay}ms both`,
                 }}
-              >
-                {/* The app's completion mark everywhere else, from Picture Postcard's
-                    star card to the session summary. Keeping it means "done" looks the
-                    same to a resident in every game. */}
-                🌟
-              </div>
+              />
             ) : e.kind === 'drop' ? (
               <div
                 key={e.id}
@@ -669,13 +685,6 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
                         draggable={false}
                         style={{ width: 168, height: 'auto', marginBottom: -8 }}
                       />
-                      {/* Three stars, as Picture Postcard's level card does it, so a
-                          finished round looks the same to a resident across games. */}
-                      <div style={{ display: 'flex', gap: 10 }} aria-hidden="true">
-                        {[0, 1, 2].map((i) => (
-                          <span key={i} style={{ fontSize: 46, lineHeight: 1 }}>🌟</span>
-                        ))}
-                      </div>
                     </>
                   )}
                   <h2 style={{
