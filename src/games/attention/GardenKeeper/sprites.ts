@@ -66,13 +66,24 @@ export const BADGE_CAN_URL = `${BASE}/ui-badge-can.png`;
 export const LANTERN_URL = `${BASE}/ui-lantern.png`;
 
 /**
+ * The watering can, used as the completion mark: it tips over a plant the moment its
+ * watering lands, and it heads the round-complete card.
+ *
+ * The spec dropped the can as an *affordance* - there is nothing to pick up, the tap is
+ * the whole interaction. This is the opposite job: confirmation after the fact.
+ */
+export const WATERING_CAN_URL = `${BASE}/ui-watering-can.png`;
+
+/**
  * Board furniture that must be decoded before the first frame.
  *
  * The rest of the UI sheet is sliced but unused: the timer pill, the WATERED label, the
  * caption plate and the wooden sign all have English text baked into the artwork, so they
  * can carry neither a live value nor a Hindi or Kannada translation.
  */
-export const FURNITURE_URLS: string[] = [BOARD_URL, GLOW_RING_URL, BADGE_CAN_URL, LANTERN_URL];
+export const FURNITURE_URLS: string[] = [
+  BOARD_URL, GLOW_RING_URL, BADGE_CAN_URL, LANTERN_URL, WATERING_CAN_URL,
+];
 
 /** Everything the board can paint, for preloading before the round starts. */
 export const ALL_SPRITE_URLS: string[] = [

@@ -59,6 +59,7 @@ UI_RECTS_USED: dict[str, tuple[int, int, int, int]] = {
     "ui-glow-ring":     (966, 257, 276, 200),
     "ui-lantern":       (951, 460, 291, 431),
     "ui-badge-can":     (18, 911, 283, 287),
+    "ui-watering-can":  (438, 486, 437, 361),
 }
 
 # Everything else on the sheet. Sliced so nothing is lost, but written beside the source
@@ -76,7 +77,6 @@ UI_RECTS_SPARE: dict[str, tuple[int, int, int, int]] = {
     "ui-pause":         (1110, 59, 132, 148),
     "ui-hearts-panel":  (821, 66, 279, 134),
     "ui-bar-track":     (337, 115, 469, 79),
-    "ui-watering-can":  (438, 486, 437, 361),
     "ui-arch":          (301, 868, 648, 366),
     "ui-bush":          (951, 909, 294, 322),
 }

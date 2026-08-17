@@ -66,6 +66,36 @@ export const KEYFRAMES = `
   100% { transform: translate(-50%, -100%) scale(1); }
 }
 
+/* The can tips in, pours, and lifts away. Rotation is baked into every frame with the
+   centring translate, so the animation owns transform for the element's whole life. */
+@keyframes gk-pour {
+  0%   { opacity: 0; transform: translate(-50%,-50%) rotate(-6deg) scale(.82); }
+  22%  { opacity: 1; transform: translate(-50%,-50%) rotate(26deg) scale(1); }
+  62%  { opacity: 1; transform: translate(-50%,-50%) rotate(30deg) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-56%) rotate(10deg) scale(.94); }
+}
+
+@keyframes gk-pour-ro {
+  0%   { opacity: 0; transform: translate(-50%,-50%); }
+  25%  { opacity: 1; transform: translate(-50%,-50%); }
+  70%  { opacity: 1; transform: translate(-50%,-50%); }
+  100% { opacity: 0; transform: translate(-50%,-50%); }
+}
+
+@keyframes gk-star {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(.4); }
+  35%  { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
+  70%  { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-90%) scale(1); }
+}
+
+@keyframes gk-star-ro {
+  0%   { opacity: 0; transform: translate(-50%,-50%); }
+  35%  { opacity: 1; transform: translate(-50%,-50%); }
+  70%  { opacity: 1; transform: translate(-50%,-50%); }
+  100% { opacity: 0; transform: translate(-50%,-50%); }
+}
+
 @keyframes gk-pulse {
   0%   { box-shadow: 0 0 0 0 rgba(126,217,87,0); }
   50%  { box-shadow: 0 0 0 12px rgba(126,217,87,.45); }

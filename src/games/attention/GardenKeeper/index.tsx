@@ -16,7 +16,7 @@ import {
 } from './model';
 import {
   spriteUrl, spriteUrlsFor, SPROUT_URL, bloomUrl, wiltedUrl,
-  BOARD_URL, GLOW_RING_URL, BADGE_CAN_URL, LANTERN_URL,
+  BOARD_URL, GLOW_RING_URL, BADGE_CAN_URL, LANTERN_URL, WATERING_CAN_URL,
 } from './sprites';
 import { COLOURS } from './palette';
 import { EASE, EASE_OUT, GardenKeeperStyles } from './styles';
@@ -25,7 +25,13 @@ import { EASE, EASE_OUT, GardenKeeperStyles } from './styles';
 
 type Effect =
   | { id: number; kind: 'drop'; x: number; y: number; dx: number; dy: number; delay: number }
-  | { id: number; kind: 'toast'; x: number; y: number; text: string; colour: string };
+  | { id: number; kind: 'toast'; x: number; y: number; text: string; colour: string }
+  /** The completion mark: the can tips over the plant, and a star confirms the score. */
+  | { id: number; kind: 'can'; x: number; y: number }
+  | { id: number; kind: 'star'; x: number; y: number };
+
+const POUR_MS = 900;
+const STAR_MS = 780;
 
 let FX_SEQ = 0;
 function nextFxId(): number {
@@ -479,6 +485,9 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
           delay: Math.round(rnd(0, 90)),
         }, 760);
       }
+      // The completion mark: the can tips over the plant, then a star confirms the score.
+      pushEffect({ id: nextFxId(), kind: 'can', x, y: plant.y - plant.size * 0.95 }, POUR_MS);
+      pushEffect({ id: nextFxId(), kind: 'star', x: plant.x, y: plant.y - plant.size * 1.15 }, STAR_MS);
       dispatch({ type: 'water', now: Date.now(), id: plant.id });
       if (s.watered + 1 >= params.targetCount) window.setTimeout(() => finish('complete'), 620);
       return;
@@ -576,7 +585,35 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
               );
             })}
 
-            {effects.map((e) => (e.kind === 'drop' ? (
+            {effects.map((e) => (e.kind === 'can' ? (
+              <img
+                key={e.id}
+                src={WATERING_CAN_URL}
+                alt=""
+                draggable={false}
+                style={{
+                  position: 'absolute', left: e.x, top: e.y, zIndex: 31, pointerEvents: 'none',
+                  width: 132, height: 'auto', transformOrigin: '50% 50%',
+                  animation: `${reduced ? 'gk-pour-ro' : 'gk-pour'} ${POUR_MS}ms ${EASE} both`,
+                }}
+              />
+            ) : e.kind === 'star' ? (
+              <div
+                key={e.id}
+                aria-hidden="true"
+                style={{
+                  position: 'absolute', left: e.x, top: e.y, zIndex: 32, pointerEvents: 'none',
+                  fontSize: 52, lineHeight: 1,
+                  filter: 'drop-shadow(0 3px 4px rgba(20,40,12,.45))',
+                  animation: `${reduced ? 'gk-star-ro' : 'gk-star'} ${STAR_MS}ms ${EASE} both`,
+                }}
+              >
+                {/* The app's completion mark everywhere else, from Picture Postcard's
+                    star card to the session summary. Keeping it means "done" looks the
+                    same to a resident in every game. */}
+                🌟
+              </div>
+            ) : e.kind === 'drop' ? (
               <div
                 key={e.id}
                 style={{
@@ -624,6 +661,23 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
                   textAlign: 'center',
                   animation: reduced ? 'gk-fade 220ms ease both' : `gk-cardin 260ms ${EASE} both`,
                 }}>
+                  {state.outcome === 'complete' && (
+                    <>
+                      <img
+                        src={WATERING_CAN_URL}
+                        alt=""
+                        draggable={false}
+                        style={{ width: 168, height: 'auto', marginBottom: -8 }}
+                      />
+                      {/* Three stars, as Picture Postcard's level card does it, so a
+                          finished round looks the same to a resident across games. */}
+                      <div style={{ display: 'flex', gap: 10 }} aria-hidden="true">
+                        {[0, 1, 2].map((i) => (
+                          <span key={i} style={{ fontSize: 46, lineHeight: 1 }}>🌟</span>
+                        ))}
+                      </div>
+                    </>
+                  )}
                   <h2 style={{
                     fontSize: 46, fontWeight: 800, margin: 0, lineHeight: 1.2,
                     color: state.outcome === 'complete' ? COLOURS.success : COLOURS.cardHeading,
