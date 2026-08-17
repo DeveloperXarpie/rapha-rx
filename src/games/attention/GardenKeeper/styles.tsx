@@ -1,0 +1,64 @@
+/**
+ * Keyframes for Garden Keeper, rendered as an inline <style> block, as the other games do.
+ *
+ * The countdown ring is a conic gradient driven by a CSS custom property rather than an
+ * animation, because its progress has to come from the same wall-clock deadline the
+ * reducer scores against. An animation would drift from that deadline whenever the tab is
+ * throttled, and the player would see a ring that disagrees with whether the tap counted.
+ */
+export const KEYFRAMES = `
+@keyframes gk-fade { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes gk-sprout {
+  0%   { opacity: 0; transform: translate(-50%, -100%) scale(.55); }
+  60%  { opacity: 1; transform: translate(-50%, -100%) scale(1.08); }
+  100% { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+}
+
+@keyframes gk-sprout-ro { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes gk-droop {
+  0%   { transform: translate(-50%, -100%) scale(1) rotate(0deg); }
+  100% { transform: translate(-50%, -100%) scale(.94) rotate(-3deg); }
+}
+
+@keyframes gk-splash {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.4); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+}
+
+@keyframes gk-shake {
+  0%, 100% { transform: translate(-50%, -100%) translateX(0); }
+  20%      { transform: translate(-50%, -100%) translateX(-7px); }
+  50%      { transform: translate(-50%, -100%) translateX(6px); }
+  80%      { transform: translate(-50%, -100%) translateX(-3px); }
+}
+
+@keyframes gk-rise {
+  0%   { opacity: 0; transform: translate(-50%, 6px); }
+  25%  { opacity: 1; }
+  75%  { opacity: 1; transform: translate(-50%, -28px); }
+  100% { opacity: 0; transform: translate(-50%, -42px); }
+}
+
+@keyframes gk-rise-ro { 0% { opacity: 0; } 25% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+
+@keyframes gk-cardin {
+  from { opacity: 0; transform: translate(-50%,-50%) scale(.92); }
+  to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+}
+
+@keyframes gk-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(126,217,87,0); }
+  50%  { box-shadow: 0 0 0 12px rgba(126,217,87,.45); }
+  100% { box-shadow: 0 0 0 0 rgba(126,217,87,0); }
+}
+`;
+
+export const EASE = 'cubic-bezier(.22,.61,.36,1)';
+export const EASE_OUT = 'cubic-bezier(.33,1,.68,1)';
+
+export function GardenKeeperStyles() {
+  return <style>{KEYFRAMES}</style>;
+}
