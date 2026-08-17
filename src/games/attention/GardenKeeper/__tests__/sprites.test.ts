@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { FLOWER_SPECIES } from '../palette';
-import { ALL_SPRITE_URLS, SPROUT_URL, bloomUrl, spriteUrl, spriteUrlsFor, wiltedUrl } from '../sprites';
+import {
+  ALL_SPRITE_URLS, FURNITURE_URLS, SPROUT_URL, bloomUrl, spriteUrl, spriteUrlsFor, wiltedUrl,
+} from '../sprites';
 
 /**
  * The set of sprites that actually exist on disk.
@@ -10,7 +12,7 @@ import { ALL_SPRITE_URLS, SPROUT_URL, bloomUrl, spriteUrl, spriteUrlsFor, wilted
  * widening that for one test would be the wrong trade.
  */
 const ON_DISK = new Set(
-  Object.keys(import.meta.glob('/public/garden-assets/*.png')).map((p) => p.replace('/public', '')),
+  Object.keys(import.meta.glob('/public/garden-assets/*.{png,jpg}')).map((p) => p.replace('/public', '')),
 );
 
 describe('sprite catalogue', () => {
@@ -80,5 +82,18 @@ describe('spriteUrlsFor', () => {
   it('resolves everything it returns to a real file', () => {
     const urls = spriteUrlsFor(FLOWER_SPECIES.map((species) => ({ kind: 'flower' as const, species })));
     for (const url of urls) expect(ON_DISK.has(url), `missing sprite: ${url}`).toBe(true);
+  });
+});
+
+describe('board furniture', () => {
+  it('resolves every furniture URL to a file that actually exists', () => {
+    for (const url of FURNITURE_URLS) {
+      expect(ON_DISK.has(url), `missing furniture: ${url}`).toBe(true);
+    }
+  });
+
+  it('preloads the furniture alongside the bed, so the board cannot paint half-dressed', () => {
+    const urls = spriteUrlsFor([{ kind: 'flower', species: 'rose' }]);
+    for (const url of FURNITURE_URLS) expect(urls).toContain(url);
   });
 });

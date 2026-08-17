@@ -14,7 +14,10 @@ import {
   buildMetrics, initialRoundState, pickSproutId, roundReducer,
   type Outcome, type RoundState, type Stage,
 } from './model';
-import { spriteUrl, spriteUrlsFor, SPROUT_URL, bloomUrl, wiltedUrl } from './sprites';
+import {
+  spriteUrl, spriteUrlsFor, SPROUT_URL, bloomUrl, wiltedUrl,
+  BOARD_URL, GLOW_RING_URL, BADGE_CAN_URL, LANTERN_URL,
+} from './sprites';
 import { COLOURS } from './palette';
 import { EASE, EASE_OUT, GardenKeeperStyles } from './styles';
 
@@ -41,27 +44,39 @@ interface GardenKeeperProps {
 
 // ─── Backdrop ─────────────────────────────────────────────────────────────────
 
+/**
+ * The painted board plate.
+ *
+ * This replaces the CSS bands the plan specified. The plate already carries the sky,
+ * hills, fence, rose arch, flower borders and the soil bed, which is why almost none of
+ * the UI sheet's scenery is needed on top of it - the arch, bush and watering can it
+ * offers are all already in this image.
+ *
+ * It is cropped to the board's exact aspect at slice time, so it is drawn at 1:1 with no
+ * object-fit and cannot stretch.
+ */
 function Backdrop() {
-  const layer = (style: React.CSSProperties) => <div style={{ position: 'absolute', ...style }} />;
   return (
     <>
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'linear-gradient(180deg, #9AD0EC 0%, #C4E3F4 132px, #86BE55 133px, #6BA641 240px)',
-      }} />
-      {layer({ left: -40, top: 96, width: 380, height: 96, borderRadius: '50%', background: '#6FA83F' })}
-      {layer({ left: 250, top: 74, width: 340, height: 108, borderRadius: '50%', background: '#7CB447' })}
-      {layer({ left: 520, top: 92, width: 360, height: 98, borderRadius: '50%', background: '#679C3A' })}
-      {layer({ left: 0, top: 168, width: 800, height: 40, background: 'linear-gradient(180deg, #5E9C38, #4E8C3A)' })}
-      {layer({ left: 0, top: 200, width: 800, height: 972, background: 'linear-gradient(180deg, #4E8C3A, #427E2F)' })}
-      {layer({
-        left: 18, top: 224, width: 764, height: 924, borderRadius: '210px / 130px',
-        background: 'radial-gradient(ellipse at 50% 20%, #7E5632 0%, #67451F 55%, #533618 100%)',
-      })}
-      {layer({
-        left: 18, top: 224, width: 764, height: 924, borderRadius: '210px / 130px', pointerEvents: 'none',
-        background: 'radial-gradient(ellipse at 50% 42%, transparent 46%, rgba(28,16,4,.34) 100%)',
-      })}
+      <img
+        src={BOARD_URL}
+        alt=""
+        draggable={false}
+        style={{
+          position: 'absolute', left: 0, top: 0, width: CANVAS_W, height: BOARD_H,
+          pointerEvents: 'none', userSelect: 'none',
+        }}
+      />
+      {/* Lantern on the grass to the left of the bed, clear of the planting rectangle. */}
+      <img
+        src={LANTERN_URL}
+        alt=""
+        draggable={false}
+        style={{
+          position: 'absolute', left: 8, top: BOARD_H - 300, width: 104,
+          pointerEvents: 'none', userSelect: 'none', opacity: 0.96,
+        }}
+      />
     </>
   );
 }
@@ -170,17 +185,21 @@ function PlantView({ plant, stage, active, remain, fx, reduced, onTap, playing }
         cursor: playing ? 'pointer' : 'default',
       }}
     >
-      {/* Light pool. Always mounted so it can fade rather than pop. */}
-      <div style={{
-        position: 'absolute', left: '50%', top: '62%', transform: 'translate(-50%,-50%)',
-        width: ringSize * 1.5, height: ringSize * 1.5, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,246,214,.5) 0%, rgba(255,236,180,.18) 46%, rgba(255,236,180,0) 70%)',
-        pointerEvents: 'none',
-        opacity: active ? 1 : 0,
-        ...(active && !reduced
-          ? { animation: 'gk-halo 2200ms ease-in-out infinite' }
-          : { transition: 'opacity 320ms ease' }),
-      }} />
+      {/* Light pool, from the UI sheet. Always mounted so it can fade rather than pop. */}
+      <img
+        src={GLOW_RING_URL}
+        alt=""
+        draggable={false}
+        style={{
+          position: 'absolute', left: '50%', top: '62%', transform: 'translate(-50%,-50%)',
+          width: ringSize * 1.5, height: 'auto',
+          pointerEvents: 'none', userSelect: 'none',
+          opacity: active ? 1 : 0,
+          ...(active && !reduced
+            ? { animation: 'gk-halo 2200ms ease-in-out infinite' }
+            : { transition: 'opacity 320ms ease' }),
+        }}
+      />
 
       {/*
         The countdown ring: a conic sweep masked into an annulus. The swept arc is the
@@ -215,7 +234,7 @@ function PlantView({ plant, stage, active, remain, fx, reduced, onTap, playing }
           draggable={false}
           style={{
             position: 'absolute', left: '50%', top: '100%',
-            width: plant.size * 1.7, height: 'auto',
+            width: plant.size * 1.3, height: 'auto',
             transform: 'translate(-50%, -100%)',
             transformOrigin: '50% 100%',
             filter,
@@ -604,6 +623,12 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
                   textAlign: 'center',
                   animation: reduced ? 'gk-fade 220ms ease both' : `gk-cardin 260ms ${EASE} both`,
                 }}>
+                  <img
+                    src={BADGE_CAN_URL}
+                    alt=""
+                    draggable={false}
+                    style={{ width: 116, height: 'auto', marginBottom: -6 }}
+                  />
                   <h2 style={{
                     fontSize: 40, fontWeight: 800, color: COLOURS.cardHeading, lineHeight: 1.2, margin: 0,
                   }}>

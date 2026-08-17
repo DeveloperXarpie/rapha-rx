@@ -36,8 +36,62 @@ import sys
 from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SHEET = ROOT / "assets-src" / "Garden_Asets" / "Plant_assets.png"
+SRC = ROOT / "assets-src" / "Garden_Asets"
+SHEET = SRC / "Plant_assets.png"
+UI_SHEET = SRC / "UI_assets.png"
+BACKGROUND = SRC / "garden_background_03.png"
 OUT = ROOT / "public" / "garden-assets"
+
+# ─── UI sheet ─────────────────────────────────────────────────────────────────
+#
+# Measured with a connected-component pass over the alpha channel; the pieces are far
+# enough apart that labelling separates them cleanly. The one exception is the glow ring
+# and the lantern, which touch: they are split at y=460, the thinnest row between them.
+#
+# Several pieces carry English text baked into the artwork. They are sliced so nothing is
+# lost, but they cannot carry dynamic values or be localised, so the game does not use
+# them - see the note in the amendment.
+# Pieces the game actually paints. These ship in public/ and land in the PWA precache.
+UI_RECTS_USED: dict[str, tuple[int, int, int, int]] = {
+    "ui-glow-ring":     (910, 257, 332, 203),
+    "ui-lantern":       (951, 460, 291, 431),
+    "ui-badge-can":     (18, 911, 283, 287),
+}
+
+# Everything else on the sheet. Sliced so nothing is lost, but written beside the source
+# rather than into public/: the service worker precaches all of public/, and shipping a
+# megabyte of art no screen references would be paid for on every install.
+#
+# The first four have English text baked into the artwork, so they can carry neither a
+# live value nor a Hindi or Kannada translation. The rest are scenery the board plate
+# already provides.
+UI_RECTS_SPARE: dict[str, tuple[int, int, int, int]] = {
+    "ui-timer-pill":    (16, 30, 309, 220),
+    "ui-label-watered": (337, 40, 469, 75),
+    "ui-caption-plate": (17, 255, 931, 231),
+    "ui-sign":          (30, 481, 372, 416),
+    "ui-pause":         (1110, 59, 132, 148),
+    "ui-hearts-panel":  (821, 66, 279, 134),
+    "ui-bar-track":     (337, 115, 469, 79),
+    "ui-watering-can":  (438, 486, 437, 361),
+    "ui-arch":          (301, 868, 648, 366),
+    "ui-bush":          (951, 909, 294, 322),
+}
+
+SPARE_OUT = SRC / "sliced"
+
+# The plate is a painted, photographic-style image with no transparency, so it ships as
+# JPEG. As a PNG it is 2.1MB, over Workbox's 2MiB precache ceiling - and raising that
+# ceiling would be treating the symptom. 1600px wide is 2x the 800px canvas.
+BOARD_OUT_W = 1600
+BOARD_JPEG_QUALITY = 86
+
+# The board plate is authored 941 x 1672, taller than the 800 x 1172 board. Cropping to
+# the board's aspect keeps the art undistorted; the window is biased upward so the rose
+# arch survives, spending the loss on the grass strip below the soil instead.
+BOARD_ASPECT_W = 800
+BOARD_ASPECT_H = 1172
+BACKGROUND_CROP_TOP = 150
 
 ROWS = 6
 # Measured alpha-projection column bands. Re-derive with --measure if the sheet is redrawn.
@@ -113,6 +167,84 @@ def sprite_box(sheet: Image.Image, row: int, col: int, cuts: list[int]) -> tuple
     return (left + x0, top + y0, left + x1, top + y1)
 
 
+def slice_ui(measure: bool) -> int:
+    """Cut the UI sheet into its pieces, trimming each to its own alpha bounds."""
+    if not UI_SHEET.exists():
+        print(f"ui sheet not found: {UI_SHEET}", file=sys.stderr)
+        return 0
+    sheet = Image.open(UI_SHEET).convert("RGBA")
+    written = 0
+    if not measure:
+        SPARE_OUT.mkdir(parents=True, exist_ok=True)
+
+    for rects, dest, label in ((UI_RECTS_USED, OUT, "ship"), (UI_RECTS_SPARE, SPARE_OUT, "spare")):
+        for name, (x, y, w, h) in rects.items():
+            piece = sheet.crop((x, y, x + w, y + h))
+            # Trim to the real content: the measured rects are generous by a pixel or two.
+            box = piece.getchannel("A").point(lambda v: 255 if v > ALPHA_FLOOR else 0).getbbox()
+            if box:
+                piece = piece.crop(box)
+            print(f"  [{label}] {name}: {piece.width}x{piece.height}")
+            if not measure:
+                piece.save(dest / f"{name}.png")
+                if dest is OUT:
+                    written += 1
+    return written
+
+
+def slice_background(measure: bool) -> int:
+    """
+    Crop the board plate to the board's aspect and report where its soil bed lands.
+
+    The soil rectangle is what the bed geometry has to agree with, so it is measured here
+    rather than eyeballed: `BED` in geometry.ts is derived from the fractions printed.
+    """
+    if not BACKGROUND.exists():
+        print(f"background not found: {BACKGROUND}", file=sys.stderr)
+        return 0
+
+    im = Image.open(BACKGROUND).convert("RGB")
+    target_h = round(im.width * BOARD_ASPECT_H / BOARD_ASPECT_W)
+    top = BACKGROUND_CROP_TOP
+    bottom = min(im.height, top + target_h)
+    cropped = im.crop((0, top, im.width, bottom))
+
+    # Soil is the brown plate: red above green above blue, mid brightness, little blue.
+    px = cropped.load()
+    w, h = cropped.size
+    cols = [0] * w
+    rows = [0] * h
+    for yy in range(h):
+        for xx in range(w):
+            r, g, b = px[xx, yy]
+            if r > g + 18 and g > b + 8 and 70 < r < 190 and b < 120:
+                cols[xx] += 1
+                rows[yy] += 1
+    xs = [i for i, v in enumerate(cols) if v > h * 0.15]
+    ys = [i for i, v in enumerate(rows) if v > w * 0.30]
+
+    print(f"  board plate: {w}x{h} (cropped {top}..{bottom} of {im.height})")
+    if xs and ys:
+        print(f"  soil bed: x {xs[0]}..{xs[-1]}  y {ys[0]}..{ys[-1]}")
+        print(f"  soil as fractions: x {xs[0] / w:.4f}..{xs[-1] / w:.4f}  "
+              f"y {ys[0] / h:.4f}..{ys[-1] / h:.4f}")
+        print(f"  -> on a {BOARD_ASPECT_W}x{BOARD_ASPECT_H} board: "
+              f"x {round(xs[0] / w * BOARD_ASPECT_W)}..{round(xs[-1] / w * BOARD_ASPECT_W)}  "
+              f"y {round(ys[0] / h * BOARD_ASPECT_H)}..{round(ys[-1] / h * BOARD_ASPECT_H)}")
+    else:
+        print("  soil bed: NOT DETECTED", file=sys.stderr)
+
+    if measure:
+        return 0
+
+    out = cropped.resize((BOARD_OUT_W, round(BOARD_OUT_W * cropped.height / cropped.width)),
+                         Image.LANCZOS)
+    path = OUT / "board.jpg"
+    out.save(path, quality=BOARD_JPEG_QUALITY, optimize=True, progressive=True)
+    print(f"  wrote {path.name}: {out.width}x{out.height}, {path.stat().st_size // 1024} KiB")
+    return 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--measure", action="store_true", help="print boxes without writing")
@@ -141,10 +273,16 @@ def main() -> int:
                 sheet.crop(box).save(OUT / f"{name}.png")
                 written += 1
 
+    print("\nUI sheet:")
+    written += slice_ui(args.measure)
+
+    print("\nBoard plate:")
+    written += slice_background(args.measure)
+
     if args.measure:
         print("\nmeasure only, nothing written")
     else:
-        print(f"\nwrote {written} sprites to {OUT.relative_to(ROOT)}")
+        print(f"\nwrote {written} files to {OUT.relative_to(ROOT)}")
     return 0
 
 

@@ -47,6 +47,33 @@ export function spriteUrl(kind: PlantKind, species: FlowerSpecies, stage: Stage)
   return SPROUT_URL;
 }
 
+// ─── Board furniture ──────────────────────────────────────────────────────────
+
+/**
+ * The painted board plate: sky, hills, fence, rose arch, flower borders and the soil bed.
+ * It replaces the CSS bands the plan specified, and it is the authority on where the bed
+ * is - `SOIL` in geometry.ts is measured from this image.
+ */
+export const BOARD_URL = `${BASE}/board.jpg`;
+
+/** The warm glow behind a plant that is asking for water. */
+export const GLOW_RING_URL = `${BASE}/ui-glow-ring.png`;
+
+/** Watering-can roundel, used as the intro card's icon. */
+export const BADGE_CAN_URL = `${BASE}/ui-badge-can.png`;
+
+/** Garden lantern, pure decoration on the grass beside the bed. */
+export const LANTERN_URL = `${BASE}/ui-lantern.png`;
+
+/**
+ * Board furniture that must be decoded before the first frame.
+ *
+ * The rest of the UI sheet is sliced but unused: the timer pill, the WATERED label, the
+ * caption plate and the wooden sign all have English text baked into the artwork, so they
+ * can carry neither a live value nor a Hindi or Kannada translation.
+ */
+export const FURNITURE_URLS: string[] = [BOARD_URL, GLOW_RING_URL, BADGE_CAN_URL, LANTERN_URL];
+
 /** Everything the board can paint, for preloading before the round starts. */
 export const ALL_SPRITE_URLS: string[] = [
   SPROUT_URL,
@@ -59,7 +86,7 @@ export const ALL_SPRITE_URLS: string[] = [
  * so preloading the whole catalogue would stall the start for art that never appears.
  */
 export function spriteUrlsFor(plants: readonly { kind: PlantKind; species: FlowerSpecies }[]): string[] {
-  const urls = new Set<string>([SPROUT_URL]);
+  const urls = new Set<string>([SPROUT_URL, ...FURNITURE_URLS]);
   for (const p of plants) {
     urls.add(wiltedUrl(p.species));
     if (p.kind === 'flower') urls.add(bloomUrl(p.species));

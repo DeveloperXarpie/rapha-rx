@@ -8,8 +8,20 @@ export const CANVAS_H = 1280;
 export const HUD_H = 108;
 export const BOARD_H = CANVAS_H - HUD_H;
 
-/** The planting rectangle, in board coordinates (origin at the board's top-left). */
-export const BED = { x: 62, y: 250, w: 676, h: 860 } as const;
+/**
+ * The soil plate painted into `board.png`, in board coordinates. Measured by
+ * `scripts/slice_garden_assets.py`, which prints these numbers - do not eyeball them.
+ */
+export const SOIL = { x: 45, y: 280, right: 760, bottom: 1107 } as const;
+
+/**
+ * The planting rectangle: the soil, inset so no sprite hangs off the plate.
+ *
+ * A plant is anchored at its base and drawn upward, so the inset is asymmetric in spirit
+ * even though the numbers are not: the top needs roughly a sprite's height of clearance
+ * (about 140px at the default size), while the sides need half a sprite's width.
+ */
+export const BED = { x: 110, y: 400, w: 580, h: 700 } as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
