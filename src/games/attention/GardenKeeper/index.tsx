@@ -216,16 +216,24 @@ function PlantView({ plant, stage, active, until, windowMs, fx, reduced, onTap, 
         cursor: playing ? 'pointer' : 'default',
       }}
     >
-      {/* Light pool, from the UI sheet. Always mounted so it can fade rather than pop. */}
+      {/*
+        The sheet's glow ring, used as the meter's bloom rather than as a ring in its own
+        right. Drawn at the meter's diameter and blurred, it reads as light coming off the
+        arc; drawn crisp at any size it reads as a second, complete ring, which contradicts
+        a meter whose whole job is to be visibly incomplete.
+
+        Forced to a circle: the source is an ellipse, and our meter is round.
+      */}
       <img
         src={GLOW_RING_URL}
         alt=""
         draggable={false}
         style={{
           position: 'absolute', left: '50%', top: '62%', transform: 'translate(-50%,-50%)',
-          width: ringSize * 1.5, height: 'auto',
+          width: ringSize * 1.06, height: ringSize * 1.06,
           pointerEvents: 'none', userSelect: 'none',
-          opacity: active ? 1 : 0,
+          filter: 'blur(5px)',
+          opacity: active ? 0.6 : 0,
           ...(active && !reduced
             ? { animation: 'gk-halo 2200ms ease-in-out infinite' }
             : { transition: 'opacity 320ms ease' }),

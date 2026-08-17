@@ -53,7 +53,10 @@ OUT = ROOT / "public" / "garden-assets"
 # them - see the note in the amendment.
 # Pieces the game actually paints. These ship in public/ and land in the PWA precache.
 UI_RECTS_USED: dict[str, tuple[int, int, int, int]] = {
-    "ui-glow-ring":     (910, 257, 332, 203),
+    # Measured tight. The merged ring+lantern component starts at x=910 because the
+    # lantern is wider, and taking the ring from there dragged in the right edge of the
+    # caption plate, which ends at x=948. The ring's own content starts at x=966.
+    "ui-glow-ring":     (966, 257, 276, 200),
     "ui-lantern":       (951, 460, 291, 431),
     "ui-badge-can":     (18, 911, 283, 287),
 }
@@ -167,6 +170,30 @@ def sprite_box(sheet: Image.Image, row: int, col: int, cuts: list[int]) -> tuple
     return (left + x0, top + y0, left + x1, top + y1)
 
 
+def stray_blobs(piece: Image.Image) -> int:
+    """
+    Count disconnected opaque blobs, ignoring specks.
+
+    A correctly cut piece is one blob. More than one means the rect caught a neighbour -
+    which is exactly how the glow ring shipped with a slice of the caption plate attached.
+    Needs scipy; if it is missing the check is skipped rather than blocking a slice.
+    """
+    try:
+        import numpy as np
+        from scipy import ndimage
+    except ImportError:
+        return 1
+
+    mask = np.array(piece.getchannel("A")) > ALPHA_FLOOR
+    labelled, count = ndimage.label(mask, structure=np.ones((3, 3)))
+    if count <= 1:
+        return count
+    sizes = ndimage.sum(mask, labelled, range(1, count + 1))
+    # Anything under 0.5% of the piece is a stray pixel, not a fragment.
+    floor = 0.005 * mask.size
+    return int((sizes > floor).sum())
+
+
 def slice_ui(measure: bool) -> int:
     """Cut the UI sheet into its pieces, trimming each to its own alpha bounds."""
     if not UI_SHEET.exists():
@@ -184,7 +211,9 @@ def slice_ui(measure: bool) -> int:
             box = piece.getchannel("A").point(lambda v: 255 if v > ALPHA_FLOOR else 0).getbbox()
             if box:
                 piece = piece.crop(box)
-            print(f"  [{label}] {name}: {piece.width}x{piece.height}")
+            blobs = stray_blobs(piece)
+            warn = "  <-- CHECK: rect caught a neighbour" if dest is OUT and blobs > 1 else ""
+            print(f"  [{label}] {name}: {piece.width}x{piece.height} blobs={blobs}{warn}")
             if not measure:
                 piece.save(dest / f"{name}.png")
                 if dest is OUT:
