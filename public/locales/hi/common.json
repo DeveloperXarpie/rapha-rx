@@ -465,5 +465,21 @@
   "serveGuests.dish.chutney": "चटनी",
   "serveGuests.dish.sambar": "सांबर",
   "serveGuests.dish.combo": "चटनी और सांबर",
-  "serveGuests.dish.coffee": "कॉफ़ी/चाय"
+  "serveGuests.dish.coffee": "कॉफ़ी/चाय",
+  "game.gardenKeeper": "बगीचे की देखभाल",
+  "gk.instruction": "जो फूल खिल जाए, उसी को पानी दें",
+  "gk.legend.seed": "यह अंकुर है। इसे रहने दें",
+  "gk.legend.sprouted": "खिल गया, घेरा बंद हो रहा है। अभी पानी दें",
+  "gk.legend.dried": "देर हो गई तो यह मुरझा जाता है",
+  "gk.legend.avoid": "जो फूल पहले ही मुरझा चुका है, उसे कभी पानी न दें",
+  "gk.progress": "पानी दिया {{watered}} / {{target}}",
+  "gk.toast.notReady": "अभी तैयार नहीं",
+  "gk.toast.tooLate": "इसके लिए देर हो गई",
+  "gk.toast.notThis": "यह नहीं",
+  "gk.roundComplete": "बगीचा सिंच गया",
+  "gk.outOfHearts": "फिर से कोशिश करें",
+  "gk.timeUp": "समय समाप्त",
+  "gk.summary": "{{target}} में से {{watered}} फूलों को पानी मिला। {{dried}} मुरझा गए।",
+  "gk.start": "शुरू करें",
+  "gk.next": "अगला राउंड"
 }

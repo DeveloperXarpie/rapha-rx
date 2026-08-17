@@ -465,5 +465,21 @@
   "serveGuests.dish.chutney": "Chutney",
   "serveGuests.dish.sambar": "Sambar",
   "serveGuests.dish.combo": "Chutney & Sambar",
-  "serveGuests.dish.coffee": "Coffee/Tea"
+  "serveGuests.dish.coffee": "Coffee/Tea",
+  "game.gardenKeeper": "Garden Keeper",
+  "gk.instruction": "Water each flower once it blooms",
+  "gk.legend.seed": "A sprout. Leave it be",
+  "gk.legend.sprouted": "In bloom, ring closing. Water it now",
+  "gk.legend.dried": "Left too long, it wilts",
+  "gk.legend.avoid": "Never water a flower that has already wilted",
+  "gk.progress": "WATERED {{watered}} / {{target}}",
+  "gk.toast.notReady": "Not ready yet",
+  "gk.toast.tooLate": "Too late for this one",
+  "gk.toast.notThis": "Not this one",
+  "gk.roundComplete": "Garden watered",
+  "gk.outOfHearts": "Let's try again",
+  "gk.timeUp": "Time's up",
+  "gk.summary": "{{watered}} of {{target}} flowers watered. {{dried}} wilted.",
+  "gk.start": "Start",
+  "gk.next": "Next round"
 }

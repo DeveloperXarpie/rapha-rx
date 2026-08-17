@@ -465,5 +465,21 @@
   "serveGuests.dish.chutney": "ಚಟ್ನಿ",
   "serveGuests.dish.sambar": "ಸಾಂಬಾರ್",
   "serveGuests.dish.combo": "ಚಟ್ನಿ ಮತ್ತು ಸಾಂಬಾರ್",
-  "serveGuests.dish.coffee": "ಕಾಫಿ/ಚಹಾ"
+  "serveGuests.dish.coffee": "ಕಾಫಿ/ಚಹಾ",
+  "game.gardenKeeper": "ತೋಟದ ಆರೈಕೆ",
+  "gk.instruction": "ಅರಳಿದ ಹೂವಿಗೆ ಮಾತ್ರ ನೀರು ಹಾಕಿ",
+  "gk.legend.seed": "ಇದು ಮೊಳಕೆ. ಹಾಗೆಯೇ ಬಿಡಿ",
+  "gk.legend.sprouted": "ಅರಳಿದೆ, ಉಂಗುರ ಮುಚ್ಚುತ್ತಿದೆ. ಈಗಲೇ ನೀರು ಹಾಕಿ",
+  "gk.legend.dried": "ತಡವಾದರೆ ಬಾಡಿ ಹೋಗುತ್ತದೆ",
+  "gk.legend.avoid": "ಈಗಾಗಲೇ ಬಾಡಿದ ಹೂವಿಗೆ ಎಂದಿಗೂ ನೀರು ಹಾಕಬೇಡಿ",
+  "gk.progress": "ನೀರು ಹಾಕಿದ್ದು {{watered}} / {{target}}",
+  "gk.toast.notReady": "ಇನ್ನೂ ಸಿದ್ಧವಿಲ್ಲ",
+  "gk.toast.tooLate": "ಇದಕ್ಕೆ ತಡವಾಯಿತು",
+  "gk.toast.notThis": "ಇದು ಅಲ್ಲ",
+  "gk.roundComplete": "ತೋಟಕ್ಕೆ ನೀರಾಯಿತು",
+  "gk.outOfHearts": "ಇನ್ನೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸೋಣ",
+  "gk.timeUp": "ಸಮಯ ಮುಗಿಯಿತು",
+  "gk.summary": "{{target}} ಹೂವುಗಳಲ್ಲಿ {{watered}} ಹೂವುಗಳಿಗೆ ನೀರಾಯಿತು. {{dried}} ಬಾಡಿದವು.",
+  "gk.start": "ಪ್ರಾರಂಭಿಸಿ",
+  "gk.next": "ಮುಂದಿನ ಸುತ್ತು"
 }
