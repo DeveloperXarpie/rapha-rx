@@ -311,3 +311,53 @@ export function getTrainYardParams(score: number): TrainYardDynamicParams {
     lives: 3,
   };
 }
+
+export interface MarketMemoryDynamicParams {
+  /** Targets on the shopping list. */
+  listLength: number;
+  /** How long the list stays visible before the blind drops. */
+  listSeconds: number;
+  /** How long the blind is held down, delayed-retrieval bonus already folded in. */
+  retentionMs: number;
+  /** Seed each target's lookalike twin as a decoy. */
+  similarPackaging: boolean;
+  /** Lengthens the covered hold. */
+  delayedRetrieval: boolean;
+  /** Draw targets and most filler from a single product group. */
+  listCategory: boolean;
+  lives: number;
+  hints: number;
+}
+
+/**
+ * Every threshold lives here so the curve can be retuned from one place after play-testing.
+ * See docs/superpowers/specs/2026-08-17-market-memory-design.md section 9.
+ */
+const MM = {
+  listLengthMin: 3,
+  listLengthMax: 6,
+  listMsEasy: 9000,
+  listMsHard: 3500,
+  retentionBaseMs: 1500,
+  delayedBonusMs: 2500,
+  similarPackagingAt: 0.25,
+  delayedRetrievalAt: 0.55,
+  listCategoryAt: 0.75,
+  lives: 3,
+  hints: 2,
+} as const;
+
+export function getMarketMemoryParams(score: number): MarketMemoryDynamicParams {
+  const s = Math.max(0, Math.min(1, score));
+  const delayedRetrieval = s >= MM.delayedRetrievalAt;
+  return {
+    listLength: lerpInt(MM.listLengthMin, MM.listLengthMax, s),
+    listSeconds: lerpInt(MM.listMsEasy, MM.listMsHard, s),
+    retentionMs: MM.retentionBaseMs + (delayedRetrieval ? MM.delayedBonusMs : 0),
+    similarPackaging: s >= MM.similarPackagingAt,
+    delayedRetrieval,
+    listCategory: s >= MM.listCategoryAt,
+    lives: MM.lives,
+    hints: MM.hints,
+  };
+}
