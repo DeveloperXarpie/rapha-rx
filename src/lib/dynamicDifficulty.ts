@@ -326,6 +326,44 @@ export function getServeGuestsParams(score: number): ServeGuestsDynamicParams {
   };
 }
 
+export interface GardenKeeperDynamicParams {
+  /** Total objects in the bed, blooming flowers plus wilted distractors. */
+  plantCount: number;
+  /** Share of plantCount that is already-wilted flowers, which must not be watered. */
+  distractorRatio: number;
+  /** Waterings needed to complete the round. */
+  targetCount: number;
+  /** Gap between spawner fires. */
+  spawnIntervalMs: number;
+  /** How long a sprouted plant stays waterable before it dries up. */
+  thirstWindowMs: number;
+  /** Ceiling on simultaneously sprouted plants. */
+  maxConcurrentThirsty: number;
+  roundDurationMs: number;
+  lives: number;
+}
+
+/**
+ * Two pressures from one score: search load (plantCount, distractorRatio) and time
+ * pressure (spawn rate, window length, concurrency), so the curve goes wide before
+ * it goes fast. Round length and lives are fixed - a shorter round would not fit the
+ * two-minute category slot any better, and fewer than three hearts ends the round on
+ * a single lapse of attention.
+ */
+export function getGardenKeeperParams(score: number): GardenKeeperDynamicParams {
+  const s = Math.max(0, Math.min(1, score));
+  return {
+    plantCount: lerpInt(12, 24, s),
+    distractorRatio: lerp(0.25, 0.55, s),
+    targetCount: lerpInt(8, 20, s),
+    spawnIntervalMs: lerpInt(3000, 1200, s),
+    thirstWindowMs: lerpInt(6000, 2800, s),
+    maxConcurrentThirsty: s < 0.4 ? 1 : s < 0.75 ? 2 : 3,
+    roundDurationMs: 90000,
+    lives: 3,
+  };
+}
+
 export interface MarketMemoryDynamicParams {
   /** Targets on the shopping list. */
   listLength: number;
