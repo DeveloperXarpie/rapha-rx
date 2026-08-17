@@ -9,12 +9,14 @@ interface CrateProps {
   index: number;
   picked: boolean;
   hinted: boolean;
+  /** The shelf is on screen from the first frame, but only live during `shopping`. */
+  interactive: boolean;
   reduced: boolean;
   /** Receives the board-space tap point so the caller can float a toast there. */
   onTap: (index: number, x: number, y: number) => void;
 }
 
-export default function Crate({ item, index, picked, hinted, reduced, onTap }: CrateProps) {
+export default function Crate({ item, index, picked, hinted, interactive, reduced, onTap }: CrateProps) {
   const box = crateBox(index);
   const border = picked ? COLOURS.greenPick : hinted ? COLOURS.amber : COLOURS.woodDark;
 
@@ -31,8 +33,8 @@ export default function Crate({ item, index, picked, hinted, reduced, onTap }: C
         width: CRATE_W,
         height: CRATE_H,
         zIndex: 5,
-        padding: 0,
-        cursor: 'pointer',
+        padding: '8px 8px 6px',
+        cursor: interactive ? 'pointer' : 'default',
         background: `linear-gradient(180deg, ${COLOURS.woodLight} 0%, ${COLOURS.woodDark} 100%)`,
         border: `5px solid ${border}`,
         borderBottom: `7px solid ${picked ? COLOURS.greenEdge : COLOURS.woodDarker}`,
@@ -51,7 +53,13 @@ export default function Crate({ item, index, picked, hinted, reduced, onTap }: C
       }}
     >
       <Product item={item} size={78} />
-      <span style={{ fontSize: 19, fontWeight: 700, color: COLOURS.creamLight, lineHeight: 1.1, paddingBottom: 4 }}>
+      <span style={{
+        fontSize: 19, fontWeight: 700, color: '#FFF2D8', letterSpacing: '.04em',
+        lineHeight: 1.1,
+        // The name is the reliable signal for telling twins apart, so it gets a shadow
+        // to hold contrast against the wood grain rather than relying on fill alone.
+        textShadow: '0 2px 0 rgba(60,32,10,.55)',
+      }}>
         {item.name}
       </span>
       {picked && (

@@ -30,6 +30,7 @@ const GAME_BY_CATEGORY: Record<GameCategory, { id: string; nameKey: string; icon
     { id: 'sequence-repeat',      nameKey: 'game.sequenceRepeat',     icon: '🎨', imageSrc: '/placeholders/games/sequence-repeat.svg' },
     { id: 'picture-postcard',     nameKey: 'game.picturePostcard',    icon: '📮', imageSrc: '/placeholders/games/picture-postcard.svg' },
     { id: 'train-yard',           nameKey: 'game.trainYard',          icon: '🚂', imageSrc: '/placeholders/games/train-yard.svg' },
+    { id: 'market-memory',        nameKey: 'game.marketMemory',       icon: '🧺', imageSrc: '/placeholders/games/market-memory.svg' },
   ],
   attention: [
     { id: 'spot-focus',    nameKey: 'game.spotFocus',    icon: '👁️', imageSrc: '/placeholders/games/spot-focus.svg' },
@@ -40,6 +41,7 @@ const GAME_BY_CATEGORY: Record<GameCategory, { id: string; nameKey: string; icon
     { id: 'morning-routine-quest', nameKey: 'game.morningRoutine', icon: '☀️', imageSrc: '/placeholders/games/morning-routine-quest.svg' },
     { id: 'recipe-builder',        nameKey: 'game.recipeBuilder',  icon: '🍲', imageSrc: '/placeholders/games/recipe-builder.svg' },
     { id: 'garden-sequencer',      nameKey: 'game.gardenSequencer', icon: '🌱', imageSrc: '/placeholders/games/garden-sequencer.svg' },
+    { id: 'serve-guests',          nameKey: 'game.serveGuests',    icon: '🍽️', imageSrc: '/placeholders/games/serve-guests.svg' },
   ],
 };
 
@@ -68,10 +70,13 @@ export default function HomeScreen() {
   const profile    = useAppStore((s) => s.activeProfile);
   const session    = useAppStore((s) => s.currentSession);
   const startSession = useAppStore((s) => s.startSession);
+  const devCompleteToday = useAppStore((s) => s.devCompleteToday);
+  const devResetToday = useAppStore((s) => s.devResetToday);
 
   const [previousSession, setPreviousSession] = useState<SessionState | null>(null);
   const [isResumable, setIsResumable] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const firstName = profile?.nickname ?? profile?.firstName ?? '';
 
@@ -86,7 +91,7 @@ export default function HomeScreen() {
       setIsResumable(!!resumable);
       setLoading(false);
     });
-  }, [profile]);
+  }, [profile, refreshKey]);
 
   function handleStartSession() {
     startSession();
@@ -95,6 +100,13 @@ export default function HomeScreen() {
 
   function handleResumeSession() {
     navigate('/app/rotation');
+  }
+
+  // Dev-only. Re-runs the previous/resumable lookup once the Dexie write lands,
+  // so the screen reflects the new session state without a manual refresh.
+  async function handleDevAction(action: () => Promise<void>) {
+    await action();
+    setRefreshKey((k) => k + 1);
   }
 
   function handlePracticeGame(gameId: string) {
@@ -258,6 +270,27 @@ export default function HomeScreen() {
         </button>
         <span className="text-small text-caption-text opacity-50">v{version}</span>
       </div>
+
+      {/* Dev-only session shortcuts. Stripped from production builds — Vite
+          substitutes import.meta.env.DEV as a literal false. */}
+      {import.meta.env.DEV && (
+        <div className="pt-3 flex items-center justify-center gap-3">
+          <button
+            onClick={() => handleDevAction(devCompleteToday)}
+            className="font-mono text-small text-amber-700 border border-dashed border-amber-400
+                       rounded px-3 py-1 hover:bg-amber-50"
+          >
+            dev: complete today
+          </button>
+          <button
+            onClick={() => handleDevAction(devResetToday)}
+            className="font-mono text-small text-amber-700 border border-dashed border-amber-400
+                       rounded px-3 py-1 hover:bg-amber-50"
+          >
+            dev: reset today
+          </button>
+        </div>
+      )}
     </div>
   );
 }

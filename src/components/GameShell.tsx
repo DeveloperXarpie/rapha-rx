@@ -290,6 +290,28 @@ function computePerformanceRatio(gameId: string, result: LevelResult): number {
     return Math.min(1, ratio);
   }
 
+  if (gameId === 'serve-guests') {
+    // Items rather than guests: the round has no fail state, so the ratio has to be
+    // granular enough to move the score on its own.
+    const itemsServed    = (m.itemsServed    as number) ?? 0;
+    const itemsRequested = (m.itemsRequested as number) ?? 1;
+    const dishesBurnt    = (m.dishesBurnt    as number) ?? 0;
+    const serveRatio  = itemsServed / Math.max(1, itemsRequested);
+    const wastePenalty = Math.min(0.3, dishesBurnt * 0.05);
+    return Math.max(0, Math.min(1, serveRatio - wastePenalty));
+  }
+
+  if (gameId === 'market-memory') {
+    // Wrong picks are penalised harder than misses: picking a twin is the specific
+    // failure this game measures, whereas a miss is ordinary forgetting.
+    const correct    = (m.correct    as number) ?? 0;
+    const wrong      = (m.wrong      as number) ?? 0;
+    const listLength = (m.listLength as number) ?? 4;
+    const hintsUsed  = (m.hintsUsed  as number) ?? 0;
+    const ratio = correct / Math.max(1, listLength) - wrong * 0.15 - hintsUsed * 0.05;
+    return Math.max(0, Math.min(1, ratio));
+  }
+
   // Default for non-dynamic games
   return result.completed ? 0.7 : 0.3;
 }

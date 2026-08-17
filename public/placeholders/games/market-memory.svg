@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" width="200" height="140" role="img" aria-label="Market Memory">
+  <defs>
+    <pattern id="s" width="34" height="20" patternUnits="userSpaceOnUse">
+      <rect width="17" height="20" fill="#FBF3E4"/>
+    </pattern>
+  </defs>
+  <rect width="200" height="140" fill="#C6E1F1"/>
+  <rect y="78" width="200" height="62" fill="#C99A6B"/>
+  <rect x="12" y="30" width="176" height="20" fill="#D24B42"/>
+  <rect x="12" y="30" width="176" height="20" fill="url(#s)"/>
+  <rect x="12" y="50" width="176" height="5" fill="#A9352E"/>
+  <rect x="30" y="86" width="42" height="32" rx="6" fill="#A9743F" stroke="#8A5A34" stroke-width="4"/>
+  <rect x="80" y="86" width="42" height="32" rx="6" fill="#A9743F" stroke="#8A5A34" stroke-width="4"/>
+  <rect x="130" y="86" width="42" height="32" rx="6" fill="#A9743F" stroke="#8A5A34" stroke-width="4"/>
+  <circle cx="51" cy="100" r="9" fill="#D0453C"/>
+  <rect x="92" y="92" width="18" height="20" rx="3" fill="#F7F5EF"/>
+  <rect x="142" y="92" width="18" height="20" rx="3" fill="#DE9C22"/>
+</svg>

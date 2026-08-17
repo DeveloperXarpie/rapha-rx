@@ -312,6 +312,20 @@ export function getTrainYardParams(score: number): TrainYardDynamicParams {
   };
 }
 
+export interface ServeGuestsDynamicParams {
+  /**
+   * Largest order a guest can arrive with; each guest draws 1..this many distinct dishes.
+   * The only knob for this game, so it steps rather than lerps.
+   */
+  maxItemsPerGuest: number;
+}
+
+export function getServeGuestsParams(score: number): ServeGuestsDynamicParams {
+  return {
+    maxItemsPerGuest: score < 0.34 ? 1 : score < 0.67 ? 2 : 3,
+  };
+}
+
 export interface MarketMemoryDynamicParams {
   /** Targets on the shopping list. */
   listLength: number;

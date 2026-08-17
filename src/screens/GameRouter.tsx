@@ -5,6 +5,7 @@ import {
   getRememberMatchParams, getSpotFocusParams, getMorningRoutineParams, getWordSearchParams,
   getShoppingListParams, getSequenceRepeatParams, getFocusFilterParams,
   getRecipeBuilderParams, getGardenSequencerParams, getTrainYardParams,
+  getServeGuestsParams, getMarketMemoryParams,
 } from '../lib/dynamicDifficulty';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import GameShell, { type LevelResult } from '../components/GameShell';
@@ -21,8 +22,10 @@ import FocusFilter from '../games/attention/FocusFilter';
 import MorningRoutineQuest from '../games/executive/MorningRoutineQuest';
 import RecipeBuilder from '../games/executive/RecipeBuilder';
 import GardenSequencer from '../games/executive/GardenSequencer';
+import ServeTheGuests from '../games/executive/ServeTheGuests';
 import PicturePostcard from '../games/memory/PicturePostcard';
 import TrainYard from '../games/memory/TrainYard';
+import MarketMemory from '../games/memory/MarketMemory';
 
 // (all games now use the dynamic difficulty system — no static level imports needed)
 
@@ -47,6 +50,7 @@ const GAME_REGISTRY: Record<string, GameEntry> = {
   'remember-match':         { component: RememberMatch,       category: 'memory'    },
   'picture-postcard':       { component: PicturePostcard,     category: 'memory'    },
   'train-yard':             { component: TrainYard,           category: 'memory'    },
+  'market-memory':          { component: MarketMemory,        category: 'memory'    },
   'shopping-list-recall':   { component: ShoppingListRecall,  category: 'memory'    },
   'sequence-repeat':        { component: SequenceRepeat,      category: 'memory'    },
   'spot-focus':             { component: SpotFocus,           category: 'attention' },
@@ -55,6 +59,7 @@ const GAME_REGISTRY: Record<string, GameEntry> = {
   'morning-routine-quest':  { component: MorningRoutineQuest, category: 'executive' },
   'recipe-builder':         { component: RecipeBuilder,       category: 'executive' },
   'garden-sequencer':       { component: GardenSequencer,     category: 'executive' },
+  'serve-guests':           { component: ServeTheGuests,      category: 'executive' },
 };
 
 // ─── Dynamic content generation ───────────────────────────────────────────────
@@ -144,6 +149,22 @@ function generateContentForGame(gameId: string, score: number): { levelConfig: L
 
   if (gameId === 'train-yard') {
     const params = getTrainYardParams(score);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: undefined,
+    };
+  }
+
+  if (gameId === 'market-memory') {
+    const params = getMarketMemoryParams(score);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: undefined,
+    };
+  }
+
+  if (gameId === 'serve-guests') {
+    const params = getServeGuestsParams(score);
     return {
       levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
       generatedContent: undefined,

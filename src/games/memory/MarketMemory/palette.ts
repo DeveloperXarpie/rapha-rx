@@ -56,6 +56,4 @@ export const COLOURS = {
   streetBot:    '#B29C7E',
 } as const;
 
-export const BUILDINGS = ['#C7A98A', '#D3B694', '#C2A283', '#D0B291'] as const;
-
 export const CONFETTI_COLOURS = ['#EDBB2A', '#F5D778', '#D7443C', '#3D7CC9', '#FFFFFF', '#5AA83F'] as const;

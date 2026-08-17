@@ -361,30 +361,36 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
             reduced={reduced}
           />
 
-          {phase === 'shopping' && round.crates.map((id, i) => (
+          {/*
+            The shelf is scenery as much as it is UI, so it is present from the first
+            frame - as in the prototype, which maps the crates unconditionally and gates
+            only the cursor. Rendering it solely during `shopping` left two thirds of the
+            board as bare ground through encoding and retention. Interaction is still
+            gated: handleCrateTap returns early outside `shopping`.
+          */}
+          {round.crates.map((id, i) => (
             <Crate
               key={id}
               item={BY_ID[id]}
               index={i}
               picked={picked.includes(id)}
               hinted={peek === id}
+              interactive={phase === 'shopping'}
               reduced={reduced}
               onTap={handleCrateTap}
             />
           ))}
 
-          {phase === 'shopping' && (
-            <CartStrip
-              slots={slots}
-              listLength={round.list.length}
-              submitEnabled={picked.length > 0}
-              cartLabel={t('mm.myCart', 'MY CART')}
-              submitLabel={t('mm.submit', 'SUBMIT')}
-              reduced={reduced}
-              onRemove={handleRemove}
-              onSubmit={handleSubmit}
-            />
-          )}
+          <CartStrip
+            slots={slots}
+            listLength={round.list.length}
+            submitEnabled={phase === 'shopping' && picked.length > 0}
+            cartLabel={t('mm.myCart', 'MY CART')}
+            submitLabel={t('mm.submit', 'SUBMIT')}
+            reduced={reduced}
+            onRemove={handleRemove}
+            onSubmit={handleSubmit}
+          />
 
           {effects.map((e) => <EffectView key={e.id} effect={e} reduced={reduced} />)}
 

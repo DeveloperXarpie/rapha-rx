@@ -44,6 +44,12 @@ interface AppState {
   restoreSession: (state: CurrentSession) => void;
   tickCategory: () => void;
 
+  // Dev-only session shortcuts. Every call site is behind `import.meta.env.DEV`,
+  // which Vite substitutes as a literal `false` in production, so these are
+  // unreachable in a built bundle.
+  devCompleteToday: () => Promise<void>;
+  devResetToday: () => Promise<void>;
+
   // Settings slice
   settings: UserSettings;
   updateSetting: <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => void;
@@ -67,8 +73,10 @@ const defaultSettings: UserSettings = {
 };
 
 // Helper — persist session to Dexie (called from actions, not part of interface)
-function persistSession(userId: string | undefined, state: CurrentSession) {
-  if (!userId) return;
+// Returns the write promise so callers that need the write to land before reading
+// back (the dev helpers) can await it. Normal actions ignore it, as before.
+function persistSession(userId: string | undefined, state: CurrentSession): Promise<void> {
+  if (!userId) return Promise.resolve();
   const dbState: SessionState = {
     userId,
     date: state.date,
@@ -80,7 +88,7 @@ function persistSession(userId: string | undefined, state: CurrentSession) {
     secondsInCurrentCategory: state.secondsInCurrentCategory,
     sessionStartedAt: state.sessionStartedAt,
   };
-  upsertSessionState(dbState).catch(() => {});
+  return upsertSessionState(dbState).catch(() => {});
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -187,6 +195,35 @@ export const useAppStore = create<AppState>()(
             secondsInCurrentCategory: prev.secondsInCurrentCategory + 1,
           },
         });
+      },
+
+      // ─── Dev-only ──────────────────────────────────────────────────────────
+      // Marks today as fully done so HomeScreen shows the Practice Mode game
+      // list without playing a session. Awaits the Dexie write, because the
+      // store rehydrates from Dexie on profile load and a state-only change
+      // would not survive a refresh.
+      devCompleteToday: async () => {
+        const prev = get().currentSession;
+        const updated: CurrentSession = {
+          ...prev,
+          date: todayISO(),
+          questionnaireCompleted: true,
+          categoriesCompleted: ['memory', 'attention', 'executive'],
+          currentCategory: null,
+          currentGameId: null,
+          secondsInCurrentCategory: 0,
+          sessionStartedAt: prev.sessionStartedAt ?? Date.now(),
+        };
+        set({ currentSession: updated });
+        await persistSession(get().activeProfile?.userId, updated);
+      },
+
+      // The inverse, so the Start Session and Resume flows stay testable after
+      // devCompleteToday has been used.
+      devResetToday: async () => {
+        const updated: CurrentSession = { ...defaultSession, date: todayISO() };
+        set({ currentSession: updated });
+        await persistSession(get().activeProfile?.userId, updated);
       },
 
       // Settings slice
