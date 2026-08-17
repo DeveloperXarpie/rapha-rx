@@ -1,20 +1,24 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { FLOWER_SPECIES } from '../palette';
 import { ALL_SPRITE_URLS, SPROUT_URL, bloomUrl, spriteUrl, spriteUrlsFor, wiltedUrl } from '../sprites';
 
-/** A sprite URL is served from public/, so it maps to public/<path> on disk. */
-function onDisk(url: string): string {
-  return resolve(__dirname, '../../../../../public', url.replace(/^\//, ''));
-}
+/**
+ * The set of sprites that actually exist on disk.
+ *
+ * Enumerated with Vite's own glob rather than node:fs: `tsconfig.app.json` restricts
+ * ambient types to `vite/client` precisely so app code cannot reach for Node APIs, and
+ * widening that for one test would be the wrong trade.
+ */
+const ON_DISK = new Set(
+  Object.keys(import.meta.glob('/public/garden-assets/*.png')).map((p) => p.replace('/public', '')),
+);
 
 describe('sprite catalogue', () => {
   it('resolves every catalogued URL to a file that actually exists', () => {
     // The single failure this catches is the one that matters: a rename in the slicing
     // script that silently leaves the board painting broken images.
     for (const url of ALL_SPRITE_URLS) {
-      expect(existsSync(onDisk(url)), `missing sprite: ${url}`).toBe(true);
+      expect(ON_DISK.has(url), `missing sprite: ${url}`).toBe(true);
     }
   });
 
@@ -75,6 +79,6 @@ describe('spriteUrlsFor', () => {
 
   it('resolves everything it returns to a real file', () => {
     const urls = spriteUrlsFor(FLOWER_SPECIES.map((species) => ({ kind: 'flower' as const, species })));
-    for (const url of urls) expect(existsSync(onDisk(url)), `missing sprite: ${url}`).toBe(true);
+    for (const url of urls) expect(ON_DISK.has(url), `missing sprite: ${url}`).toBe(true);
   });
 });
