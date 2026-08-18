@@ -7,6 +7,14 @@
  * `transform` for the element's whole life. Centring those elements any other way throws
  * them to the top-left corner. Confetti custom properties carry their units on the
  * values, not inside the calc().
+ *
+ * The same trap applies to `opacity`, and it has bitten twice. mm-fade and mm-slidein
+ * both end on `opacity: 1` and both run with fill `both`, so an element carrying either
+ * of them can never afterwards be dimmed or hidden by an `opacity` declaration - the
+ * animation outranks it in the cascade, permanently. It cost us a shopping list that
+ * stayed readable under the retention cover and a DONE button that never dimmed when
+ * disabled. Whenever an element needs both an entrance and a state-driven opacity, use
+ * two elements: the outer animates, the inner sets opacity. See `listRowStyles.ts`.
  */
 export const KEYFRAMES = `
 @keyframes mm-fade { from { opacity: 0; } to { opacity: 1; } }

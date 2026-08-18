@@ -1,4 +1,5 @@
 import { CLIPBOARD, CLIPBOARD_PAPER } from './geometry';
+import { listRowStyles } from './listRowStyles';
 import type { Item } from './items';
 import { COLOURS } from './palette';
 import Product from './Product';
@@ -59,22 +60,22 @@ export default function ListCard({ items, covered, leaving, reduced }: ListCardP
         justifyContent: 'center',
         padding: '0 14px', boxSizing: 'border-box',
       }}>
-        {items.map((it, i) => (
-          <div
-            key={it.id}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 18, height: rowH,
-              opacity: covered ? 0 : 1,
-              transition: 'opacity 120ms linear',
-              animation: reduced
-                ? `mm-fade 300ms ease ${i * 90}ms both`
-                : `mm-slidein 300ms ${EASE_SETTLE} ${i * 90}ms both`,
-            }}
-          >
-            <Product item={it} size={Math.min(78, rowH - 12)} />
-            <span style={{ fontSize: 30, fontWeight: 700, color: COLOURS.ink }}>{it.name}</span>
-          </div>
-        ))}
+        {items.map((it, i) => {
+          const style = listRowStyles(i, covered, reduced);
+          return (
+            // Two elements, not one: the outer owns the entrance animation and the inner
+            // owns the blanking. See listRowStyles for why they cannot be the same node.
+            <div key={it.id} style={{ height: rowH, ...style.entrance }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 18, height: '100%',
+                ...style.content,
+              }}>
+                <Product item={it} size={Math.min(78, rowH - 12)} />
+                <span style={{ fontSize: 30, fontWeight: 700, color: COLOURS.ink }}>{it.name}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

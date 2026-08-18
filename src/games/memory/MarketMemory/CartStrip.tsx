@@ -90,30 +90,40 @@ export default function CartStrip({
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={onSubmit}
-        disabled={!submitEnabled}
-        aria-label={submitLabel}
-        style={{
-          position: 'absolute',
-          left: DONE_BTN.left, top: DONE_BTN.top, width: DONE_BTN.width, height: DONE_BTN.height,
-          zIndex: 7, padding: 0, border: 'none', background: 'transparent',
-          opacity: submitEnabled ? 1 : 0.5,
-          filter: submitEnabled ? 'none' : 'grayscale(.55)',
-          cursor: submitEnabled ? 'pointer' : 'default',
-          transition: 'opacity 200ms linear, filter 200ms linear',
-          animation: 'mm-fade 300ms ease both',
-        }}
-      >
-        <img
-          src={UI_DONE}
-          alt=""
-          aria-hidden="true"
-          draggable={false}
-          style={{ width: '100%', height: '100%', display: 'block' }}
-        />
-      </button>
+      {/*
+        The entrance fade lives on the wrapper and the disabled dimming on the button.
+        Putting both on one element does not work: `mm-fade` runs with fill `both`, so its
+        final `opacity: 1` outranks the declaration and the button never dims.
+      */}
+      <div style={{
+        position: 'absolute',
+        left: DONE_BTN.left, top: DONE_BTN.top, width: DONE_BTN.width, height: DONE_BTN.height,
+        zIndex: 7,
+        animation: 'mm-fade 300ms ease both',
+      }}>
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={!submitEnabled}
+          aria-label={submitLabel}
+          style={{
+            width: '100%', height: '100%',
+            padding: 0, border: 'none', background: 'transparent',
+            opacity: submitEnabled ? 1 : 0.5,
+            filter: submitEnabled ? 'none' : 'grayscale(.55)',
+            cursor: submitEnabled ? 'pointer' : 'default',
+            transition: 'opacity 200ms linear, filter 200ms linear',
+          }}
+        >
+          <img
+            src={UI_DONE}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            style={{ width: '100%', height: '100%', display: 'block' }}
+          />
+        </button>
+      </div>
     </>
   );
 }
