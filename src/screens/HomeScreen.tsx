@@ -43,6 +43,7 @@ const GAME_BY_CATEGORY: Record<GameCategory, { id: string; nameKey: string; icon
     { id: 'recipe-builder',        nameKey: 'game.recipeBuilder',  icon: '🍲', imageSrc: '/placeholders/games/recipe-builder.svg' },
     { id: 'garden-sequencer',      nameKey: 'game.gardenSequencer', icon: '🌱', imageSrc: '/placeholders/games/garden-sequencer.svg' },
     { id: 'serve-guests',          nameKey: 'game.serveGuests',    icon: '🍽️', imageSrc: '/placeholders/games/serve-guests.svg' },
+    { id: 'clear-the-way',         nameKey: 'game.clearTheWay',    icon: '🐠', imageSrc: '/placeholders/games/clear-the-way.svg' },
   ],
 };
 

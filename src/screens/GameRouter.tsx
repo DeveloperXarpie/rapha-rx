@@ -6,6 +6,7 @@ import {
   getShoppingListParams, getSequenceRepeatParams, getFocusFilterParams,
   getRecipeBuilderParams, getGardenSequencerParams, getTrainYardParams,
   getServeGuestsParams, getMarketMemoryParams, getGardenKeeperParams,
+  getClearTheWayParams,
 } from '../lib/dynamicDifficulty';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import GameShell, { type LevelResult } from '../components/GameShell';
@@ -24,6 +25,7 @@ import MorningRoutineQuest from '../games/executive/MorningRoutineQuest';
 import RecipeBuilder from '../games/executive/RecipeBuilder';
 import GardenSequencer from '../games/executive/GardenSequencer';
 import ServeTheGuests from '../games/executive/ServeTheGuests';
+import ClearTheWay from '../games/executive/ClearTheWay';
 import PicturePostcard from '../games/memory/PicturePostcard';
 import TrainYard from '../games/memory/TrainYard';
 import MarketMemory from '../games/memory/MarketMemory';
@@ -35,6 +37,7 @@ import { generateRememberMatchContent, type GeneratedRememberMatchContent } from
 import { generateSpotFocusContent, type GeneratedScene } from '../lib/contentGenerators/spotFocus';
 import { generateMorningRoutineContent, type GeneratedRoutineContent } from '../lib/contentGenerators/morningRoutine';
 import { generateWordSearchContent } from '../lib/contentGenerators/wordSearch';
+import { generateClearTheWayContent } from '../lib/contentGenerators/clearTheWay';
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
@@ -62,6 +65,7 @@ const GAME_REGISTRY: Record<string, GameEntry> = {
   'recipe-builder':         { component: RecipeBuilder,       category: 'executive' },
   'garden-sequencer':       { component: GardenSequencer,     category: 'executive' },
   'serve-guests':           { component: ServeTheGuests,      category: 'executive' },
+  'clear-the-way':          { component: ClearTheWay,         category: 'executive' },
 };
 
 // ─── Dynamic content generation ───────────────────────────────────────────────
@@ -178,6 +182,14 @@ function generateContentForGame(gameId: string, score: number): { levelConfig: L
     return {
       levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
       generatedContent: undefined,
+    };
+  }
+
+  if (gameId === 'clear-the-way') {
+    const params = getClearTheWayParams(score);
+    return {
+      levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
+      generatedContent: generateClearTheWayContent(params),
     };
   }
 

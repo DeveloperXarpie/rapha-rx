@@ -496,5 +496,16 @@
   "gk.summary": "{{watered}} of {{target}} flowers watered. {{dried}} wilted.",
   "gk.start": "Start",
   "gk.next": "Next round",
-  "serveGuests.dispose": "DISPOSE"
+  "serveGuests.dispose": "DISPOSE",
+  "game.clearTheWay": "Clear the Way",
+  "clearTheWay.instruction": "Slide the blocks out of the way and free the fish.",
+  "clearTheWay.moves": "Moves",
+  "clearTheWay.best": "Fewest possible",
+  "clearTheWay.reset": "Start over",
+  "clearTheWay.hint": "Show me",
+  "clearTheWay.freed": "Free!",
+  "clearTheWay.movesTaken": "You did it in {{moves}} moves. Fewest possible: {{best}}.",
+  "clearTheWay.next": "Next puzzle",
+  "clearTheWay.aria.key": "The trapped fish",
+  "clearTheWay.aria.block": "A blocking stone"
 }

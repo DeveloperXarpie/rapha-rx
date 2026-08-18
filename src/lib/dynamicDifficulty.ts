@@ -424,3 +424,21 @@ export function getMarketMemoryParams(score: number): MarketMemoryDynamicParams 
     hints: MM.hints,
   };
 }
+
+// ─── Clear the Way ────────────────────────────────────────────────────────────
+
+export interface ClearTheWayDynamicParams {
+  /**
+   * Which shelf of the level catalog to draw this round's puzzle from, 1-5.
+   *
+   * The only knob: the puzzles themselves are hand-picked and solver-verified, so
+   * difficulty is chosen rather than computed.
+   */
+  tier: number;
+}
+
+export function getClearTheWayParams(score: number): ClearTheWayDynamicParams {
+  const s = Math.max(0, Math.min(1, score));
+  // Even fifths, so each tier owns the same slice of the ladder.
+  return { tier: Math.min(5, Math.floor(s * 5) + 1) };
+}

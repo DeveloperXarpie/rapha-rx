@@ -302,6 +302,18 @@ function computePerformanceRatio(gameId: string, result: LevelResult): number {
     return Math.max(0, Math.min(1, serveRatio - wastePenalty));
   }
 
+  if (gameId === 'clear-the-way') {
+    // Move efficiency is the whole reading: the puzzle has no fail state and no clock, so
+    // a player who thrashes and a player who plans both finish, and only the move count
+    // separates them.
+    const movesUsed = (m.movesUsed as number) ?? 1;
+    const minMoves  = (m.minMoves  as number) ?? 1;
+    const resets    = (m.resets    as number) ?? 0;
+    const hintsUsed = (m.hintsUsed as number) ?? 0;
+    const efficiency = minMoves / Math.max(1, movesUsed);
+    return Math.max(0, Math.min(1, efficiency - resets * 0.1 - hintsUsed * 0.15));
+  }
+
   if (gameId === 'garden-keeper') {
     // A deliberate divergence from the house pattern of inlining each game's ratio: this
     // maths is unit-tested against the round model, and a second copy here would drift.

@@ -496,5 +496,16 @@
   "gk.summary": "{{target}} में से {{watered}} फूलों को पानी मिला। {{dried}} मुरझा गए।",
   "gk.start": "शुरू करें",
   "gk.next": "अगला राउंड",
-  "serveGuests.dispose": "फेंकें"
+  "serveGuests.dispose": "फेंकें",
+  "game.clearTheWay": "रास्ता बनाइए",
+  "clearTheWay.instruction": "पत्थरों को खिसकाकर मछली को आज़ाद कीजिए।",
+  "clearTheWay.moves": "चालें",
+  "clearTheWay.best": "कम से कम चालें",
+  "clearTheWay.reset": "फिर से शुरू करें",
+  "clearTheWay.hint": "दिखाइए",
+  "clearTheWay.freed": "आज़ाद!",
+  "clearTheWay.movesTaken": "आपने {{moves}} चालों में किया। कम से कम: {{best}}।",
+  "clearTheWay.next": "अगली पहेली",
+  "clearTheWay.aria.key": "फँसी हुई मछली",
+  "clearTheWay.aria.block": "रास्ता रोकता पत्थर"
 }

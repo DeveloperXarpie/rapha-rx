@@ -496,5 +496,16 @@
   "gk.summary": "{{target}} ಹೂವುಗಳಲ್ಲಿ {{watered}} ಹೂವುಗಳಿಗೆ ನೀರಾಯಿತು. {{dried}} ಬಾಡಿದವು.",
   "gk.start": "ಪ್ರಾರಂಭಿಸಿ",
   "gk.next": "ಮುಂದಿನ ಸುತ್ತು",
-  "serveGuests.dispose": "ಬಿಸಾಡಿ"
+  "serveGuests.dispose": "ಬಿಸಾಡಿ",
+  "game.clearTheWay": "ದಾರಿ ಮಾಡಿ",
+  "clearTheWay.instruction": "ಕಲ್ಲುಗಳನ್ನು ಸರಿಸಿ ಮೀನನ್ನು ಬಿಡುಗಡೆ ಮಾಡಿ.",
+  "clearTheWay.moves": "ನಡೆಗಳು",
+  "clearTheWay.best": "ಕನಿಷ್ಠ ನಡೆಗಳು",
+  "clearTheWay.reset": "ಮತ್ತೆ ಆರಂಭಿಸಿ",
+  "clearTheWay.hint": "ತೋರಿಸಿ",
+  "clearTheWay.freed": "ಬಿಡುಗಡೆ!",
+  "clearTheWay.movesTaken": "ನೀವು {{moves}} ನಡೆಗಳಲ್ಲಿ ಮಾಡಿದಿರಿ. ಕನಿಷ್ಠ: {{best}}.",
+  "clearTheWay.next": "ಮುಂದಿನ ಒಗಟು",
+  "clearTheWay.aria.key": "ಸಿಕ್ಕಿಬಿದ್ದ ಮೀನು",
+  "clearTheWay.aria.block": "ದಾರಿ ತಡೆಯುವ ಕಲ್ಲು"
 }
