@@ -4,26 +4,29 @@ import type { LevelResult } from '../../../components/GameShell';
 import type { LevelConfig } from '../../types';
 import { useReducedMotion } from '../../../lib/useReducedMotion';
 
-import Backdrop from './Backdrop';
 import Blind from './Blind';
 import CartStrip from './CartStrip';
 import Crate from './Crate';
 import ListCard from './ListCard';
+import Scene from './Scene';
 import { EffectView } from './effects';
 import { lifetime, makeConfetti, makeToast, type Effect } from './effectModel';
 import {
-  BASKET, BOARD_H, BOARD_W, CANVAS_H, CANVAS_W, CAPTION, HINT_BTN, HUD_H,
+  BOARD_H, BOARD_W, CANVAS_H, CANVAS_W, CAPTION, HINT_BTN, HUD_H, READY_BTN,
 } from './geometry';
 import { BY_ID, type Item } from './items';
 import { COLOURS } from './palette';
 import { buildRound, scoreRound, type RoundScore } from './round';
+import { PRELOAD, UI_READY } from './sprites';
 import { EASE_SETTLE, MarketMemoryStyles } from './styles';
 
 // ─── Timings ──────────────────────────────────────────────────────────────────
 
 const BLIND_MS = 540;
-/** The blind must land before the list blanks, or the player watches the rows vanish. */
+/** The cover must land before the list blanks, or the player watches the rows vanish. */
 const ARM_MS = 40;
+/** How long the clipboard takes to clear the board once the cover is up. */
+const LEAVE_MS = 400;
 const DOT_TICK_MS = 120;
 const HINT_MS = 3000;
 
@@ -31,7 +34,6 @@ const HINT_MS = 3000;
 
 interface MarketMemoryParams {
   listLength: number;
-  listSeconds: number;
   retentionMs: number;
   similarPackaging: boolean;
   delayedRetrieval: boolean;
@@ -42,7 +44,6 @@ interface MarketMemoryParams {
 
 const DEFAULT_PARAMS: MarketMemoryParams = {
   listLength: 4,
-  listSeconds: 6000,
   retentionMs: 1500,
   similarPackaging: true,
   delayedRetrieval: false,
@@ -51,7 +52,13 @@ const DEFAULT_PARAMS: MarketMemoryParams = {
   hints: 2,
 };
 
-type Phase = 'encoding' | 'retention' | 'shopping' | 'roundEnd' | 'outOfHearts';
+/**
+ * `encoding` is at home and ends only when the player presses READY. `covering`,
+ * `travel` and `revealing` are the walk to the shop: the cover falls, the background
+ * changes underneath it, and it lifts again on a blank list. Everything from `shopping`
+ * on happens in the store.
+ */
+type Phase = 'encoding' | 'covering' | 'travel' | 'revealing' | 'shopping' | 'roundEnd' | 'outOfHearts';
 
 interface MarketMemoryProps {
   levelConfig: LevelConfig;
@@ -81,6 +88,8 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
   const [picked, setPicked] = useState<string[]>([]);
   const [covered, setCovered] = useState(false);
   const [blindDown, setBlindDown] = useState(false);
+  const [inStore, setInStore] = useState(false);
+  const [listLeaving, setListLeaving] = useState(false);
   const [retentionPct, setRetentionPct] = useState(0);
   const [lives, setLives] = useState(params.lives);
   const [hintsLeft, setHintsLeft] = useState(params.hints);
@@ -98,6 +107,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
   const mountedAt = useRef(0);
   const shoppingAt = useRef(0);
   const firstPickAt = useRef(0);
+  const studyMs = useRef(0);
   const hintsUsedRef = useRef(0);
   const pickOrderRef = useRef<string[]>([]);
 
@@ -107,9 +117,15 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
   // is impure and unstable across re-renders. Same pattern as Train Yard.
   useEffect(() => { mountedAt.current = Date.now(); }, []);
 
+  // The store backdrop and the DONE button are needed the moment the cover comes down.
+  // Warming them during encoding means the change of place is never a blank frame.
+  useEffect(() => {
+    PRELOAD.forEach((src) => { const img = new Image(); img.src = src; });
+  }, []);
+
   /**
-   * Warning 2 from the spec: kills both the pending phase timeout and the retention dot
-   * interval. Missing either leaves an old timer to fire a stale transition mid-round.
+   * Kills both the pending phase timeout and the retention dot interval. Missing either
+   * leaves an old timer to fire a stale transition mid-round.
    */
   const clearPhaseTimer = useCallback(() => {
     if (phaseTimer.current !== null) { window.clearTimeout(phaseTimer.current); phaseTimer.current = null; }
@@ -140,40 +156,54 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
 
   // ─── Phase schedule ─────────────────────────────────────────────────────────
   //
-  // Warning 1 from the spec: every transition runs on a setTimeout against a deadline,
-  // never on a display ticker. A ticker-driven machine deadlocks on a backgrounded tab.
+  // Every transition runs on a setTimeout against a deadline, never on a display ticker.
+  // A ticker-driven machine deadlocks on a backgrounded tab.
 
-  useEffect(() => {
+  /** Leaves `encoding`. The only exit: there is no countdown on the list any more. */
+  const handleReady = useCallback(() => {
     if (phase !== 'encoding') return;
-    // The blind starts falling as part of the transition, not as a reaction to being in
-    // `retention`: dropping it from the retention effect would be a synchronous setState
-    // inside an effect, which costs an extra render pass before the animation starts.
-    later(() => { setBlindDown(true); setPhase('retention'); }, params.listSeconds);
-  }, [phase, params.listSeconds, later]);
+    studyMs.current = Date.now() - mountedAt.current;
+    setBlindDown(true);
+    setPhase('covering');
+  }, [phase]);
 
   useEffect(() => {
-    if (phase !== 'retention') return;
+    if (phase !== 'covering') return;
+    // Blank the list and start the walk only once the cover has landed.
+    later(() => {
+      setCovered(true);
+      setInStore(true);
+      setPhase('travel');
+    }, BLIND_MS + ARM_MS);
+  }, [phase, later]);
 
-    // Warning 3: blank the list only once the blind has landed.
-    const armId = window.setTimeout(() => setCovered(true), BLIND_MS + ARM_MS);
-    reapTimers.current.push(armId);
+  useEffect(() => {
+    if (phase !== 'travel') return;
 
-    const holdStart = Date.now() + BLIND_MS;
+    const holdStart = Date.now();
     dotTimer.current = window.setInterval(() => {
-      const pct = (Date.now() - holdStart) / params.retentionMs;
-      setRetentionPct(Math.max(0, Math.min(1, pct)));
+      setRetentionPct(Math.max(0, Math.min(1, (Date.now() - holdStart) / params.retentionMs)));
     }, DOT_TICK_MS);
 
     phaseTimer.current = window.setTimeout(() => {
       if (dotTimer.current !== null) { window.clearInterval(dotTimer.current); dotTimer.current = null; }
       setRetentionPct(1);
       setBlindDown(false);
-      phaseTimer.current = window.setTimeout(() => {
-        shoppingAt.current = Date.now();
-        setPhase('shopping');
-      }, BLIND_MS);
-    }, BLIND_MS + params.retentionMs);
+      setPhase('revealing');
+    }, params.retentionMs);
   }, [phase, params.retentionMs]);
+
+  useEffect(() => {
+    if (phase !== 'revealing') return;
+    // The cover lifts on the blank list, and only then does the clipboard clear the board.
+    const leaveId = window.setTimeout(() => setListLeaving(true), BLIND_MS);
+    reapTimers.current.push(leaveId);
+
+    later(() => {
+      shoppingAt.current = Date.now();
+      setPhase('shopping');
+    }, BLIND_MS + LEAVE_MS);
+  }, [phase, later]);
 
   // ─── Interaction ────────────────────────────────────────────────────────────
 
@@ -186,7 +216,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
       return;
     }
     if (pickedRef.current.length >= round.list.length) {
-      pushEffects([makeToast(x, y, t('mm.basketFull', 'Basket full'))]);
+      pushEffects([makeToast(x, y, t('mm.basketFull', 'Cart full'))]);
       return;
     }
     if (firstPickAt.current === 0) firstPickAt.current = Date.now();
@@ -240,6 +270,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
         missed: score.missed.length,
         listLength: round.list.length,
         hintsUsed: hintsUsedRef.current,
+        studyMs: studyMs.current,
         timeToFirstPickMs: firstPickAt.current ? firstPickAt.current - shoppingAt.current : null,
         timeToSubmitMs: Date.now() - shoppingAt.current,
         pickOrder: [...pickOrderRef.current],
@@ -273,47 +304,62 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
   const slots: (Item | null)[] = Array.from({ length: round.list.length }, (_, i) =>
     picked[i] ? BY_ID[picked[i]] : null);
 
-  const caption = phase === 'encoding'
-    ? t('mm.caption.encoding', 'Remember the items from the list.')
-    : phase === 'retention'
-      ? t('mm.caption.retention', 'The list is covered now.')
-      : t('mm.caption.shopping', 'Find and collect only those items, then press SUBMIT.');
+  const caption =
+    phase === 'encoding' ? t('mm.caption.encoding', 'Remember the items on the list.')
+      : phase === 'covering' || phase === 'travel' ? t('mm.caption.travel', 'Off to the shop!')
+        : phase === 'revealing' ? t('mm.caption.revealing', 'The list is gone now.')
+          : t('mm.caption.shopping', 'Find and collect only those items, then press DONE.');
 
+  // The clipboard's exit animation runs inside `revealing`, so unmounting on `shopping`
+  // lets it finish rather than cutting it short.
+  const showList = phase === 'encoding' || phase === 'covering' || phase === 'travel' || phase === 'revealing';
+  // The tray would otherwise sit on top of the clipboard through the walk to the shop.
+  const showCart = phase === 'shopping' || phase === 'roundEnd' || phase === 'outOfHearts';
+  const hintLive = phase === 'shopping' && hintsLeft > 0;
   const card = phase === 'roundEnd' || phase === 'outOfHearts' ? phase : null;
 
   return (
-    <div ref={wrapRef} style={{ width: '100%', height: CANVAS_H * scale, overflow: 'hidden' }}>
+    <div
+      ref={wrapRef}
+      style={{
+        width: '100%', height: CANVAS_H * scale, overflow: 'hidden',
+        // Flex centring, not `margin: 0 auto`: the canvas is 800 design px and the
+        // viewport is routinely narrower, and auto margins collapse to zero once the
+        // child overflows, which parks the board off to the right. Flex still centres.
+        display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+      }}
+    >
       <MarketMemoryStyles />
       <div style={{
-        width: CANVAS_W, height: CANVAS_H, margin: '0 auto',
+        width: CANVAS_W, height: CANVAS_H, flex: '0 0 auto',
         transform: `scale(${scale})`, transformOrigin: 'top center',
         position: 'relative', fontFamily: "'Baloo 2', sans-serif", userSelect: 'none',
       }}>
-        {/* HUD */}
-        <div style={{
-          position: 'absolute', left: 0, top: 0, width: CANVAS_W, height: HUD_H,
-          background: `linear-gradient(180deg, ${COLOURS.navyHudTop} 0%, ${COLOURS.navyHudBot} 100%)`,
-          borderBottom: `4px solid ${COLOURS.navyDeep}`,
-          display: 'flex', alignItems: 'center', gap: 14, padding: '0 18px',
-        }}>
-          <div style={{ display: 'flex', gap: 10 }}>
-            {[0, 1, 2].map((i) => (
-              <span key={i} style={{
-                fontSize: 34, lineHeight: 1,
-                opacity: i < lives ? 1 : 0.22,
-                filter: i < lives ? 'none' : 'grayscale(1)',
-                transition: 'opacity 300ms linear',
-              }}>❤️</span>
-            ))}
-          </div>
-          <span aria-live="polite" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '.12em', color: COLOURS.navyLabel }}>
-            {t('mm.hearts', 'HEARTS')}
-          </span>
-        </div>
-
         {/* Board */}
-        <div style={{ position: 'absolute', left: 0, top: HUD_H, width: BOARD_W, height: BOARD_H, overflow: 'hidden' }}>
-          <Backdrop />
+        <div style={{ position: 'absolute', left: 0, top: 0, width: BOARD_W, height: BOARD_H, overflow: 'hidden' }}>
+          <Scene inStore={inStore} reduced={reduced} />
+
+          {/* HUD, painted over the backdrop rather than in a band above it. */}
+          <div style={{
+            position: 'absolute', left: 0, top: 0, width: BOARD_W, height: HUD_H, zIndex: 7,
+            background: `linear-gradient(180deg, ${COLOURS.navyHudTop} 0%, ${COLOURS.navyHudBot} 100%)`,
+            borderBottom: `4px solid ${COLOURS.navyDeep}`,
+            display: 'flex', alignItems: 'center', gap: 14, padding: '0 18px',
+          }}>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {[0, 1, 2].map((i) => (
+                <span key={i} style={{
+                  fontSize: 34, lineHeight: 1,
+                  opacity: i < lives ? 1 : 0.22,
+                  filter: i < lives ? 'none' : 'grayscale(1)',
+                  transition: 'opacity 300ms linear',
+                }}>❤️</span>
+              ))}
+            </div>
+            <span aria-live="polite" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '.12em', color: COLOURS.navyLabel }}>
+              {t('mm.hearts', 'HEARTS')}
+            </span>
+          </div>
 
           <div style={{
             position: 'absolute', left: CAPTION.left, top: CAPTION.top, width: CAPTION.width, zIndex: 6,
@@ -325,50 +371,40 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
             {caption}
           </div>
 
-          <div style={{
-            position: 'absolute', left: BASKET.left, top: BASKET.top, zIndex: 7,
-            background: COLOURS.creamLight, border: `4px solid ${COLOURS.creamBorder}`, borderRadius: 14,
-            padding: '8px 14px', fontSize: 22, fontWeight: 700, color: COLOURS.ink,
-          }}>
-            {t('mm.basket', 'Basket')} {picked.length}/{round.list.length}
-          </div>
-
           <button
             type="button"
             onClick={handleHint}
-            disabled={phase !== 'shopping' || hintsLeft <= 0}
+            disabled={!hintLive}
             style={{
               position: 'absolute', right: HINT_BTN.right, top: HINT_BTN.top,
               width: HINT_BTN.width, height: HINT_BTN.height, zIndex: 7,
-              background: COLOURS.amber, border: 'none', borderBottom: `7px solid ${COLOURS.amberEdge}`,
-              borderRadius: 16, fontFamily: "'Baloo 2', sans-serif",
-              fontSize: 26, fontWeight: 800, color: '#FFFFFF',
-              opacity: phase !== 'shopping' || hintsLeft <= 0 ? 0.55 : 1,
-              cursor: phase === 'shopping' && hintsLeft > 0 ? 'pointer' : 'default',
+              background: COLOURS.creamLight, border: `4px solid ${COLOURS.creamBorder}`,
+              borderRadius: 16, boxSizing: 'border-box',
+              fontFamily: "'Baloo 2', sans-serif",
+              fontSize: 24, fontWeight: 800, color: COLOURS.inkSign,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
+              opacity: hintLive ? 1 : 0.5,
+              cursor: hintLive ? 'pointer' : 'default',
             }}
           >
-            {t('mm.hint', 'HINT')} {hintsLeft}
+            <span aria-hidden="true" style={{ fontSize: 32, lineHeight: 1 }}>💡</span>
+            {t('mm.hint', 'HINT')}
+            <span style={{
+              position: 'absolute', right: -10, top: -10, width: 36, height: 36, borderRadius: '50%',
+              background: COLOURS.greenBadge, border: '3px solid #FFFFFF', boxSizing: 'border-box',
+              color: '#FFFFFF', fontSize: 20, fontWeight: 800,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {hintsLeft}
+            </span>
           </button>
 
-          {(phase === 'encoding' || phase === 'retention') && (
-            <ListCard items={listItems} covered={covered} reduced={reduced} />
-          )}
-
-          <Blind
-            down={blindDown}
-            progress={retentionPct}
-            label={t('mm.listCovered', 'LIST COVERED')}
-            reduced={reduced}
-          />
-
           {/*
-            The shelf is scenery as much as it is UI, so it is present from the first
-            frame - as in the prototype, which maps the crates unconditionally and gates
-            only the cursor. Rendering it solely during `shopping` left two thirds of the
-            board as bare ground through encoding and retention. Interaction is still
-            gated: handleCrateTap returns early outside `shopping`.
+            The shelf is scenery as much as it is UI, so it appears with the store and
+            stays. Interaction is gated separately: handleCrateTap returns early outside
+            `shopping`.
           */}
-          {round.crates.map((id, i) => (
+          {inStore && round.crates.map((id, i) => (
             <Crate
               key={id}
               item={BY_ID[id]}
@@ -381,22 +417,57 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
             />
           ))}
 
-          <CartStrip
-            slots={slots}
-            listLength={round.list.length}
-            submitEnabled={phase === 'shopping' && picked.length > 0}
-            cartLabel={t('mm.myCart', 'MY CART')}
-            submitLabel={t('mm.submit', 'SUBMIT')}
+          {showList && (
+            <ListCard items={listItems} covered={covered} leaving={listLeaving} reduced={reduced} />
+          )}
+
+          <Blind
+            down={blindDown}
+            progress={retentionPct}
+            label={t('mm.listCovered', 'ON THE WAY TO THE SHOP')}
             reduced={reduced}
-            onRemove={handleRemove}
-            onSubmit={handleSubmit}
           />
+
+          {phase === 'encoding' && (
+            <button
+              type="button"
+              onClick={handleReady}
+              aria-label={t('mm.ready', 'READY')}
+              style={{
+                position: 'absolute',
+                left: READY_BTN.left, top: READY_BTN.top,
+                width: READY_BTN.width, height: READY_BTN.height,
+                zIndex: 7, padding: 0, border: 'none', background: 'transparent', cursor: 'pointer',
+              }}
+            >
+              <img
+                src={UI_READY}
+                alt=""
+                aria-hidden="true"
+                draggable={false}
+                style={{ width: '100%', height: '100%', display: 'block' }}
+              />
+            </button>
+          )}
+
+          {showCart && (
+            <CartStrip
+              slots={slots}
+              listLength={round.list.length}
+              submitEnabled={phase === 'shopping' && picked.length > 0}
+              cartLabel={t('mm.myCart', 'MY CART')}
+              submitLabel={t('mm.submit', 'DONE')}
+              reduced={reduced}
+              onRemove={handleRemove}
+              onSubmit={handleSubmit}
+            />
+          )}
 
           {effects.map((e) => <EffectView key={e.id} effect={e} reduced={reduced} />)}
 
           {card && result && (
             <>
-              <div style={{ position: 'absolute', inset: 0, zIndex: 9, background: 'rgba(20,48,79,.55)' }} />
+              <div style={{ position: 'absolute', inset: 0, zIndex: 9, background: 'rgba(11,44,56,.55)' }} />
               <div style={{
                 position: 'absolute', left: '50%', top: '50%', zIndex: 10, width: 600,
                 background: COLOURS.creamLight, border: `5px solid ${COLOURS.creamBorder}`, borderRadius: 22,
@@ -413,7 +484,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
                     ? t('mm.gameOver', 'Market closed')
                     : result.perfect
                       ? t('mm.perfect', 'Whole list, exactly right')
-                      : t('mm.checked', 'Basket checked')}
+                      : t('mm.checked', 'Cart checked')}
                 </div>
                 <p style={{ fontSize: 27, fontWeight: 500, color: COLOURS.inkSoft, margin: '16px 0 24px' }}>
                   {t('mm.summary', '{{correct}} of {{total}} right, {{wrong}} not on the list, {{missed}} missed.', {

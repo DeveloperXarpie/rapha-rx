@@ -5,7 +5,6 @@ describe('getMarketMemoryParams', () => {
   it('starts gentle at score 0', () => {
     const p = getMarketMemoryParams(0);
     expect(p.listLength).toBe(3);
-    expect(p.listSeconds).toBe(9000);
     expect(p.similarPackaging).toBe(false);
     expect(p.delayedRetrieval).toBe(false);
     expect(p.listCategory).toBe(false);
@@ -14,15 +13,18 @@ describe('getMarketMemoryParams', () => {
   it('reaches full difficulty at score 1', () => {
     const p = getMarketMemoryParams(1);
     expect(p.listLength).toBe(6);
-    expect(p.listSeconds).toBe(3500);
     expect(p.similarPackaging).toBe(true);
     expect(p.delayedRetrieval).toBe(true);
     expect(p.listCategory).toBe(true);
   });
 
-  it('adds the delayed-retrieval hold only when that axis is on', () => {
+  it('lengthens the covered hold across the curve, then adds the delayed bonus on top', () => {
+    // The hold is the only clock in the game now: the list itself is untimed and ends on
+    // READY, so this curve carries all of the encoding pressure listSeconds used to.
     expect(getMarketMemoryParams(0).retentionMs).toBe(1500);
-    expect(getMarketMemoryParams(1).retentionMs).toBe(4000);
+    // Just under the delayedRetrieval threshold of 0.55, so no bonus yet.
+    expect(getMarketMemoryParams(0.5).retentionMs).toBe(2750);
+    expect(getMarketMemoryParams(1).retentionMs).toBe(4000 + 2500);
   });
 
   it('keeps lives and hints fixed across the whole curve', () => {
@@ -32,22 +34,23 @@ describe('getMarketMemoryParams', () => {
     }
   });
 
-  it('never shortens the list or lengthens the encoding as score rises', () => {
+  it('never shortens the list or the covered hold as score rises', () => {
     let prevLen = 0;
-    let prevSecs = Infinity;
+    let prevHold = 0;
     for (let s = 0; s <= 1.0001; s += 0.05) {
       const p = getMarketMemoryParams(Math.min(1, s));
       expect(p.listLength).toBeGreaterThanOrEqual(prevLen);
-      expect(p.listSeconds).toBeLessThanOrEqual(prevSecs);
+      expect(p.retentionMs).toBeGreaterThanOrEqual(prevHold);
       prevLen = p.listLength;
-      prevSecs = p.listSeconds;
+      prevHold = p.retentionMs;
     }
   });
 
   it('keeps listCategory satisfiable: a group exists with listLength + 2 members', () => {
-    // Pantry has 10. If listLength ever exceeds 8 this axis silently disables itself.
+    // Produce has 20, staples 12, pulses and pantry 9, spices 8. If listLength ever
+    // exceeds 6 this axis starts silently disabling itself group by group.
     const p = getMarketMemoryParams(1);
-    expect(p.listLength + 2).toBeLessThanOrEqual(10);
+    expect(p.listLength + 2).toBeLessThanOrEqual(8);
   });
 
   it('clamps out-of-range scores', () => {

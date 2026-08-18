@@ -375,9 +375,13 @@ export function getGardenKeeperParams(score: number): GardenKeeperDynamicParams 
 export interface MarketMemoryDynamicParams {
   /** Targets on the shopping list. */
   listLength: number;
-  /** How long the list stays visible before the blind drops. */
-  listSeconds: number;
-  /** How long the blind is held down, delayed-retrieval bonus already folded in. */
+  /**
+   * How long the cover is held down, delayed-retrieval bonus already folded in.
+   *
+   * This carries the game's whole time pressure. The list itself is no longer timed -
+   * the player leaves the encoding phase by pressing READY - so the interval the list
+   * must survive in memory is the only clock left.
+   */
   retentionMs: number;
   /** Seed each target's lookalike twin as a decoy. */
   similarPackaging: boolean;
@@ -396,9 +400,8 @@ export interface MarketMemoryDynamicParams {
 const MM = {
   listLengthMin: 3,
   listLengthMax: 6,
-  listMsEasy: 9000,
-  listMsHard: 3500,
-  retentionBaseMs: 1500,
+  retentionEasyMs: 1500,
+  retentionHardMs: 4000,
   delayedBonusMs: 2500,
   similarPackagingAt: 0.25,
   delayedRetrievalAt: 0.55,
@@ -412,8 +415,8 @@ export function getMarketMemoryParams(score: number): MarketMemoryDynamicParams 
   const delayedRetrieval = s >= MM.delayedRetrievalAt;
   return {
     listLength: lerpInt(MM.listLengthMin, MM.listLengthMax, s),
-    listSeconds: lerpInt(MM.listMsEasy, MM.listMsHard, s),
-    retentionMs: MM.retentionBaseMs + (delayedRetrieval ? MM.delayedBonusMs : 0),
+    retentionMs: lerpInt(MM.retentionEasyMs, MM.retentionHardMs, s)
+      + (delayedRetrieval ? MM.delayedBonusMs : 0),
     similarPackaging: s >= MM.similarPackagingAt,
     delayedRetrieval,
     listCategory: s >= MM.listCategoryAt,

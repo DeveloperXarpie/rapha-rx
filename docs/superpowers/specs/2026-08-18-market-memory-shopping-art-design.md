@@ -229,9 +229,14 @@ Background images are preloaded during `encoding` so the crossfade to the store 
 | `src/games/memory/MarketMemory/ListCard.tsx` | Clipboard art instead of CSS card. |
 | `src/games/memory/MarketMemory/CartStrip.tsx` | Cart panel and DONE button art. |
 | `src/games/memory/MarketMemory/palette.ts` | Wood colours out, kit colours in. |
+| `src/games/memory/MarketMemory/Scene.tsx` | New. The two backdrops, stacked, with the store fading up over the home. |
+| `src/games/memory/MarketMemory/sprites.ts` | New. Backdrop and UI art paths, plus the preload set. |
 | `src/lib/dynamicDifficulty.ts` | `listSeconds` removed, `retentionMs` becomes a curve. |
-| `public/locales/*/translation.json` | `mm.submit` default becomes DONE; new `mm.ready`, `mm.caption.travel`. |
 | `package.json` | Minor version bump. |
+
+The locale files are **not** touched. `public/locales/*/common.json` holds no `mm.*` keys
+at all - the game has always run on the inline `t()` fallbacks - so the new and changed
+strings follow that same convention rather than introducing a partly-translated state.
 
 `src/screens/GameRouter.tsx` and `src/components/GameShell.tsx` need no change.
 
@@ -262,7 +267,21 @@ Background images are preloaded during `encoding` so the crossfade to the store 
 - **Shelf holds 12, not the mockup's 19.** Larger touch targets for the audience;
   distractor pressure comes from the twin mechanic, not from count.
 
-## 12. Out of scope
+## 12. Found during implementation
+
+- **The sheet holds 62 items, not 60.** Rows run 10/10/10/10/10/12; `ShoppingList_items.docx`
+  is right about row 6 and wrong about row 1. The grid slicing this spec first proposed
+  would have cut row 6 in half, so the script uses connected-component labelling with
+  small fragments merged into the nearest item instead.
+- **The HINT tile and cart panel could not be used as art.** Both have live counts painted
+  into them - a "2" on the tile, "0/10" on the tray - so they are drawn in CSS from the
+  kit's palette. Only the clipboard, READY and DONE are raster UI.
+- **The board was rendering off-centre.** The canvas wrapper used `margin: 0 auto` on an
+  800px child, and auto margins collapse to zero once the child overflows its parent, so
+  the board sat to the right of the viewport and clipped. Pre-existing, but the taller
+  canvas made it worse, so the wrapper now centres with flex.
+
+## 13. Out of scope
 
 - `items-1.png` is not used. Only `items-2.png` seeds the pool, as instructed.
 - `shopping-list-recall` is not modified or retired.

@@ -1,52 +1,80 @@
-import { LIST_CARD } from './geometry';
+import { CLIPBOARD, CLIPBOARD_PAPER } from './geometry';
 import type { Item } from './items';
 import { COLOURS } from './palette';
 import Product from './Product';
+import { UI_CLIPBOARD } from './sprites';
+import { EASE_SETTLE } from './styles';
 
 interface ListCardProps {
   items: Item[];
-  /** Blanks the rows. Set only once the blind has landed. */
+  /** Blanks the rows. Set only once the cover has landed. */
   covered: boolean;
+  /** Slides the whole board off once shopping starts. */
+  leaving: boolean;
   reduced: boolean;
 }
 
-export default function ListCard({ items, covered, reduced }: ListCardProps) {
-  return (
-    <div style={{
-      position: 'absolute', left: LIST_CARD.left, top: LIST_CARD.top, width: LIST_CARD.width,
-      zIndex: 6, background: COLOURS.creamLight, border: `4px solid ${COLOURS.creamBorder}`,
-      borderRadius: 18, overflow: 'hidden', fontFamily: "'Baloo 2', sans-serif",
-    }}>
-      <div style={{
-        background: COLOURS.purple, color: COLOURS.creamLight, fontSize: 27, fontWeight: 800,
-        textAlign: 'center', padding: '10px 0', borderBottom: `5px solid ${COLOURS.purpleEdge}`,
-      }}>
-        Shopping list
-      </div>
+/**
+ * The shopping list on its clipboard.
+ *
+ * The clipboard is a single sprite with its own header and rules already painted in, so
+ * the rows are positioned against the measured paper rectangle inside it rather than
+ * against the sprite's own edges.
+ */
+export default function ListCard({ items, covered, leaving, reduced }: ListCardProps) {
+  const rowH = Math.min(120, CLIPBOARD_PAPER.height / Math.max(items.length, 1));
 
-      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 120 }}>
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: CLIPBOARD.left,
+        top: CLIPBOARD.top,
+        width: CLIPBOARD.width,
+        height: CLIPBOARD.height,
+        zIndex: 6,
+        fontFamily: "'Baloo 2', sans-serif",
+        opacity: leaving ? 0 : 1,
+        transform: leaving && !reduced ? 'translateY(-90px) scale(.94)' : 'translateY(0) scale(1)',
+        transition: `opacity 400ms linear, transform 400ms ${EASE_SETTLE}`,
+        pointerEvents: 'none',
+      }}
+    >
+      <img
+        src={UI_CLIPBOARD}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        style={{ width: '100%', height: '100%', display: 'block' }}
+      />
+
+      <div style={{
+        position: 'absolute',
+        left: CLIPBOARD_PAPER.left - CLIPBOARD.left,
+        top: CLIPBOARD_PAPER.top - CLIPBOARD.top,
+        width: CLIPBOARD_PAPER.width,
+        height: CLIPBOARD_PAPER.height,
+        display: 'flex', flexDirection: 'column', alignItems: 'stretch',
+        // Centred, so a three-item list does not leave two thirds of the page blank.
+        justifyContent: 'center',
+        padding: '0 14px', boxSizing: 'border-box',
+      }}>
         {items.map((it, i) => (
           <div
             key={it.id}
             style={{
-              display: 'flex', alignItems: 'center', gap: 14, height: 64,
+              display: 'flex', alignItems: 'center', gap: 18, height: rowH,
               opacity: covered ? 0 : 1,
               transition: 'opacity 120ms linear',
-              animation: reduced ? `mm-fade 300ms ease ${i * 90}ms both` : `mm-slidein 300ms cubic-bezier(.22,.61,.36,1) ${i * 90}ms both`,
+              animation: reduced
+                ? `mm-fade 300ms ease ${i * 90}ms both`
+                : `mm-slidein 300ms ${EASE_SETTLE} ${i * 90}ms both`,
             }}
           >
-            <Product item={it} size={60} />
+            <Product item={it} size={Math.min(78, rowH - 12)} />
             <span style={{ fontSize: 30, fontWeight: 700, color: COLOURS.ink }}>{it.name}</span>
           </div>
         ))}
-      </div>
-
-      <div style={{
-        background: COLOURS.cream, borderTop: `3px solid ${COLOURS.creamBorder}`,
-        textAlign: 'center', padding: '8px 0', fontSize: 20, fontWeight: 700, color: COLOURS.inkSoft,
-        opacity: covered ? 0 : 1, transition: 'opacity 120ms linear',
-      }}>
-        Find these items!
       </div>
     </div>
   );

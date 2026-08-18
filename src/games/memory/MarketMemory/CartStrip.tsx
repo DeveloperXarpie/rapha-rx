@@ -1,7 +1,8 @@
-import { CART, CART_BLOCK_W, SLOT_GAP, SUBMIT_W, slotWidth } from './geometry';
+import { CART, CART_HEADER_H, CART_PAD, DONE_BTN, SLOT_GAP, slotWidth } from './geometry';
 import type { Item } from './items';
 import { COLOURS } from './palette';
 import Product from './Product';
+import { UI_DONE } from './sprites';
 import { EASE_SETTLE } from './styles';
 
 interface CartStripProps {
@@ -16,67 +17,103 @@ interface CartStripProps {
   onSubmit: () => void;
 }
 
+/**
+ * The cart tray and the DONE button.
+ *
+ * The tray is CSS rather than the kit's panel art: that art has "0/10" painted into its
+ * header and ten slots printed on its face, and both the count and the slot count change
+ * with the list length. The colours come from the same palette so it sits with the rest.
+ */
 export default function CartStrip({
   slots, listLength, submitEnabled, cartLabel, submitLabel, reduced, onRemove, onSubmit,
 }: CartStripProps) {
   const w = slotWidth(listLength);
+  const filled = slots.filter(Boolean).length;
+  const slotH = CART.height - CART_HEADER_H - CART_PAD * 2;
 
   return (
-    <div style={{
-      position: 'absolute', left: CART.left, top: CART.top, width: CART.width, height: CART.height,
-      zIndex: 7, display: 'flex', alignItems: 'center', gap: SLOT_GAP,
-      fontFamily: "'Baloo 2', sans-serif",
-    }}>
+    <>
       <div style={{
-        width: CART_BLOCK_W, height: 124, flex: '0 0 auto',
-        background: COLOURS.purple, borderBottom: `6px solid ${COLOURS.purpleEdge}`, borderRadius: 16,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-        fontSize: 22, fontWeight: 800, color: COLOURS.creamLight, padding: 6, boxSizing: 'border-box',
+        position: 'absolute', left: CART.left, top: CART.top, width: CART.width, height: CART.height,
+        zIndex: 7, boxSizing: 'border-box',
+        background: `linear-gradient(180deg, ${COLOURS.woodLight} 0%, ${COLOURS.woodDark} 100%)`,
+        border: `6px solid ${COLOURS.woodDarker}`,
+        borderRadius: 20,
+        overflow: 'hidden',
+        fontFamily: "'Baloo 2', sans-serif",
+        // The tray only mounts once the clipboard has cleared the board, so it arrives
+        // on its own rather than popping in behind something else.
+        animation: 'mm-fade 300ms ease both',
       }}>
-        {cartLabel}
-      </div>
+        <div style={{
+          height: CART_HEADER_H, boxSizing: 'border-box',
+          background: COLOURS.navyPlate, borderBottom: `4px solid ${COLOURS.navyPlateEdge}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+          fontSize: 28, fontWeight: 800, color: '#FFFFFF', letterSpacing: '.06em',
+        }}>
+          {cartLabel}
+          <span style={{
+            position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+            background: COLOURS.creamLight, border: `2px solid ${COLOURS.creamBorder}`,
+            borderRadius: 9, padding: '2px 12px',
+            fontSize: 22, fontWeight: 800, color: COLOURS.inkSign, letterSpacing: 0,
+          }}>
+            {filled}/{listLength}
+          </span>
+        </div>
 
-      <div style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', gap: SLOT_GAP, justifyContent: 'center' }}>
-        {slots.map((it, i) => (
-          <button
-            key={i}
-            type="button"
-            disabled={!it}
-            onClick={() => it && onRemove(i)}
-            aria-label={it ? it.name : undefined}
-            style={{
-              width: w, height: 124, flex: '0 0 auto', padding: 0,
-              background: it ? COLOURS.creamSlot : 'transparent',
-              border: it ? `4px solid ${COLOURS.creamBorder}` : `4px dashed ${COLOURS.slotDash}`,
-              borderRadius: 14, boxSizing: 'border-box',
-              cursor: it ? 'pointer' : 'default',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              animation: it ? (reduced ? 'mm-fade 240ms ease both' : `mm-slidein 240ms ${EASE_SETTLE} both`) : undefined,
-            }}
-          >
-            {it && <Product item={it} size={62} />}
-          </button>
-        ))}
+        <div style={{
+          height: CART.height - CART_HEADER_H, boxSizing: 'border-box',
+          padding: CART_PAD, background: COLOURS.cream,
+          display: 'flex', gap: SLOT_GAP, alignItems: 'center', justifyContent: 'center',
+        }}>
+          {slots.map((it, i) => (
+            <button
+              key={i}
+              type="button"
+              disabled={!it}
+              onClick={() => it && onRemove(i)}
+              aria-label={it ? it.name : undefined}
+              style={{
+                width: w, height: slotH, flex: '0 0 auto', padding: 0,
+                background: it ? COLOURS.creamSlot : 'rgba(255,255,255,.35)',
+                border: it ? `4px solid ${COLOURS.creamBorder}` : `4px dashed ${COLOURS.slotDash}`,
+                borderRadius: 14, boxSizing: 'border-box',
+                cursor: it ? 'pointer' : 'default',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                animation: it ? (reduced ? 'mm-fade 240ms ease both' : `mm-slidein 240ms ${EASE_SETTLE} both`) : undefined,
+              }}
+            >
+              {it && <Product item={it} size={Math.min(w, slotH) - 20} />}
+            </button>
+          ))}
+        </div>
       </div>
 
       <button
         type="button"
         onClick={onSubmit}
         disabled={!submitEnabled}
+        aria-label={submitLabel}
         style={{
-          width: SUBMIT_W, height: 124, flex: '0 0 auto',
-          background: submitEnabled ? COLOURS.green : COLOURS.greenMuted,
-          // `border` must come first: the shorthand would otherwise wipe out borderBottom.
-          border: 'none',
-          borderBottom: `7px solid ${submitEnabled ? COLOURS.greenEdge : '#7A9273'}`,
-          borderRadius: 16,
-          fontSize: 34, fontWeight: 800, color: '#FFFFFF',
-          fontFamily: "'Baloo 2', sans-serif",
+          position: 'absolute',
+          left: DONE_BTN.left, top: DONE_BTN.top, width: DONE_BTN.width, height: DONE_BTN.height,
+          zIndex: 7, padding: 0, border: 'none', background: 'transparent',
+          opacity: submitEnabled ? 1 : 0.5,
+          filter: submitEnabled ? 'none' : 'grayscale(.55)',
           cursor: submitEnabled ? 'pointer' : 'default',
+          transition: 'opacity 200ms linear, filter 200ms linear',
+          animation: 'mm-fade 300ms ease both',
         }}
       >
-        {submitLabel}
+        <img
+          src={UI_DONE}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          style={{ width: '100%', height: '100%', display: 'block' }}
+        />
       </button>
-    </div>
+    </>
   );
 }

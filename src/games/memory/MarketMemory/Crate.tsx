@@ -16,9 +16,17 @@ interface CrateProps {
   onTap: (index: number, x: number, y: number) => void;
 }
 
+const PLATE_H = 38;
+
+/**
+ * One item standing on the painted shelf, with its name on a plate beneath it.
+ *
+ * The plate is not decoration. Twins share a silhouette and a colour family on purpose -
+ * five bowls of split pulses differ only in shade - so the name is the only reliable way
+ * to tell them apart, and it has to hold contrast against the wood behind it.
+ */
 export default function Crate({ item, index, picked, hinted, interactive, reduced, onTap }: CrateProps) {
   const box = crateBox(index);
-  const border = picked ? COLOURS.greenPick : hinted ? COLOURS.amber : COLOURS.woodDark;
 
   return (
     <button
@@ -33,17 +41,13 @@ export default function Crate({ item, index, picked, hinted, interactive, reduce
         width: CRATE_W,
         height: CRATE_H,
         zIndex: 5,
-        padding: '8px 8px 6px',
+        padding: 0,
+        background: 'transparent',
+        border: 'none',
         cursor: interactive ? 'pointer' : 'default',
-        background: `linear-gradient(180deg, ${COLOURS.woodLight} 0%, ${COLOURS.woodDark} 100%)`,
-        border: `5px solid ${border}`,
-        borderBottom: `7px solid ${picked ? COLOURS.greenEdge : COLOURS.woodDarker}`,
-        borderRadius: 14,
-        boxSizing: 'border-box',
-        opacity: picked ? 0.82 : 1,
-        transform: reduced || !picked ? 'translateY(0)' : 'translateY(-5px)',
-        transition: `transform 220ms ${EASE_SETTLE}, opacity 220ms linear, border-color 220ms linear`,
-        animation: hinted && !reduced ? 'mm-glow 2000ms ease-in-out infinite' : undefined,
+        transform: reduced || !picked ? 'translateY(0)' : 'translateY(-6px)',
+        transition: `transform 220ms ${EASE_SETTLE}, opacity 220ms linear`,
+        opacity: picked ? 0.55 : 1,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -52,21 +56,41 @@ export default function Crate({ item, index, picked, hinted, interactive, reduce
         fontFamily: "'Baloo 2', sans-serif",
       }}
     >
-      <Product item={item} size={78} />
+      <div
+        style={{
+          position: 'relative',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          borderRadius: 14,
+          padding: 2,
+          // The hint glows the item itself; there is no crate frame to outline any more.
+          boxShadow: hinted ? `0 0 0 5px ${COLOURS.amber}` : 'none',
+          animation: hinted && !reduced ? 'mm-glow 2000ms ease-in-out infinite' : undefined,
+        }}
+      >
+        <Product item={item} size={CRATE_H - PLATE_H - 8} />
+      </div>
+
       <span style={{
-        fontSize: 19, fontWeight: 700, color: '#FFF2D8', letterSpacing: '.04em',
-        lineHeight: 1.1,
-        // The name is the reliable signal for telling twins apart, so it gets a shadow
-        // to hold contrast against the wood grain rather than relying on fill alone.
-        textShadow: '0 2px 0 rgba(60,32,10,.55)',
+        width: '100%',
+        background: COLOURS.creamLight,
+        border: `3px solid ${picked ? COLOURS.greenPick : COLOURS.creamBorder}`,
+        borderRadius: 9,
+        boxSizing: 'border-box',
+        height: PLATE_H,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '0 4px',
+        fontSize: 18, fontWeight: 700, color: COLOURS.ink, letterSpacing: '.01em',
+        lineHeight: 1,
+        whiteSpace: 'nowrap', overflow: 'hidden',
       }}>
         {item.name}
       </span>
+
       {picked && (
         <span
           aria-hidden="true"
           style={{
-            position: 'absolute', right: -8, top: -8, width: 34, height: 34, borderRadius: '50%',
+            position: 'absolute', right: -6, top: -6, width: 34, height: 34, borderRadius: '50%',
             background: COLOURS.greenPick, color: '#FFFFFF', fontSize: 20, fontWeight: 800,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             border: `3px solid ${COLOURS.greenEdge}`,

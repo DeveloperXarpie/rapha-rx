@@ -1,0 +1,925 @@
+{
+  "items": [
+    {
+      "id": "tomatoes",
+      "file": "item-tomatoes.png",
+      "box": [
+        12,
+        36,
+        150,
+        160
+      ],
+      "size": [
+        146,
+        132
+      ]
+    },
+    {
+      "id": "onion",
+      "file": "item-onion.png",
+      "box": [
+        167,
+        37,
+        316,
+        155
+      ],
+      "size": [
+        157,
+        126
+      ]
+    },
+    {
+      "id": "potatoes",
+      "file": "item-potatoes.png",
+      "box": [
+        327,
+        38,
+        473,
+        164
+      ],
+      "size": [
+        154,
+        134
+      ]
+    },
+    {
+      "id": "carrots",
+      "file": "item-carrots.png",
+      "box": [
+        478,
+        18,
+        619,
+        168
+      ],
+      "size": [
+        149,
+        158
+      ]
+    },
+    {
+      "id": "bananas",
+      "file": "item-bananas.png",
+      "box": [
+        627,
+        16,
+        778,
+        170
+      ],
+      "size": [
+        159,
+        162
+      ]
+    },
+    {
+      "id": "apples",
+      "file": "item-apples.png",
+      "box": [
+        793,
+        19,
+        934,
+        162
+      ],
+      "size": [
+        149,
+        151
+      ]
+    },
+    {
+      "id": "orange",
+      "file": "item-orange.png",
+      "box": [
+        953,
+        25,
+        1082,
+        166
+      ],
+      "size": [
+        137,
+        149
+      ]
+    },
+    {
+      "id": "grapes",
+      "file": "item-grapes.png",
+      "box": [
+        1095,
+        24,
+        1238,
+        163
+      ],
+      "size": [
+        151,
+        147
+      ]
+    },
+    {
+      "id": "pomegranate",
+      "file": "item-pomegranate.png",
+      "box": [
+        1251,
+        26,
+        1385,
+        166
+      ],
+      "size": [
+        142,
+        148
+      ]
+    },
+    {
+      "id": "mango",
+      "file": "item-mango.png",
+      "box": [
+        1394,
+        18,
+        1508,
+        167
+      ],
+      "size": [
+        122,
+        157
+      ]
+    },
+    {
+      "id": "capsicum",
+      "file": "item-capsicum.png",
+      "box": [
+        19,
+        182,
+        141,
+        318
+      ],
+      "size": [
+        130,
+        144
+      ]
+    },
+    {
+      "id": "vine-tomatoes",
+      "file": "item-vine-tomatoes.png",
+      "box": [
+        158,
+        187,
+        311,
+        323
+      ],
+      "size": [
+        161,
+        144
+      ]
+    },
+    {
+      "id": "brinjal",
+      "file": "item-brinjal.png",
+      "box": [
+        323,
+        182,
+        444,
+        321
+      ],
+      "size": [
+        129,
+        147
+      ]
+    },
+    {
+      "id": "okra",
+      "file": "item-okra.png",
+      "box": [
+        447,
+        197,
+        610,
+        319
+      ],
+      "size": [
+        171,
+        130
+      ]
+    },
+    {
+      "id": "cauliflower",
+      "file": "item-cauliflower.png",
+      "box": [
+        624,
+        182,
+        774,
+        324
+      ],
+      "size": [
+        158,
+        150
+      ]
+    },
+    {
+      "id": "cabbage",
+      "file": "item-cabbage.png",
+      "box": [
+        792,
+        183,
+        930,
+        319
+      ],
+      "size": [
+        146,
+        144
+      ]
+    },
+    {
+      "id": "broccoli",
+      "file": "item-broccoli.png",
+      "box": [
+        947,
+        178,
+        1084,
+        324
+      ],
+      "size": [
+        145,
+        154
+      ]
+    },
+    {
+      "id": "green-beans",
+      "file": "item-green-beans.png",
+      "box": [
+        1087,
+        195,
+        1239,
+        313
+      ],
+      "size": [
+        160,
+        126
+      ]
+    },
+    {
+      "id": "curry-leaves",
+      "file": "item-curry-leaves.png",
+      "box": [
+        1252,
+        185,
+        1376,
+        322
+      ],
+      "size": [
+        132,
+        145
+      ]
+    },
+    {
+      "id": "coriander",
+      "file": "item-coriander.png",
+      "box": [
+        1371,
+        181,
+        1514,
+        330
+      ],
+      "size": [
+        151,
+        157
+      ]
+    },
+    {
+      "id": "ginger",
+      "file": "item-ginger.png",
+      "box": [
+        12,
+        347,
+        151,
+        467
+      ],
+      "size": [
+        147,
+        128
+      ]
+    },
+    {
+      "id": "garlic",
+      "file": "item-garlic.png",
+      "box": [
+        164,
+        343,
+        309,
+        464
+      ],
+      "size": [
+        153,
+        129
+      ]
+    },
+    {
+      "id": "green-chillies",
+      "file": "item-green-chillies.png",
+      "box": [
+        320,
+        325,
+        455,
+        472
+      ],
+      "size": [
+        143,
+        155
+      ]
+    },
+    {
+      "id": "red-chillies",
+      "file": "item-red-chillies.png",
+      "box": [
+        458,
+        332,
+        616,
+        464
+      ],
+      "size": [
+        166,
+        140
+      ]
+    },
+    {
+      "id": "turmeric",
+      "file": "item-turmeric.png",
+      "box": [
+        621,
+        342,
+        771,
+        470
+      ],
+      "size": [
+        158,
+        136
+      ]
+    },
+    {
+      "id": "cumin",
+      "file": "item-cumin.png",
+      "box": [
+        788,
+        353,
+        923,
+        465
+      ],
+      "size": [
+        143,
+        120
+      ]
+    },
+    {
+      "id": "kala-chana",
+      "file": "item-kala-chana.png",
+      "box": [
+        936,
+        354,
+        1066,
+        464
+      ],
+      "size": [
+        138,
+        118
+      ]
+    },
+    {
+      "id": "urad-dal",
+      "file": "item-urad-dal.png",
+      "box": [
+        1079,
+        354,
+        1209,
+        465
+      ],
+      "size": [
+        138,
+        119
+      ]
+    },
+    {
+      "id": "toor-dal",
+      "file": "item-toor-dal.png",
+      "box": [
+        1221,
+        346,
+        1359,
+        465
+      ],
+      "size": [
+        146,
+        127
+      ]
+    },
+    {
+      "id": "masoor-dal",
+      "file": "item-masoor-dal.png",
+      "box": [
+        1371,
+        346,
+        1519,
+        468
+      ],
+      "size": [
+        156,
+        130
+      ]
+    },
+    {
+      "id": "rice",
+      "file": "item-rice.png",
+      "box": [
+        11,
+        485,
+        160,
+        609
+      ],
+      "size": [
+        157,
+        132
+      ]
+    },
+    {
+      "id": "chana-dal",
+      "file": "item-chana-dal.png",
+      "box": [
+        177,
+        491,
+        318,
+        606
+      ],
+      "size": [
+        149,
+        123
+      ]
+    },
+    {
+      "id": "moong-dal",
+      "file": "item-moong-dal.png",
+      "box": [
+        330,
+        492,
+        468,
+        606
+      ],
+      "size": [
+        146,
+        122
+      ]
+    },
+    {
+      "id": "rajma",
+      "file": "item-rajma.png",
+      "box": [
+        479,
+        489,
+        623,
+        607
+      ],
+      "size": [
+        152,
+        126
+      ]
+    },
+    {
+      "id": "kabuli-chana",
+      "file": "item-kabuli-chana.png",
+      "box": [
+        635,
+        491,
+        774,
+        607
+      ],
+      "size": [
+        147,
+        124
+      ]
+    },
+    {
+      "id": "white-chana",
+      "file": "item-white-chana.png",
+      "box": [
+        787,
+        490,
+        926,
+        604
+      ],
+      "size": [
+        147,
+        122
+      ]
+    },
+    {
+      "id": "atta-loose",
+      "file": "item-atta-loose.png",
+      "box": [
+        917,
+        485,
+        1094,
+        622
+      ],
+      "size": [
+        185,
+        145
+      ]
+    },
+    {
+      "id": "rava",
+      "file": "item-rava.png",
+      "box": [
+        1104,
+        493,
+        1243,
+        610
+      ],
+      "size": [
+        147,
+        125
+      ]
+    },
+    {
+      "id": "sugar-loose",
+      "file": "item-sugar-loose.png",
+      "box": [
+        1253,
+        492,
+        1386,
+        609
+      ],
+      "size": [
+        141,
+        125
+      ]
+    },
+    {
+      "id": "salt-loose",
+      "file": "item-salt-loose.png",
+      "box": [
+        1392,
+        470,
+        1520,
+        608
+      ],
+      "size": [
+        136,
+        146
+      ]
+    },
+    {
+      "id": "rice-pack",
+      "file": "item-rice-pack.png",
+      "box": [
+        17,
+        617,
+        149,
+        790
+      ],
+      "size": [
+        140,
+        181
+      ]
+    },
+    {
+      "id": "atta-pack",
+      "file": "item-atta-pack.png",
+      "box": [
+        164,
+        617,
+        293,
+        794
+      ],
+      "size": [
+        137,
+        185
+      ]
+    },
+    {
+      "id": "sunflower-oil",
+      "file": "item-sunflower-oil.png",
+      "box": [
+        320,
+        605,
+        391,
+        800
+      ],
+      "size": [
+        79,
+        203
+      ]
+    },
+    {
+      "id": "groundnut-oil",
+      "file": "item-groundnut-oil.png",
+      "box": [
+        428,
+        621,
+        529,
+        793
+      ],
+      "size": [
+        109,
+        180
+      ]
+    },
+    {
+      "id": "ghee",
+      "file": "item-ghee.png",
+      "box": [
+        559,
+        626,
+        670,
+        789
+      ],
+      "size": [
+        119,
+        171
+      ]
+    },
+    {
+      "id": "milk",
+      "file": "item-milk.png",
+      "box": [
+        694,
+        631,
+        828,
+        787
+      ],
+      "size": [
+        142,
+        164
+      ]
+    },
+    {
+      "id": "curd",
+      "file": "item-curd.png",
+      "box": [
+        855,
+        640,
+        978,
+        795
+      ],
+      "size": [
+        131,
+        163
+      ]
+    },
+    {
+      "id": "paneer",
+      "file": "item-paneer.png",
+      "box": [
+        1013,
+        642,
+        1135,
+        794
+      ],
+      "size": [
+        130,
+        160
+      ]
+    },
+    {
+      "id": "eggs",
+      "file": "item-eggs.png",
+      "box": [
+        1145,
+        652,
+        1365,
+        773
+      ],
+      "size": [
+        228,
+        129
+      ]
+    },
+    {
+      "id": "bread",
+      "file": "item-bread.png",
+      "box": [
+        1382,
+        616,
+        1482,
+        789
+      ],
+      "size": [
+        108,
+        181
+      ]
+    },
+    {
+      "id": "tea",
+      "file": "item-tea.png",
+      "box": [
+        15,
+        815,
+        131,
+        988
+      ],
+      "size": [
+        124,
+        181
+      ]
+    },
+    {
+      "id": "coffee",
+      "file": "item-coffee.png",
+      "box": [
+        137,
+        807,
+        229,
+        992
+      ],
+      "size": [
+        100,
+        193
+      ]
+    },
+    {
+      "id": "sugar-pack",
+      "file": "item-sugar-pack.png",
+      "box": [
+        246,
+        813,
+        357,
+        989
+      ],
+      "size": [
+        119,
+        184
+      ]
+    },
+    {
+      "id": "salt-pack",
+      "file": "item-salt-pack.png",
+      "box": [
+        379,
+        812,
+        491,
+        988
+      ],
+      "size": [
+        120,
+        184
+      ]
+    },
+    {
+      "id": "sambar-masala",
+      "file": "item-sambar-masala.png",
+      "box": [
+        508,
+        811,
+        609,
+        988
+      ],
+      "size": [
+        109,
+        185
+      ]
+    },
+    {
+      "id": "garam-masala",
+      "file": "item-garam-masala.png",
+      "box": [
+        621,
+        811,
+        730,
+        989
+      ],
+      "size": [
+        117,
+        186
+      ]
+    },
+    {
+      "id": "biscuits",
+      "file": "item-biscuits.png",
+      "box": [
+        738,
+        831,
+        897,
+        973
+      ],
+      "size": [
+        167,
+        150
+      ]
+    },
+    {
+      "id": "noodles",
+      "file": "item-noodles.png",
+      "box": [
+        902,
+        818,
+        1028,
+        990
+      ],
+      "size": [
+        134,
+        180
+      ]
+    },
+    {
+      "id": "detergent",
+      "file": "item-detergent.png",
+      "box": [
+        1037,
+        811,
+        1162,
+        992
+      ],
+      "size": [
+        133,
+        189
+      ]
+    },
+    {
+      "id": "dish-liquid",
+      "file": "item-dish-liquid.png",
+      "box": [
+        1174,
+        790,
+        1255,
+        995
+      ],
+      "size": [
+        89,
+        213
+      ]
+    },
+    {
+      "id": "tissue",
+      "file": "item-tissue.png",
+      "box": [
+        1276,
+        829,
+        1408,
+        983
+      ],
+      "size": [
+        140,
+        162
+      ]
+    },
+    {
+      "id": "toilet-cleaner",
+      "file": "item-toilet-cleaner.png",
+      "box": [
+        1426,
+        792,
+        1513,
+        990
+      ],
+      "size": [
+        95,
+        206
+      ]
+    }
+  ],
+  "ui": [
+    {
+      "id": "ui-clipboard",
+      "file": "ui-clipboard.png",
+      "source": "ui-kit2.png",
+      "box": [
+        15,
+        186,
+        480,
+        1054
+      ]
+    },
+    {
+      "id": "ui-ready",
+      "file": "ui-ready.png",
+      "source": "ui-kit2.png",
+      "box": [
+        360,
+        1097,
+        688,
+        1279
+      ]
+    },
+    {
+      "id": "ui-done",
+      "file": "ui-done.png",
+      "source": "ui-kit-1.png",
+      "box": [
+        1231,
+        335,
+        1526,
+        480
+      ]
+    }
+  ],
+  "backgrounds": [
+    {
+      "id": "bg-home",
+      "file": "bg-home.jpg",
+      "size": [
+        941,
+        1672
+      ]
+    },
+    {
+      "id": "bg-store",
+      "file": "bg-store.jpg",
+      "size": [
+        941,
+        1672
+      ]
+    }
+  ]
+}

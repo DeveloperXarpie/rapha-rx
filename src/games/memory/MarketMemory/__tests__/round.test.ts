@@ -61,12 +61,17 @@ describe('buildRound', () => {
     }
   });
 
-  it('fills most of the shelf from the chosen group when listCategory is on', () => {
-    const r = buildRound({ listLength: 6, similarPackaging: true, listCategory: true }, seededRng(3));
-    const group = BY_ID[r.list[0]].group;
-    const sameGroup = r.crates.filter((id) => BY_ID[id].group === group).length;
-    // Pantry is the only qualifying group at listLength 6 and has 10 members.
-    expect(sameGroup).toBeGreaterThanOrEqual(10);
+  it('fills the shelf from the chosen group as far as that group goes', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const r = buildRound({ listLength: 6, similarPackaging: true, listCategory: true }, seededRng(seed));
+      const group = BY_ID[r.list[0]].group;
+      const available = ITEMS.filter((i) => i.group === group).length;
+      const sameGroup = r.crates.filter((id) => BY_ID[id].group === group).length;
+      // Groups qualify at 8 members and the smallest of them cannot fill all 12 crates,
+      // so the bar is the group's own size, not a flat count. Twins are admitted even
+      // from outside the group, which is why this is a floor and not an equality.
+      expect(sameGroup).toBeGreaterThanOrEqual(Math.min(available, CRATE_COUNT) - 6);
+    }
   });
 
   it('never returns an id that is not in the catalogue', () => {
