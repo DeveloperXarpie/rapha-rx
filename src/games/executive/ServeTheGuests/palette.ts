@@ -17,9 +17,16 @@ export const COLOURS = {
   wasted: '#c0392b',
 } as const;
 
-/** Button face per dish state: [background, shadow colour, label colour]. */
+/**
+ * Button face per dish state: [background, shadow colour, label colour].
+ *
+ * This is the fallback for languages the painted buttons are not drawn in - see
+ * `PAINTED_BUTTON_LANG` in `sprites.ts`. The four match the painted pills' colours, so the
+ * board reads the same whichever variant a player gets.
+ */
 export const BUTTON_SKIN: Record<string, [string, string, string]> = {
   idle: ['linear-gradient(180deg,#7ec8f0,#3d9bd6)', '#2b7bb0', '#123a52'],
   cooking: ['linear-gradient(180deg,#ffb454,#f0830d)', '#c1650a', '#123a52'],
   ready: ['linear-gradient(180deg,#8ede63,#4caf27)', '#2f7d32', '#1e4d16'],
+  burnt: ['linear-gradient(180deg,#f0554a,#d32f1f)', '#962013', '#fff4f2'],
 };

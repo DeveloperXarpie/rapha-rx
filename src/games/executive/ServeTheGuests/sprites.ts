@@ -1,11 +1,11 @@
 /**
  * Sprite manifest.
  *
- * Everything except the background plate and the character sheet is cut from
- * `public/Dar_assets_01.png` by `scripts/slice_cook_assets.py` into `public/cook-assets/`,
- * so paths are absolute strings - the house convention, see TrainYard's sprite manifest and
- * PicturePostcard's scene definitions. Sizes below are the slicer's output; re-run it and
- * copy its printed sizes if the sheet is redrawn.
+ * Everything except the background plate and the character sheet is cut by
+ * `scripts/slice_cook_assets.py` into `public/cook-assets/`, so paths are absolute strings -
+ * the house convention, see TrainYard's sprite manifest and PicturePostcard's scene
+ * definitions. Sizes below are the slicer's output; re-run it and copy its printed sizes if
+ * a sheet is redrawn.
  *
  * The guest faces are the exception: they are cropped out of the character sheet at render
  * time. See `faceCrop` below.
@@ -48,15 +48,37 @@ function dish(
   };
 }
 
+/**
+ * The full menu: the south Indian tiffin first, then the north Indian plates and the sweets.
+ *
+ * Only `DISH_COUNT` of these are dealt onto the counter in any one round - see
+ * `createInitialState` - so this is a pool to draw from, not a layout. Cook times are set by
+ * how much work the dish is, which is what makes ordering between them a decision: a chutney
+ * is nearly instant, a tandoori chicken ties the card up for the length of a short order.
+ */
 export const DISH_DEFS: DishDef[] = [
-  dish('plain-dosa',  'serveGuests.dish.plainDosa',  'Plain Dosa',       191, 159, 4.5),
-  dish('masala-dosa', 'serveGuests.dish.masalaDosa', 'Masala Dosa',      184, 157, 6),
-  dish('idly',        'serveGuests.dish.idly',       'Idly',             176, 136, 4),
-  dish('vada',        'serveGuests.dish.vada',       'Vada',             163, 144, 5),
-  dish('chutney',     'serveGuests.dish.chutney',    'Chutney',          131, 122, 3),
-  dish('sambar',      'serveGuests.dish.sambar',     'Sambar',           168, 151, 3.5),
-  dish('combo',       'serveGuests.dish.combo',      'Chutney & Sambar', 215, 142, 5),
-  dish('coffee',      'serveGuests.dish.coffee',     'Coffee/Tea',       140, 148, 3),
+  dish('plain-dosa',       'serveGuests.dish.plainDosa',      'Plain Dosa',        255, 237, 4.5),
+  dish('masala-dosa',      'serveGuests.dish.masalaDosa',     'Masala Dosa',       241, 211, 6),
+  dish('idly',             'serveGuests.dish.idly',           'Idly',              239, 201, 4),
+  dish('uddin-vada',       'serveGuests.dish.uddinVada',      'Uddin Vada',        235, 195, 5),
+  dish('filter-coffee',    'serveGuests.dish.filterCoffee',   'Filter Coffee',     183, 190, 3),
+  dish('coconut-chutney',  'serveGuests.dish.coconutChutney', 'Coconut Chutney',   202, 185, 3),
+  dish('sambar',           'serveGuests.dish.sambar',         'Sambar',            230, 195, 3.5),
+  dish('chutney-sambar',   'serveGuests.dish.chutneySambar',  'Chutney & Sambar',  237, 166, 5),
+  dish('samosa',           'serveGuests.dish.samosa',         'Samosa',            233, 198, 5.5),
+  dish('pakora',           'serveGuests.dish.pakora',         'Pakora',            221, 195, 4.5),
+  dish('aloo-paratha',     'serveGuests.dish.alooParatha',    'Aloo Paratha',      247, 200, 5.5),
+  dish('chole-bhature',    'serveGuests.dish.choleBhature',   'Chole Bhature',     249, 215, 7),
+  dish('butter-chicken',   'serveGuests.dish.butterChicken',  'Butter Chicken',    256, 199, 7),
+  dish('dal-makhani',      'serveGuests.dish.dalMakhani',     'Dal Makhani',       253, 201, 6.5),
+  dish('rajma-chawal',     'serveGuests.dish.rajmaChawal',    'Rajma Chawal',      230, 201, 6),
+  dish('kadhi-chawal',     'serveGuests.dish.kadhiChawal',    'Kadhi Chawal',      238, 208, 5.5),
+  dish('paneer-tikka',     'serveGuests.dish.paneerTikka',    'Paneer Tikka',      264, 227, 6.5),
+  dish('tandoori-chicken', 'serveGuests.dish.tandooriChicken', 'Tandoori Chicken', 254, 212, 7.5),
+  dish('amritsari-kulcha', 'serveGuests.dish.amritsariKulcha', 'Amritsari Kulcha', 253, 208, 6),
+  dish('gulab-jamun',      'serveGuests.dish.gulabJamun',     'Gulab Jamun',       214, 194, 4),
+  dish('jalebi',           'serveGuests.dish.jalebi',         'Jalebi',            289, 231, 4.5),
+  dish('gajar-ka-halwa',   'serveGuests.dish.gajarKaHalwa',   'Gajar Ka Halwa',    255, 214, 5),
 ];
 
 export const DISH_BY_ID: Record<string, DishDef> = Object.fromEntries(
@@ -103,14 +125,48 @@ export const BAR_TRACK: FrameDef = { src: `${DISH_BASE}/ui-bar-track.png`, w: 33
 export const BAR_FILL: FrameDef = { src: `${DISH_BASE}/ui-bar-fill.png`, w: 326, h: 47, slice: [0, 22, 0, 22] };
 
 export const COIN_SRC = `${DISH_BASE}/ui-coin.png`;
-export const CLEAR_BTN_SRC = `${DISH_BASE}/ui-btn-clear.png`;
+
+// ─── State buttons ────────────────────────────────────────────────────────────
 
 /**
- * Sliced but unconsumed: the two smaller speech bubbles and the sheet's empty vessels -
- * banana leaf, two bowls, a tumbler. Listed so the slicer's output is accounted for rather
- * than looking like strays in the directory, and so anything that wants them can find them.
+ * The painted button for each dish state.
+ *
+ * These carry their word in the artwork, so they are only used when the UI language is the
+ * one they are painted in; every other language falls back to the CSS capsules in
+ * `palette.ts`. See `PAINTED_BUTTON_LANG` below.
+ *
+ * The four are drawn at different aspect ratios - DISPOSE's bin and stink lines rise above
+ * its pill - so the card sizes each by width and bottom-aligns it. That puts all four pills
+ * on one baseline, because in every one of them the pill is the lowest painted thing.
+ */
+export interface ButtonDef {
+  src: string;
+  w: number;
+  h: number;
+}
+
+export const BUTTONS = {
+  idle:    { src: `${DISH_BASE}/btn-make.png`,    w: 480, h: 148 },
+  cooking: { src: `${DISH_BASE}/btn-cooking.png`, w: 480, h: 148 },
+  ready:   { src: `${DISH_BASE}/btn-serve.png`,   w: 480, h: 151 },
+  burnt:   { src: `${DISH_BASE}/btn-dispose.png`, w: 480, h: 180 },
+} satisfies Record<string, ButtonDef>;
+
+/**
+ * The language the button art is painted in. Hindi and Kannada get the CSS capsules with
+ * their own translated word instead, so no player is asked to read a language they did not
+ * pick. Redrawing the pills per language would remove this branch.
+ */
+export const PAINTED_BUTTON_LANG = 'en';
+
+/**
+ * Sliced but unconsumed: the round ✕ the DISPOSE pill replaced, the two smaller speech
+ * bubbles, and the sheet's empty vessels - banana leaf, two bowls, a tumbler. Listed so the
+ * slicer's output is accounted for rather than looking like strays in the directory, and so
+ * anything that wants them can find them.
  */
 export const UNUSED_ASSETS = [
+  `${DISH_BASE}/ui-btn-clear.png`,
   `${DISH_BASE}/ui-bubble-sm.png`,
   `${DISH_BASE}/ui-bubble-md.png`,
   `${DISH_BASE}/prop-leaf.png`,
@@ -135,19 +191,28 @@ export function frameStyle(frame: FrameDef, scale = 1) {
   };
 }
 
-export const BACKGROUND_SRC = '/bg_cook.png';
+export const BACKGROUND_SRC = '/bg_cook.jpg';
 export const FACE_SHEET_SRC = '/characters_cook.png';
 
-export const ALL_SPRITE_URLS: string[] = [
-  BACKGROUND_SRC,
-  FACE_SHEET_SRC,
-  ...DISH_DEFS.flatMap((d) => [d.src, d.spoiledSrc]),
-  ...Object.values(FRAMES).map((f) => f.src),
-  BAR_TRACK.src,
-  BAR_FILL.src,
-  COIN_SRC,
-  CLEAR_BTN_SRC,
-];
+/**
+ * Everything the board has to have decoded before the patience clock may start.
+ *
+ * Only the dishes actually dealt to the counter are included. Orders are drawn from the
+ * same dealt set, so nothing outside it can ever appear, and preloading the whole 22-dish
+ * pool would more than double the wait before a round for art it will not show.
+ */
+export function spriteUrls(dealtDishIds: string[]): string[] {
+  return [
+    BACKGROUND_SRC,
+    FACE_SHEET_SRC,
+    ...dealtDishIds.flatMap((id) => [DISH_BY_ID[id].src, DISH_BY_ID[id].spoiledSrc]),
+    ...Object.values(FRAMES).map((f) => f.src),
+    ...Object.values(BUTTONS).map((b) => b.src),
+    BAR_TRACK.src,
+    BAR_FILL.src,
+    COIN_SRC,
+  ];
+}
 
 // ─── Guest faces ──────────────────────────────────────────────────────────────
 

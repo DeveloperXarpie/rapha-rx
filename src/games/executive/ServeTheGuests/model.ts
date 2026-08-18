@@ -96,17 +96,40 @@ export interface GameState {
 // ─── Setup ────────────────────────────────────────────────────────────────────
 
 /**
- * Guests are built lazily as seats open, so nothing random happens here - the opening
- * stagger is fixed and the first guest is created by the first `tick`.
+ * The counter holds this many dishes, dealt from the far larger `DISH_DEFS` pool. Dealing
+ * rather than fixing the menu is what stops every round looking the same; it is the view's
+ * `DISH_COUNT` and the two must agree, so the board is laid out for what the model deals.
  */
-export function createInitialState(): GameState {
+export const COUNTER_SIZE = 8;
+
+/**
+ * Deal the round's counter: `COUNTER_SIZE` distinct dishes drawn from the menu.
+ *
+ * The dealt set is the whole world for the round - orders are drawn from it too - so a guest
+ * can never ask for something the counter cannot make.
+ */
+function dealCounter(rng: Rng): DishRuntime[] {
+  const pool = DISH_DEFS.slice();
+  const dealt: DishRuntime[] = [];
+  for (let i = 0; i < COUNTER_SIZE && pool.length > 0; i++) {
+    const [picked] = pool.splice(Math.floor(rng() * pool.length), 1);
+    dealt.push({ id: picked.id, state: 'idle', since: 0, nudgeUntil: 0 });
+  }
+  return dealt;
+}
+
+/**
+ * Guests are built lazily as seats open, so the only randomness here is the deal - the
+ * opening stagger is fixed and the first guest is created by the first `tick`.
+ */
+export function createInitialState(rng: Rng = Math.random): GameState {
   return {
     t: 0,
     score: 0,
     spawned: 0,
     seats: Array.from({ length: SEAT_COUNT }, () => null),
     nextSpawn: OPENING_SPAWNS.slice(0, SEAT_COUNT),
-    dishes: DISH_DEFS.map((d) => ({ id: d.id, state: 'idle' as const, since: 0, nudgeUntil: 0 })),
+    dishes: dealCounter(rng),
     done: false,
     itemsServed: 0,
     itemsRequested: 0,
@@ -116,13 +139,14 @@ export function createInitialState(): GameState {
   };
 }
 
-function makeGuest(index: number, maxItemsPerGuest: number, rng: Rng): Guest {
+function makeGuest(index: number, maxItemsPerGuest: number, counter: DishRuntime[], rng: Rng): Guest {
   const count = Math.max(1, Math.min(maxItemsPerGuest, 1 + Math.floor(rng() * maxItemsPerGuest)));
-  const pool = DISH_DEFS.slice();
+  // Orders come off the dealt counter, not the whole menu, so every item is servable.
+  const pool = counter.map((d) => d.id);
   const items: OrderItem[] = [];
   for (let k = 0; k < count && pool.length > 0; k++) {
     const [picked] = pool.splice(Math.floor(rng() * pool.length), 1);
-    items.push({ dishId: picked.id, served: false });
+    items.push({ dishId: picked, served: false });
   }
   const patience = PATIENCE_BASE + items.length * PATIENCE_PER_ITEM;
   return {
@@ -153,7 +177,7 @@ export function tick(state: GameState, dt: number, maxItemsPerGuest: number, rng
 
     if (!current) {
       if (spawned < TOTAL_GUESTS && t >= nextSpawn[i]) {
-        const guest = makeGuest(spawned, maxItemsPerGuest, rng);
+        const guest = makeGuest(spawned, maxItemsPerGuest, state.dishes, rng);
         seats[i] = guest;
         itemsRequested += guest.items.length;
         spawned++;

@@ -1,12 +1,12 @@
 /**
- * Board geometry, in the fixed design-pixel space of `public/bg_cook.png`.
+ * Board geometry, in the fixed design-pixel space of `public/bg_cook.jpg`.
  *
  * The whole game is laid out at these coordinates and scaled to the viewport with a single
  * transform, the same approach TrainYard takes. Every number below is measured against the
  * background plate, so moving a element means moving it here, not in the JSX.
  */
 
-import { SEAT_COUNT } from './model';
+import { COUNTER_SIZE, SEAT_COUNT } from './model';
 import { FRAMES } from './sprites';
 
 export const CANVAS_W = 1920;
@@ -27,7 +27,8 @@ export const TRAY_W = CANVAS_W - TRAY_INSET_X * 2;
 
 // ─── Dish cards ───────────────────────────────────────────────────────────────
 
-export const DISH_COUNT = 8;
+/** One card per dish the model deals onto the counter. */
+export const DISH_COUNT = COUNTER_SIZE;
 export const CARD_W = Math.floor(TRAY_W / DISH_COUNT);
 
 export function cardX(index: number): number {
@@ -38,18 +39,34 @@ export function cardX(index: number): number {
  * Card internals. Measured off the background plate: the tray's cream interior runs y 796
  * to 1048, with its painted rim just outside that. The bands below bleed a few pixels over
  * the rim at each end, which the art carries fine, but they cannot go further - the tray is
- * painted into `bg_cook.png`, so growing this budget means redrawing the plate.
+ * painted into the background, so growing this budget means redrawing the plate.
  *
- * The dish image takes the lion's share, because it is what the player actually reads. The
- * name and button were cut back to 30 and 46 to pay for it; `CARD_BTN_H` only sizes the
- * card's hit area, since the visible capsule is sized by its own padding.
+ * The dish image takes the lion's share, because it is what the player actually reads. It
+ * gave up 20px to the painted state buttons, which are chunkier than the flat capsules they
+ * replaced; the name band pays the rest.
  */
 export const CARD_IMG_Y = 778;
-export const CARD_IMG_H = 196;
-export const CARD_NAME_Y = 976;
+export const CARD_IMG_H = 176;
+export const CARD_NAME_Y = 956;
 export const CARD_NAME_H = 30;
-export const CARD_BTN_Y = 1006;
-export const CARD_BTN_H = 46;
+
+/**
+ * The state button.
+ *
+ * The four painted buttons have different aspect ratios - DISPOSE carries a bin and stink
+ * lines above its pill - so each is drawn at `BTN_W` wide, given the height its own art asks
+ * for, and hung from `BTN_BOTTOM_Y`. Bottom-aligning is what puts every pill on one baseline,
+ * and it works because the pill is the lowest painted thing in all four. `CARD_BTN_Y` and
+ * `CARD_BTN_H` therefore describe the band the tallest of them needs, which is the card's hit
+ * area; they do not size any one button.
+ *
+ * `BTN_W` is well short of the card, because the widest button at full card width would be
+ * tall enough to push the band over the tray's painted rim.
+ */
+export const BTN_W = 164;
+export const BTN_BOTTOM_Y = 1050;
+export const CARD_BTN_H = 62;
+export const CARD_BTN_Y = BTN_BOTTOM_Y - CARD_BTN_H;
 
 /**
  * The cook-progress bar sits along the bottom of the image band. It is 20 rather than the

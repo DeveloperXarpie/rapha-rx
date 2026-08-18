@@ -6,8 +6,8 @@ import { useImagesReady } from '../../../lib/useImagesReady';
 import { useReducedMotion } from '../../../lib/useReducedMotion';
 
 import {
-  BUBBLE_BOTTOM_Y, BUBBLE_ITEM_GAP, BUBBLE_ITEM_H, BUBBLE_ITEM_W, bubbleCentreX, bubbleWidth,
-  CANVAS_H, CANVAS_W, CARD_BTN_H, CARD_BTN_Y, CARD_IMG_H, CARD_IMG_Y, CARD_NAME_H,
+  BTN_BOTTOM_Y, BTN_W, BUBBLE_BOTTOM_Y, BUBBLE_ITEM_GAP, BUBBLE_ITEM_H, BUBBLE_ITEM_W,
+  bubbleCentreX, bubbleWidth, CANVAS_H, CANVAS_W, CARD_IMG_H, CARD_IMG_Y, CARD_NAME_H,
   CARD_NAME_Y, CARD_W, cardX, COOK_BAR_H, COOK_BAR_W, FACE_BOTTOM_Y, FACE_H, FACE_TOP_Y,
   faceCentreX, GUEST_CAPSULE_W, GUEST_DIAL, HUD_LEFT_X, HUD_RIGHT_X, HUD_Y, PATIENCE_BAR_H,
   patienceBarWidth, SCORE_CAPSULE_H, SCORE_CAPSULE_W,
@@ -17,8 +17,8 @@ import {
   type GameState, type Guest,
 } from './model';
 import {
-  ALL_SPRITE_URLS, BACKGROUND_SRC, BUBBLE_TAIL, CLEAR_BTN_SRC, COIN_SRC, DISH_BY_ID, DISH_DEFS,
-  faceCrop, FRAMES, frameStyle,
+  BACKGROUND_SRC, BUBBLE_TAIL, BUTTONS, COIN_SRC, DISH_BY_ID, faceCrop, FRAMES, frameStyle,
+  PAINTED_BUTTON_LANG, spriteUrls,
 } from './sprites';
 import { Bar, type BarTint } from './Bar';
 import { BUTTON_SKIN, COLOURS } from './palette';
@@ -45,15 +45,22 @@ interface Props {
 }
 
 export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMotion }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const params: ServeGuestsParams = useMemo(
     () => ({ ...DEFAULT_PARAMS, ...(levelConfig.params as Partial<ServeGuestsParams>) }),
     [levelConfig.params],
   );
 
-  const imagesReady = useImagesReady(ALL_SPRITE_URLS);
   const [state, setState] = useState<GameState>(createInitialState);
+
+  // The counter is dealt once per round and never changes, so this list is stable for the
+  // life of the board even though it is derived from state.
+  const dealt = state.dishes.map((d) => d.id).join(',');
+  const imagesReady = useImagesReady(useMemo(() => spriteUrls(dealt.split(',')), [dealt]));
+
+  // The button art has its word painted in, so only the language it was drawn in gets it.
+  const painted = i18n.language.split('-')[0] === PAINTED_BUTTON_LANG;
 
   const osReducedMotion = useReducedMotion();
   const reduced = reducedMotion ?? osReducedMotion;
@@ -179,6 +186,7 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
                 state={state}
                 onTap={handleDishTap}
                 reduced={reduced}
+                painted={painted}
                 t={t}
               />
             ))}
@@ -459,16 +467,20 @@ function SeatView({ seat, guest, t }: { seat: number; guest: Guest | null; t: Tr
 // ─── Dish card ────────────────────────────────────────────────────────────────
 
 function DishCard({
-  index, state, onTap, reduced, t,
+  index, state, onTap, reduced, painted, t,
 }: {
   index: number;
   state: GameState;
   onTap: (index: number) => void;
   reduced: boolean;
+  /** Whether this language gets the painted buttons or the CSS capsules. */
+  painted: boolean;
   t: Translate;
 }) {
   const dish = state.dishes[index];
-  const def = DISH_DEFS[index];
+  // The counter is dealt per round, so a card's dish comes from the runtime, not from a
+  // fixed position in the menu.
+  const def = DISH_BY_ID[dish.id];
   const name = t(def.nameKey, def.nameEn);
   const progress = cookProgress(state, dish);
   const nudging = dish.nudgeUntil > state.t;
@@ -479,10 +491,14 @@ function DishCard({
 
   // Idle and cooking are still read by colour as well as by label - washed out, saturating
   // as they go - because those are one dish progressing, not a different dish.
+  //
+  // Idle does not wash out any further than this. Taken down to near-greyscale it landed on
+  // the same dull green as the mouldy art, so a dish nobody had started looked like a dish
+  // about to be thrown away - two states that must never be confusable.
   const filter = dish.state === 'idle'
-    ? 'saturate(.2) brightness(1.14) opacity(.5)'
+    ? 'saturate(.5) brightness(1.05) opacity(.66)'
     : dish.state === 'cooking'
-      ? `saturate(${(0.2 + progress * 0.85).toFixed(3)}) brightness(${(1.14 - progress * 0.14).toFixed(3)}) opacity(${(0.5 + progress * 0.5).toFixed(3)})`
+      ? `saturate(${(0.5 + progress * 0.55).toFixed(3)}) brightness(${(1.05 - progress * 0.05).toFixed(3)}) opacity(${(0.66 + progress * 0.34).toFixed(3)})`
       : 'saturate(1.05)';
 
   const dishImg = {
@@ -495,12 +511,12 @@ function DishCard({
   };
 
   const label = dish.state === 'idle'
-    ? t('serveGuests.prepare', 'PREPARE')
+    ? t('serveGuests.prepare', 'MAKE')
     : dish.state === 'cooking'
       ? t('serveGuests.cooking', 'COOKING')
       : dish.state === 'ready'
-        ? t('serveGuests.ready', 'READY')
-        : '✕';
+        ? t('serveGuests.ready', 'SERVE')
+        : t('serveGuests.dispose', 'DISPOSE');
 
   const ariaLabel = dish.state === 'idle'
     ? t('serveGuests.a11y.prepare', 'Prepare {{dish}}', { dish: name })
@@ -510,8 +526,9 @@ function DishCard({
         ? t('serveGuests.a11y.serve', 'Serve {{dish}}', { dish: name })
         : t('serveGuests.a11y.clear', 'Throw away the burnt {{dish}}', { dish: name });
 
-  // Burnt has no capsule button - it gets the round ✕ below - so it has no skin entry.
-  const skin = BUTTON_SKIN[dish.state] ?? BUTTON_SKIN.idle;
+  const skin = BUTTON_SKIN[dish.state];
+  const button = BUTTONS[dish.state];
+  const buttonH = Math.round(BTN_W * button.h / button.w);
 
   return (
     <button
@@ -525,7 +542,7 @@ function DishCard({
         left: cardX(index),
         top: CARD_IMG_Y,
         width: CARD_W,
-        height: CARD_BTN_Y + CARD_BTN_H - CARD_IMG_Y,
+        height: BTN_BOTTOM_Y - CARD_IMG_Y,
         background: 'none',
         border: 'none',
         padding: 0,
@@ -569,28 +586,34 @@ function DishCard({
         {dish.state === 'burnt' ? t('serveGuests.wasted', 'WASTED') : name}
       </span>
 
-      {/* Action */}
-      <span
-        style={dish.state === 'burnt'
-          ? {
-            position: 'absolute', left: '50%', top: CARD_BTN_Y - CARD_IMG_Y,
-            transform: 'translateX(-50%)', width: 60, height: 60,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }
-          : {
-            position: 'absolute', left: '50%', top: CARD_BTN_Y - CARD_IMG_Y,
-            transform: 'translateX(-50%)', minWidth: CARD_W - 46, padding: '7px 14px',
+      {/* Action. Both variants hang from the same baseline, so the button sits in the same
+          place whichever one the language gets. */}
+      {painted ? (
+        <img
+          src={button.src}
+          alt=""
+          className={dish.state === 'ready' ? 'sg-glow' : undefined}
+          style={{
+            position: 'absolute', left: '50%', top: BTN_BOTTOM_Y - buttonH - CARD_IMG_Y,
+            transform: 'translateX(-50%)', width: BTN_W, height: buttonH,
+          }}
+        />
+      ) : (
+        <span
+          className={dish.state === 'ready' ? 'sg-glow' : undefined}
+          style={{
+            // The card's own box ends at BTN_BOTTOM_Y, which is the baseline both share.
+            position: 'absolute', left: '50%', bottom: 0,
+            transform: 'translateX(-50%)', minWidth: BTN_W, padding: '9px 14px',
             borderRadius: 999, background: skin[0],
             border: '3px solid rgba(255,255,255,.75)', boxShadow: `0 4px 0 ${skin[1]}`,
             color: skin[2], fontSize: 22, fontWeight: 800, letterSpacing: 1,
             textAlign: 'center', boxSizing: 'border-box',
           }}
-        className={dish.state === 'ready' ? 'sg-glow' : undefined}
-      >
-        {dish.state === 'burnt'
-          ? <img src={CLEAR_BTN_SRC} alt="" style={{ width: '100%', height: '100%' }} />
-          : label}
-      </span>
+        >
+          {label}
+        </span>
+      )}
     </button>
   );
 }
