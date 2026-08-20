@@ -8,7 +8,7 @@ import {
   generateSpotFocusContent,
   type GeneratedScene,
 } from '../../../lib/contentGenerators/spotFocus';
-import { COLOURS } from './palette';
+import { COLOURS, DISPLAY_FONT } from './palette';
 import { Grid } from './Grid';
 import { Scene } from './Scene';
 
@@ -169,8 +169,13 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
           <p
             role="status"
             aria-live="polite"
-            className="rounded-2xl px-8 py-2 text-h3 font-extrabold"
-            style={{ background: COLOURS.pillFill, color: COLOURS.pillText }}
+            className="rounded-2xl px-8 py-2 text-h3"
+            style={{
+              fontFamily: DISPLAY_FONT,
+              fontWeight: 800,
+              background: COLOURS.pillFill,
+              color: COLOURS.pillText,
+            }}
           >
             {t('spot-focus.found', '{{found}} / {{total}} Found', { found: found.size, total })}
           </p>

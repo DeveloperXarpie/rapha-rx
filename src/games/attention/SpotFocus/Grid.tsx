@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Card } from './Card';
-import { COLOURS } from './palette';
+import { COLOURS, DISPLAY_FONT } from './palette';
 import type { SceneCell } from '../../../lib/contentGenerators/spotFocus';
 
 interface Props {
@@ -20,8 +20,10 @@ export function Grid({ rows, tone, label, interactive, found, onTap }: Props) {
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
       <span
-        className="whitespace-nowrap rounded-full px-4 py-2 text-body-md font-bold"
+        className="whitespace-nowrap rounded-full px-5 py-2 text-body-md"
         style={{
+          fontFamily: DISPLAY_FONT,
+          fontWeight: 700,
           background: tone === 'blue' ? COLOURS.ribbonBlue : COLOURS.ribbonRed,
           color: COLOURS.ribbonText,
           boxShadow: '0 3px 0 rgba(0,0,0,.22)',

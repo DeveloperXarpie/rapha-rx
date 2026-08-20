@@ -67,10 +67,21 @@ ORPHAN_REACH = 30
 SEAM_WINDOW = 0.30
 JPEG_QUALITY = 88
 
-# Ornament crop boxes, measured off spot_focus_UI.png (1024 x 1024).
+# The signboard's two end caps, measured off spot_focus_UI.png (1024 x 1024). The
+# signboard occupies x 24..593, y 180..361, its plank body running y 200..360 with the
+# daisy sprigs poking above it.
+#
+# Each cap carries a rounded plank end, its screws and its sprig - none of which CSS can
+# draw - while the wood between them is a gradient sampled from the plank itself, so the
+# board stretches to whatever the heading needs in any language. An earlier crop stopped
+# at y 330 and cut the plank's bottom edge off, which is part of why it read as flat.
+#
+# The horizontal bounds are tight against the lettering, which runs x 132..492 measured
+# on the text band alone. Measuring on the whole plank puts it at x 46, but that is the
+# sprigs' dark leaf outlines, and trusting it left a stray "t" on the rendered board.
 UI_CROPS: dict[str, tuple[int, int, int, int]] = {
-    "ui-sprig-left": (18, 196, 128, 330),
-    "ui-sprig-right": (498, 196, 608, 330),
+    "ui-plank-left": (20, 176, 130, 366),
+    "ui-plank-right": (497, 176, 606, 366),
 }
 
 # Names transcribed from items_01_100_items.docx, kebab-cased, in atlas order.
