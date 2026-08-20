@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../components/ui/Button';
 import { useGamePhase } from '../../../hooks/useGamePhase';
@@ -17,6 +17,18 @@ interface Props {
   onLevelComplete: (result: LevelResult) => void;
   generatedContent?: GeneratedScene;
 }
+
+/** Breathing room kept below the board, so it never sits flush to the viewport edge. */
+const BOARD_FOOTER = 24;
+/** Mirrors the gap-2 between cards and the p-2 inside a panel, in Tailwind's scale. */
+const GAP = 8;
+const PANEL_PADDING = 8;
+/** The ribbon label and its gap, which sit inside the measured box above the cards. */
+const RIBBON_H = 56;
+/** The gap between the two panels, matching gap-4. */
+const PANEL_GAP = 16;
+/** Never shrink past this, however short the window; scrolling beats unreadable. */
+const MIN_BOARD_WIDTH = 420;
 
 type Phase = 'scene_intro' | 'find_differences' | 'completion';
 
@@ -52,6 +64,43 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
   }, []);
 
   const total = scene.differenceCount;
+  const gridRows = scene.originalRows.length;
+  const gridCols = scene.originalRows[0]?.length ?? 1;
+
+  // ── Fit the board into whatever space is left below the chrome ──────────────
+  //
+  // Cards are 3:4 and sized by width, so the board's height is decided by how wide we
+  // let the two panels get. Left to itself the grid overflows the viewport and a
+  // resident has to scroll to see the bottom row of a puzzle they are being asked to
+  // compare at a glance, which defeats the game.
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [maxBoardWidth, setMaxBoardWidth] = useState(896);
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = boardRef.current;
+      if (!el) return;
+      // Height cannot come from the layout: the shell's column sizes to its content and
+      // that content is what we are measuring. Measuring against the viewport breaks the
+      // circularity, as the other boards do.
+      const top = el.getBoundingClientRect().top;
+      const available = window.innerHeight - top - BOARD_FOOTER - RIBBON_H;
+      const cardHeight = (available - GAP * (gridRows - 1) - PANEL_PADDING * 2) / gridRows;
+      const cardWidth = (cardHeight * 3) / 4;
+      const panel = cardWidth * gridCols + GAP * (gridCols - 1) + PANEL_PADDING * 2;
+      setMaxBoardWidth(Math.max(MIN_BOARD_WIDTH, Math.round(panel * 2 + PANEL_GAP)));
+    };
+    measure();
+    // Setting the width reflows the board, which can move its own top edge, so watch the
+    // element as well as the window rather than trusting a single pass.
+    const ro = new ResizeObserver(measure);
+    if (boardRef.current) ro.observe(boardRef.current);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [gridRows, gridCols]);
 
   function handleTap(row: number, col: number) {
     const key = `${row}-${col}`;
@@ -115,7 +164,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
         The button and the pill share one slot of fixed height, so nothing on the board
         shifts when the round starts under a resident who is already looking at it.
       */}
-      <div className="flex h-20 items-center justify-center">
+      <div className="flex h-16 items-center justify-center">
         {playing ? (
           <p
             role="status"
@@ -132,7 +181,11 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
         )}
       </div>
 
-      <div className="flex w-full max-w-4xl gap-3 md:gap-4">
+      <div
+        ref={boardRef}
+        className="flex w-full gap-3 md:gap-4"
+        style={{ maxWidth: maxBoardWidth }}
+      >
         <Grid
           rows={scene.originalRows}
           tone="blue"

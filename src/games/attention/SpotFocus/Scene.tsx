@@ -14,12 +14,18 @@ interface Props {
  * The plank is CSS rather than the kit's sprite because the kit paints "Can you spot the
  * Differences?" into the wood, and this app ships in English, Hindi and Kannada. Only
  * the daisy sprigs are sliced: they carry no text and CSS cannot draw them.
+ *
+ * The 12rem in the min-height is GameShell's chrome: its header, its title bar and its
+ * padding. `flex-1` alone is not enough, because the shell's column is `min-h-full` and
+ * that resolves to nothing without a definite height on its own parent - so on the
+ * completion screen, where the content is short, the backdrop stopped halfway down and
+ * left grey shell showing beneath it. ClearTheWay carries the same constant as CHROME_H.
  */
 export function Scene({ heading, instruction, children }: Props) {
   return (
     <div
       role="main"
-      className="flex flex-1 flex-col items-center gap-4 bg-cover bg-center bg-no-repeat p-4"
+      className="flex min-h-[calc(100vh-12rem)] flex-1 flex-col items-center gap-3 bg-cover bg-center bg-no-repeat px-4 py-3"
       style={{
         backgroundImage: `url(${BG_SCENE})`,
         backgroundColor: COLOURS.skyMid,
@@ -39,7 +45,7 @@ export function Scene({ heading, instruction, children }: Props) {
           className="pointer-events-none absolute -right-2 -top-4 z-10 w-16 md:w-20"
         />
         <h2
-          className="w-full rounded-2xl px-8 py-3 text-center text-h2 font-extrabold"
+          className="w-full rounded-2xl px-8 py-2 text-center text-h2 font-extrabold"
           style={{
             color: COLOURS.signText,
             background: `repeating-linear-gradient(180deg, ${COLOURS.signWood} 0 9px, ${COLOURS.signGrain} 9px 18px)`,
