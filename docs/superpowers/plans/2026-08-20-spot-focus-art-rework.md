@@ -61,6 +61,20 @@ Expected: `ok`. These are already used by `scripts/slice_shopping_assets.py`.
 
 - [ ] **Step 2: Write the script**
 
+> **What actually happened (recorded after execution).** The script below is not what
+> shipped. Its premise - that the atlases are even 10 x 10 grids so a cell can be cropped
+> and trimmed - is false, and Step 5's eyeball check is what caught it. Measured row gaps
+> in atlas 1 run 134, 136, 128, 132, 123, 123, 116, 111 pixels, so an even split puts grid
+> lines through the objects in the lower rows. Three fixes were tried against the bad grid
+> and all failed, because the grid was the bug.
+>
+> The shipped script measures the nine gutters as the emptiest lines near where an even
+> split would fall, then settles ownership against each cell's core - its central half.
+> A component reaching one core is one object and keeps its overflow; a component reaching
+> two is two objects touching, and is cut at the neck by a watershed on the distance
+> transform. Read `scripts/slice_spot_focus_assets.py` for the real thing.
+
+
 Create `scripts/slice_spot_focus_assets.py`. The id tables below are the 100 names per atlas from `assets-src/Spot_Focus_Assets/items_0*_100_items.docx`, kebab-cased, 10 per row, in atlas order. The docx lists are accurate; rows 1 to 3 of atlas 1 were verified name by name against the rendered sheet. Note `globe-2` in atlas 1 row 10: the docx names "Globe" twice, so the second occurrence is suffixed to keep the sprite filenames unique. It is sliced but omitted from the catalogue in Task 2.
 
 ```python
