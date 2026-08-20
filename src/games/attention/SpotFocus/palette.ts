@@ -38,25 +38,3 @@ export const COLOURS = {
  */
 export const DISPLAY_FONT =
   "'Baloo 2', 'Baloo Tamma 2', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif";
-
-/**
- * The plank's wood, sampled row by row out of the signboard in the art rather than
- * invented. The lettering is voted out by taking the modal colour across the plank's
- * interior at each row, which leaves the grain, the lit middle and the dark framing
- * edges top and bottom.
- */
-export const PLANK_WOOD = `linear-gradient(180deg,
-  #bd630f 0%,
-  #d57b27 8.5%,
-  #ffc969 15.7%,
-  #ffcf75 23.5%,
-  #ffc969 31.4%,
-  #ffc969 38.6%,
-  #ffcf75 46.4%,
-  #ffcf75 54.2%,
-  #f9c96f 62.1%,
-  #ffc96f 69.3%,
-  #ffc96f 77.1%,
-  #ffbd5d 85%,
-  #f9b14b 92.2%,
-  #5d2103 100%)`;

@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
-import { COLOURS, DISPLAY_FONT, PLANK_WOOD } from './palette';
-import { BG_SCENE, UI_PLANK_LEFT, UI_PLANK_RIGHT } from './sprites';
+import { COLOURS, DISPLAY_FONT } from './palette';
+import {
+  BG_SCENE,
+  PLANK_CAP_RATIO,
+  UI_PLANK_LEFT,
+  UI_PLANK_MID,
+  UI_PLANK_RIGHT,
+} from './sprites';
 
 interface Props {
   heading: string;
@@ -8,19 +14,24 @@ interface Props {
   children: ReactNode;
 }
 
-/** How far a cap overhangs the plank, as a fraction of the plank's height. */
-const CAP_OVERHANG = 0.19;
+/** Height of the signboard. The caps' width follows from it, via their aspect ratio. */
+const PLANK_H = 104;
+/** The plank's wood inside its frame, as a fraction of the board's height. */
+const PLANK_INSET = 0.16;
 
 /**
  * The backdrop, the signboard header and the instruction line.
  *
- * The signboard is a three-piece build rather than one sprite. The kit paints "Can you
- * spot the Differences?" into the wood and this app ships in English, Hindi and Kannada,
- * so the heading has to be live text. But the plank's rounded ends, its screws and its
- * daisy sprigs are not things CSS draws convincingly, so those are sliced as end caps
- * and the wood between them is a gradient sampled row by row from the plank itself. The
- * board stretches to whatever the heading needs, in any language, and still looks like
- * the art rather than like a form field.
+ * The signboard is three sliced pieces, not one sprite and not CSS. It cannot be one
+ * sprite because the kit paints "Can you spot the Differences?" into the wood and this
+ * app ships in English, Hindi and Kannada, so the heading has to be live text over a
+ * board that stretches to fit it. It should not be CSS because a drawn gradient butted
+ * against two sliced caps reads as an overlap of two things rather than as one board.
+ *
+ * So the slicing script erases the baked heading from the plank and cuts three pieces
+ * from that cleaned board over the same rows: two end caps carrying the rounded ends,
+ * screws and daisy sprigs, and a middle strip that tiles between them. Rendered at one
+ * height they are the same wood at the same scale, and the join does not show.
  *
  * The 12rem in the min-height is GameShell's chrome: its header, its title bar and its
  * padding. `flex-1` alone is not enough, because the shell's column is `min-h-full` and
@@ -29,6 +40,8 @@ const CAP_OVERHANG = 0.19;
  * left grey shell showing beneath it. ClearTheWay carries the same constant as CHROME_H.
  */
 export function Scene({ heading, instruction, children }: Props) {
+  const capWidth = Math.round(PLANK_H * PLANK_CAP_RATIO);
+
   return (
     <div
       role="main"
@@ -38,39 +51,50 @@ export function Scene({ heading, instruction, children }: Props) {
         backgroundColor: COLOURS.skyMid,
       }}
     >
-      <div className="relative flex w-full max-w-2xl justify-center pt-3">
-        <h2
-          className="w-full rounded-xl px-24 py-4 text-center text-h2"
+      <div
+        className="relative flex w-full max-w-3xl items-center justify-center"
+        style={{ minHeight: PLANK_H }}
+      >
+        {/* The middle, tiled behind everything and inset so the caps' frames overlap it. */}
+        <div
+          aria-hidden
+          className="absolute inset-y-0"
           style={{
-            fontFamily: DISPLAY_FONT,
-            fontWeight: 800,
-            color: COLOURS.signText,
-            background: PLANK_WOOD,
-            boxShadow: '0 6px 0 rgba(0,0,0,.28), inset 0 0 0 1px rgba(122,53,9,.55)',
+            left: capWidth - 2,
+            right: capWidth - 2,
+            backgroundImage: `url(${UI_PLANK_MID})`,
+            backgroundSize: `auto ${PLANK_H}px`,
+            backgroundRepeat: 'repeat-x',
+            backgroundPosition: 'center',
           }}
-        >
-          {heading}
-        </h2>
-
-        {/*
-          The caps sit over the plank's own ends. They are taller than the plank because
-          the sprigs grow above it, so they anchor to the plank's vertical centre and are
-          allowed to overhang.
-        */}
+        />
         <img
           src={UI_PLANK_LEFT}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2"
-          style={{ height: `calc(100% + ${CAP_OVERHANG * 200}%)` }}
+          className="absolute left-0 top-0"
+          style={{ height: PLANK_H }}
         />
         <img
           src={UI_PLANK_RIGHT}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2"
-          style={{ height: `calc(100% + ${CAP_OVERHANG * 200}%)` }}
+          className="absolute right-0 top-0"
+          style={{ height: PLANK_H }}
         />
+
+        <h2
+          className="relative text-center text-h2"
+          style={{
+            fontFamily: DISPLAY_FONT,
+            fontWeight: 800,
+            color: COLOURS.signText,
+            paddingInline: capWidth + 8,
+            paddingBlock: PLANK_H * PLANK_INSET,
+          }}
+        >
+          {heading}
+        </h2>
       </div>
 
       <p

@@ -1740,7 +1740,7 @@ Expected: `broken images: 0`, `pill at start: {"found":0,"total":N}`, `cards mar
 
 - [ ] **Step 4: Look at the screenshots**
 
-Open `spot-1-intro.png`, `spot-2-found.png` and `spot-3-complete.png`. Check against `assets-src/spot-focus/-abs.png`:
+Open `spot-1-intro.png`, `spot-2-found.png` and `spot-3-complete.png`. Check against the reference mockups:
 - The backdrop fills the screen and the signboard sits on it with a sprig at each end.
 - Both panels have their ribbon, the blue frame, and white cards with one object each.
 - Found cards are pink with a tick, and the object is still legible through the wash.

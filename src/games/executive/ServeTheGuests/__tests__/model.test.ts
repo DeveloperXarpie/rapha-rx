@@ -65,6 +65,13 @@ describe('orders', () => {
   // cannot make, or their order becomes unservable and they walk out no matter what the
   // player does.
   it('only ever asks for dishes on the counter', () => {
+    // Violations are collected and asserted once at the end rather than asserted inside
+    // the loop. The loop runs forty seeds by twenty thousand ticks by every seat by every
+    // item, so an expect() in its body is millions of calls: the test used to sit right
+    // on vitest's five-second default timeout and would tip over it whenever the suite
+    // around it grew. What it checks is unchanged.
+    const offenders: string[] = [];
+
     for (let seed = 0; seed < 40; seed++) {
       const rng = seededRng(seed);
       let state = createInitialState(rng);
@@ -73,11 +80,15 @@ describe('orders', () => {
         state = tick(state, 0.1, 3, rng);
         for (const guest of state.seats) {
           if (!guest) continue;
-          for (const item of guest.items) expect(counter.has(item.dishId)).toBe(true);
+          for (const item of guest.items) {
+            if (!counter.has(item.dishId)) offenders.push(`seed ${seed}: ${item.dishId}`);
+          }
         }
       }
-      expect(state.spawned).toBe(TOTAL_GUESTS);
+      expect(state.spawned, `seed ${seed} did not spawn every guest`).toBe(TOTAL_GUESTS);
     }
+
+    expect(offenders.slice(0, 5)).toEqual([]);
   });
 
   it('never seats more guests than there are seats', () => {

@@ -3,7 +3,7 @@
 Date: 2026-08-20
 Status: approved; revised 2026-08-20 for the delivered art set
 Source art: `assets-src/Spot_Focus_Assets/`
-Reference mockup: `assets-src/spot-focus/-abs.png`
+Reference mockups: removed once the real art set landed; `assets-src/Spot_Focus_Assets/` is the source of record
 
 ## 1. What changes and why
 
@@ -52,7 +52,7 @@ along with an art change.
 | Game id | `spot-focus` |
 | Category | `attention` |
 | Directory | `src/games/attention/SpotFocus/` |
-| Art source | `assets-src/spot-focus/` |
+| Art source | `assets-src/Spot_Focus_Assets/` |
 | Art output | `public/spot-assets/` |
 | Generator | `src/lib/contentGenerators/spotFocus.ts` |
 
@@ -102,23 +102,27 @@ Position 97 is dropped from the catalogue, leaving 199 usable objects.
 The slicing script still cuts it, so the file count matches the atlas; only `items.ts`
 omits it.
 
-### 3.3 The UI kit is mostly unusable, and that is fine
+### 3.3 The UI kit carries baked-in English, so its text is erased rather than avoided
 
-`spot_focus_UI.png` carries English text baked into the art: the signboard reads "Can
-you spot the Differences?", the ribbons read "Original" and "Find Differences Here", and
-the instruction line is painted as pixels.
-This app ships `en`, `hi` and `kn`.
-Shipping a Kannada session with an English signboard is not acceptable, and there is no
-clean plate underneath the text to slice.
+`spot_focus_UI.png` paints English into the art: the signboard reads "Can you spot the
+Differences?", the ribbons read "Original" and "Find Differences Here", and the
+instruction line is pixels.
+This app ships `en`, `hi` and `kn`, so none of that text can survive.
 
-So the kit is used as a **colour and shape reference**, not as sprites, following the
-precedent set for Market Memory's HINT tile and cart tray: art with baked-in dynamic
-content gets rebuilt in CSS from the kit's own palette.
+The first attempt rebuilt the signboard in CSS between two sliced end caps.
+It read as an overlap of two things rather than as one board, because a drawn gradient
+cannot match sliced wood at the join.
+
+So the plank's lettering is **erased** instead, and the repaired board is sliced into
+three pieces cut over the same rows: two end caps and a middle strip that tiles between
+them. The heading is live text drawn over real wood. The ribbons and the pill stay CSS
+- they are flat rounded rectangles, which CSS renders crisply at any size in any
+language.
 
 | Piece | Treatment |
 |---|---|
-| Signboard plank | CSS: wood gradient, rounded frame, from `signWood` and `signFrame` |
-| Daisy and leaf ornaments | **Sliced** - they carry no text, and CSS cannot draw them |
+| Signboard plank | **Sliced**, with its baked heading erased and repaired |
+| Daisy and leaf ornaments | **Sliced**, as part of the two end caps |
 | Blue "Original" ribbon | CSS from `ribbonBlue` |
 | Red "Find Differences Here" ribbon | CSS from `ribbonRed` |
 | Instruction line | Live text, already in the locale files |
@@ -142,7 +146,7 @@ constants in section 6 are derived from the image and never eyeballed.
 |---|---|---|
 | Object sprites, per grid cell, alpha-trimmed | `items_01.png`, `items_02.png` | `item-<slug>.png`, 200 files |
 | Backdrop, re-encoded to JPEG at quality 88 | `spot_focus_bg.png` | `bg-scene.jpg` |
-| Signboard ornaments, by measured crop box | `spot_focus_UI.png` | `ui-sprig-left.png`, `ui-sprig-right.png` |
+| Signboard, lettering erased, cut in three | `spot_focus_UI.png` | `ui-plank-left.png`, `ui-plank-mid.png`, `ui-plank-right.png` |
 | Manifest of slug to source cell to crop box | all | `manifest.json` |
 
 No stand-in mode is needed; the real art is here.
@@ -229,7 +233,7 @@ Measured from `-abs.png`, 941 x 1672.
 | Card rows | 4 in the mockup, 3 at runtime |
 | Left panel cards | x 35, 178, 320 |
 | Right panel cards | x 494, 637, 780 |
-| Signboard sprigs | 110 x 134 each, at (18, 196) and (498, 196) in `spot_focus_UI.png` |
+| Signboard pieces | y 170..372 of `spot_focus_UI.png`; caps x 14..130 and x 494..612, tiling strip x 124..130 |
 
 The mockup draws a 4 x 3 grid.
 `getSpotFocusParams` returns `gridRows: 3` and `gridCols: 3` or `4`, so the runtime grid

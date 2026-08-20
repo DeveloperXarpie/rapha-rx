@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ITEMS } from '../items';
-import { BG_SCENE, UI_PLANK_LEFT, UI_PLANK_RIGHT, spritePath } from '../sprites';
+import { BG_SCENE, UI_PLANK_LEFT, UI_PLANK_MID, UI_PLANK_RIGHT, spritePath } from '../sprites';
 
 /**
  * The art that actually exists on disk.
@@ -24,8 +24,8 @@ describe('spot-focus art', () => {
     }
   });
 
-  it('resolves the backdrop and both signboard end caps', () => {
-    for (const path of [BG_SCENE, UI_PLANK_LEFT, UI_PLANK_RIGHT]) {
+  it('resolves the backdrop and all three signboard pieces', () => {
+    for (const path of [BG_SCENE, UI_PLANK_LEFT, UI_PLANK_MID, UI_PLANK_RIGHT]) {
       expect(ON_DISK.has(path), `missing ${path}`).toBe(true);
     }
   });

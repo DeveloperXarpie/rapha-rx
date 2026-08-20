@@ -67,22 +67,35 @@ ORPHAN_REACH = 30
 SEAM_WINDOW = 0.30
 JPEG_QUALITY = 88
 
-# The signboard's two end caps, measured off spot_focus_UI.png (1024 x 1024). The
-# signboard occupies x 24..593, y 180..361, its plank body running y 200..360 with the
-# daisy sprigs poking above it.
+# The signboard, as three pieces cut from one cleaned plank.
 #
-# Each cap carries a rounded plank end, its screws and its sprig - none of which CSS can
-# draw - while the wood between them is a gradient sampled from the plank itself, so the
-# board stretches to whatever the heading needs in any language. An earlier crop stopped
-# at y 330 and cut the plank's bottom edge off, which is part of why it read as flat.
+# The kit paints "Can you spot the Differences?" into the wood and this app ships in
+# English, Hindi and Kannada, so the heading has to be live text. An earlier version drew
+# the plank in CSS between two sliced end caps, and the join showed: two framed blocks
+# butted against a flat gradient, reading as an overlap rather than a board.
 #
-# The horizontal bounds are tight against the lettering, which runs x 132..492 measured
-# on the text band alone. Measuring on the whole plank puts it at x 46, but that is the
-# sprigs' dark leaf outlines, and trusting it left a stray "t" on the rendered board.
-UI_CROPS: dict[str, tuple[int, int, int, int]] = {
-    "ui-plank-left": (20, 176, 130, 366),
-    "ui-plank-right": (497, 176, 606, 366),
+# So the lettering is erased from the plank first (see `clean_plank`) and all three
+# pieces are cut from that, over the same rows. Rendered at a common height they are the
+# same wood at the same scale, and the middle tiles between the caps without a seam.
+SIGN_Y0, SIGN_Y1 = 170, 372
+# The middle is a six-pixel column of wood taken from beside the lettering rather than
+# from behind it. Cut from the repaired area it tiles the repair's own edges into a row
+# of faint dashes; cut from clean wood it carries the true top-to-bottom colour and
+# repeats invisibly. Everything outside the plank's rows is cleared, because that column
+# also passes under a sprig.
+SIGN_CROPS: dict[str, tuple[int, int]] = {
+    "ui-plank-left": (14, 130),
+    "ui-plank-mid": (124, 130),
+    "ui-plank-right": (494, 612),
 }
+
+# The lettering to erase: dark, warm, and well inside the plank's own frame.
+TEXT_BOX = (125, 203, 500, 358)
+# Clean wood columns either side of it - past the left sprig's leaves, which reach x 109,
+# and short of the right sprig, which starts at x 497.
+WOOD_LEFT = (118, 130)
+WOOD_RIGHT = (492, 496)
+PLANK_ROWS = (198, 362)
 
 # Names transcribed from items_01_100_items.docx, kebab-cased, in atlas order.
 # "Globe" is named twice; the second is suffixed so the filenames stay unique. It is
@@ -202,6 +215,51 @@ def split_fusion(
 
     basins = watershed(-distance, markers, mask=pixels)
     return {c: basins == i for i, c in enumerate(claimants, start=1)}
+
+
+def clean_plank(sheet: Image.Image) -> Image.Image:
+    """
+    Erase the baked-in heading from the signboard, leaving bare wood.
+
+    The letters are anti-aliased into the grain, so no threshold catches their fringe
+    without also eating the grain itself; the mask is grown instead. The hole is then
+    filled by blending between the clean wood either side of the lettering, row by row.
+    The plank's colour varies down the board and barely across it, so a straight
+    horizontal blend rebuilds it convincingly - and the live heading lands over the same
+    area anyway.
+
+    Sampling the replacement colour from inside the text box was tried first and fails:
+    on the rows the lettering fills, there is too little clean wood left to measure, and
+    those rows come through with the original text intact.
+    """
+    a = np.array(sheet).astype(int)
+    tx0, ty0, tx1, ty1 = TEXT_BOX
+
+    region = np.zeros(a.shape[:2], bool)
+    region[ty0:ty1, tx0:tx1] = True
+    core = (
+        region
+        & (a[:, :, 3] > 80)
+        & (a[:, :, :3].max(axis=2) < 135)
+        & (a[:, :, 0] >= a[:, :, 1])       # letters are warm; the sprig leaves are green
+    )
+    mask = ndimage.binary_dilation(core, np.ones((3, 3)), iterations=4) & region
+
+    out = a.copy()
+    xs = np.arange(tx0, tx1)
+    t = ((xs - tx0) / (tx1 - tx0))[:, None]
+    for y in range(*PLANK_ROWS):
+        left = a[y, WOOD_LEFT[0]:WOOD_LEFT[1], :3].mean(axis=0)
+        right = a[y, WOOD_RIGHT[0]:WOOD_RIGHT[1], :3].mean(axis=0)
+        blend = left[None, :] * (1 - t) + right[None, :] * t
+        row = mask[y, tx0:tx1]
+        if not row.any():
+            continue
+        out[y, tx0:tx1][row] = np.concatenate(
+            [blend[row], np.full((int(row.sum()), 1), 255)], axis=1)
+
+    print(f"  erased {int(mask.sum())} px of baked heading from the plank")
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8), "RGBA")
 
 
 def slice_atlas(filename: str, ids: list[list[str]]) -> list[dict]:
@@ -334,11 +392,17 @@ def main() -> None:
         dupes = sorted({i for i in all_ids if all_ids.count(i) > 1})
         die(f"ids collide across the two atlases: {dupes}")
 
-    print("UI:")
-    ui = Image.open(SRC / "spot_focus_UI.png").convert("RGBA")
-    for name, box in UI_CROPS.items():
-        ui.crop(box).save(OUT / f"{name}.png")
-        print(f"  {name:20} {box}")
+    print("Signboard:")
+    board = clean_plank(Image.open(SRC / "spot_focus_UI.png").convert("RGBA"))
+    for name, (x0, x1) in SIGN_CROPS.items():
+        piece = board.crop((x0, SIGN_Y0, x1, SIGN_Y1))
+        if name.endswith("-mid"):
+            px = np.array(piece)
+            px[: PLANK_ROWS[0] - SIGN_Y0, :, 3] = 0
+            px[PLANK_ROWS[1] - SIGN_Y0 :, :, 3] = 0
+            piece = Image.fromarray(px, "RGBA")
+        piece.save(OUT / f"{name}.png")
+        print(f"  {name:20} x {x0}..{x1}, y {SIGN_Y0}..{SIGN_Y1}")
 
     print("Backdrop:")
     bg = Image.open(SRC / "spot_focus_bg.png").convert("RGB")
