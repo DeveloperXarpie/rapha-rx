@@ -257,6 +257,27 @@ export function isSolved(board: Board): boolean {
   }
 }
 
+/**
+ * The signed slide that would carry the key from where it stands out to the wall, or
+ * null if anything is in the way - or if it is already there. `parseLevel` puts the key
+ * in the exit lane and `allowedAxes` keeps it on the exit axis, so "the lane is clear"
+ * reduces to comparing the free run against the distance left.
+ */
+export function keyEscapeSlide(board: Board): number | null {
+  const key = board.pieces.find((p) => p.isKey);
+  if (!key || isSolved(board)) return null;
+
+  const sideExit = board.exit.side === 'left' || board.exit.side === 'right';
+  const { min, max } = travelRange(board, key.id, sideExit ? 'x' : 'y');
+
+  switch (board.exit.side) {
+    case 'right':  { const d = board.cols - (key.col + key.w); return d <= max ? d : null; }
+    case 'left':   { const d = -key.col;                       return d >= min ? d : null; }
+    case 'bottom': { const d = board.rows - (key.row + key.h); return d <= max ? d : null; }
+    case 'top':    { const d = -key.row;                       return d >= min ? d : null; }
+  }
+}
+
 /** Canonical occupancy string, used as the solver's visited-set key. */
 export function serialize(board: Board): string {
   return occupancy(board).map((cell) => cell ?? EMPTY_CELL).join('');

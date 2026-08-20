@@ -7,7 +7,7 @@ import { useReducedMotion } from '../../../lib/useReducedMotion';
 
 import { boardMetrics, escapeOffset, exitRect, pieceOrigin, pieceSize } from './geometry';
 import {
-  allowedAxes, applyMove, isSolved, parseLevel, travelRange,
+  allowedAxes, applyMove, isSolved, keyEscapeSlide, parseLevel, travelRange,
   type Axis, type Board, type LevelDef, type Piece,
 } from './model';
 import { nextBestMove } from './solver';
@@ -36,7 +36,16 @@ const HINT_AFTER_RATIO = 2;
 /** Space the HUD and instruction take, so the board is sized for what is actually left. */
 const CHROME_H = 190;
 
-type Phase = 'play' | 'escaping' | 'done';
+/** Beat between the lane opening and the fish leaving, so the player sees what freed it. */
+const CLEAR_BEAT_MS = 300;
+
+/** The auto-swim to the wall. The 150ms settle is too fast to read across an open lane. */
+const SWIM_MS = 450;
+
+/** Where along the swim each trailing bubble is dropped, as a fraction of the path. */
+const BUBBLE_STOPS = [0.12, 0.28, 0.44, 0.6, 0.76, 0.92];
+
+type Phase = 'play' | 'clearing' | 'swimming' | 'escaping' | 'done';
 
 interface Props {
   levelConfig: LevelConfig;
@@ -70,6 +79,8 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
   const [hintsUsed, setHintsUsed] = useState(0);
   const [hintPieceId, setHintPieceId] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>('play');
+  /** Board-box geometry of the auto-swim, captured when it starts so the bubbles have a path. */
+  const [trail, setTrail] = useState<null | { x: number; y: number; dx: number; dy: number }>(null);
 
   // Stamped in an effect rather than at render: reading the clock during render is
   // impure, and the difference between mount and first paint is not worth measuring.
@@ -182,7 +193,53 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
     setMoves((m) => m + 1);
     setHintPieceId(null);
     if (isSolved(next)) setPhase('escaping');
+    else if (keyEscapeSlide(next) !== null) setPhase('clearing');
   }
+
+  /**
+   * The auto-swim. Once nothing stands between the fish and the gap, asking for one more
+   * drag is busywork: the puzzle is already solved and the drag only tests the hand. It
+   * still counts as a move - the solver's `minMoves` includes this slide, so making it
+   * free would put every player one move under the baseline and flatten the score.
+   */
+  useEffect(() => {
+    if (phase !== 'clearing') return;
+
+    // Everything happens in the timer, including the decision: the effect body itself
+    // must not touch state, or every clearing render cascades into another.
+    const go = () => {
+      const delta = keyEscapeSlide(board);
+      const key = board.pieces.find((p) => p.isKey);
+      // Nothing can close the lane between the commit and here, but returning to play
+      // beats throwing out of a timer if that ever stops being true.
+      if (delta === null || !key) { setPhase('play'); return; }
+
+      const axis: Axis = board.exit.side === 'left' || board.exit.side === 'right' ? 'x' : 'y';
+      const origin = pieceOrigin(key, metrics);
+      const size = pieceSize(key, metrics);
+
+      setTrail({
+        x: origin.x + size.w / 2,
+        y: origin.y + size.h / 2,
+        dx: axis === 'x' ? delta * metrics.cell : 0,
+        dy: axis === 'y' ? delta * metrics.cell : 0,
+      });
+      setBoard((b) => applyMove(b, key.id, axis, delta));
+      setMoves((m) => m + 1);
+      setPhase(reduced ? 'escaping' : 'swimming');
+    };
+
+    // Reduced motion gets no beat and no swim: the board jumps to solved on the next
+    // frame and hands over to the escape's jump cut.
+    const id = setTimeout(go, reduced ? 0 : CLEAR_BEAT_MS);
+    return () => clearTimeout(id);
+  }, [phase, board, metrics, reduced]);
+
+  useEffect(() => {
+    if (phase !== 'swimming') return;
+    const id = setTimeout(() => setPhase('escaping'), SWIM_MS);
+    return () => clearTimeout(id);
+  }, [phase]);
 
   // The escape is a view flourish over an already-decided board, so it is a timer rather
   // than a transition callback: a cancelled or dropped transitionend must not strand the
@@ -199,6 +256,7 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
     setBoard(start);
     setResets((r) => r + 1);
     setHintPieceId(null);
+    setTrail(null);
     // The move counter keeps running: it counts what this puzzle cost, and starting over
     // is one of the things it cost.
   }
@@ -229,7 +287,8 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
   const hintUnlocked = phase === 'play' && level.minMoves > 0 && moves >= level.minMoves * HINT_AFTER_RATIO;
   const gap = exitRect(board.exit, board, metrics);
   const escape = escapeOffset(board.exit, metrics);
-  const escaping = phase !== 'play';
+  const gone = phase === 'escaping' || phase === 'done';
+  const swimming = phase === 'swimming';
 
   return (
     <div className="flex-1 flex flex-col items-center gap-3">
@@ -318,7 +377,7 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
               const dragging = drag?.pieceId === piece.id;
               const dragX = dragging && drag.axis === 'x' ? drag.offset : 0;
               const dragY = dragging && drag.axis === 'y' ? drag.offset : 0;
-              const flying = piece.isKey && escaping;
+              const flying = piece.isKey && gone;
               const outX = flying && !reduced ? escape.x : 0;
               const outY = flying && !reduced ? escape.y : 0;
               const face = blockFace(piece);
@@ -349,7 +408,9 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
                       ? (reduced
                         ? 'opacity 200ms ease-in'
                         : 'transform 900ms cubic-bezier(.45,.05,.55,1), opacity 900ms ease-in')
-                      : dragging ? 'none' : 'transform 150ms ease-out',
+                      : dragging ? 'none'
+                      : swimming && piece.isKey ? `transform ${SWIM_MS}ms cubic-bezier(.34,.02,.28,1)`
+                      : 'transform 150ms ease-out',
                     opacity: flying ? 0 : 1,
                     touchAction: 'none',
                     cursor: phase === 'play' ? 'grab' : 'default',
@@ -382,6 +443,29 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
                     ) : null}
                   </div>
                 </div>
+              );
+            })}
+
+            {/* The fish's wake, dropped along the path it swims rather than puffed at one
+                spot: staggered by where each bubble sits, so they surface behind it. */}
+            {trail && !reduced && (swimming || gone) && BUBBLE_STOPS.map((at, i) => {
+              const size = Math.round(metrics.cell * (0.12 + (i % 3) * 0.04));
+              return (
+                <span
+                  key={i}
+                  className="ctw-bubble pointer-events-none absolute rounded-full"
+                  style={{
+                    left: trail.x + trail.dx * at - size / 2,
+                    top: trail.y + trail.dy * at - size / 2,
+                    width: size,
+                    height: size,
+                    background: SKIN.bubbleFill,
+                    boxShadow: `inset 0 0 0 1px ${SKIN.bubbleEdge}`,
+                    animationDelay: `${Math.round(at * SWIM_MS)}ms`,
+                    zIndex: 4,
+                  }}
+                  aria-hidden
+                />
               );
             })}
           </div>

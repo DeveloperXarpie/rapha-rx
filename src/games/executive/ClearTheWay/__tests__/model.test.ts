@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  parseLevel, travelRange, applyMove, isSolved, legalMoves, serialize, allowedAxes,
+  parseLevel, travelRange, applyMove, isSolved, keyEscapeSlide, legalMoves, serialize, allowedAxes,
   type LevelDef,
 } from '../model';
 
@@ -221,5 +221,81 @@ describe('serialize', () => {
   it('distinguishes two boards that differ by one slide', () => {
     const board = parseLevel(BASIC);
     expect(serialize(applyMove(board, 'b', 'y', 1))).not.toBe(serialize(board));
+  });
+});
+
+describe('keyEscapeSlide', () => {
+  it('is null while something stands between the key and the gap', () => {
+    // b sits at column 2 of the exit lane; the key cannot reach the wall.
+    expect(keyEscapeSlide(parseLevel(BASIC))).toBeNull();
+  });
+
+  it('is the distance to the wall once the lane is clear', () => {
+    // b slides down out of row 1, leaving columns 2 and 3 free.
+    const open = applyMove(parseLevel(BASIC), 'b', 'y', 1);
+    expect(keyEscapeSlide(open)).toBe(2);
+  });
+
+  it('is null when the key is already against the wall', () => {
+    const open = applyMove(parseLevel(BASIC), 'b', 'y', 1);
+    const out = applyMove(open, 'K', 'x', 2);
+    expect(isSolved(out)).toBe(true);
+    expect(keyEscapeSlide(out)).toBeNull();
+  });
+
+  it('does not fire for a lane that some other piece could clear', () => {
+    // The key is walled in by c, but a is free to run to the right-hand wall itself.
+    const blocked = parseLevel({
+      ...BASIC,
+      layout: [
+        'a...',
+        'KKc.',
+        '..c.',
+        '....',
+      ],
+    });
+    expect(keyEscapeSlide(blocked)).toBeNull();
+  });
+
+  it('reads a left exit as a negative slide', () => {
+    const left = parseLevel({
+      ...BASIC,
+      exit: { side: 'left', index: 1 },
+      layout: [
+        '....',
+        '..KK',
+        '....',
+        '....',
+      ],
+    });
+    expect(keyEscapeSlide(left)).toBe(-2);
+  });
+
+  it('reads a bottom exit as a downward slide', () => {
+    const bottom = parseLevel({
+      ...BASIC,
+      exit: { side: 'bottom', index: 1 },
+      layout: [
+        '.K..',
+        '.K..',
+        '....',
+        '....',
+      ],
+    });
+    expect(keyEscapeSlide(bottom)).toBe(2);
+  });
+
+  it('reads a top exit as an upward slide', () => {
+    const top = parseLevel({
+      ...BASIC,
+      exit: { side: 'top', index: 1 },
+      layout: [
+        '....',
+        '....',
+        '.K..',
+        '.K..',
+      ],
+    });
+    expect(keyEscapeSlide(top)).toBe(-2);
   });
 });

@@ -30,6 +30,10 @@ export const SKIN = {
   keyFill: 'linear-gradient(180deg, #ffb765 0%, #f38f2f 55%, #d9741a 100%)',
   keyEdge: '#a4520c',
   keyBars: 'rgba(228,244,255,0.85)',
+
+  /** The wake the key leaves behind on its auto-swim out. */
+  bubbleFill: 'rgba(206,244,255,0.55)',
+  bubbleEdge: 'rgba(255,255,255,0.75)',
   keyFace: '🐠',
 
   /** Copy that is theme-specific rather than mechanical. */

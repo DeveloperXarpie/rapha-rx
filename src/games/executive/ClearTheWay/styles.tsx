@@ -6,7 +6,8 @@
 import { SKIN } from './skin';
 
 /**
- * `reduced` strips the decorative loops - the exit's beacon and the drifting bubbles -
+ * `reduced` strips the decorative loops - the exit's beacon, the drifting bubbles and
+ * the auto-swim's wake -
  * and shortens the escape to a jump cut. The hint pulse survives as a static ring: it
  * carries information rather than decorating, so removing it would remove the answer.
  */
@@ -16,6 +17,7 @@ export function ClearTheWayStyles({ reduced }: { reduced: boolean }) {
 .ctw-hint { animation: ctw-hint 1.1s ease-in-out infinite; }
 .ctw-freed { animation: ctw-freed .5s ease-out; }
 .ctw-drift { animation: ctw-drift 9s linear infinite; }
+.ctw-bubble { opacity: 0; animation: ctw-bubble 900ms ease-out forwards; }
 
 @keyframes ctw-exit-glow {
   0%, 100% { opacity: .55; filter: drop-shadow(0 0 6px ${SKIN.exitGlow}); }
@@ -30,13 +32,19 @@ export function ClearTheWayStyles({ reduced }: { reduced: boolean }) {
   60% { transform: scale(1.08); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
+@keyframes ctw-bubble {
+  0% { transform: translateY(0) scale(.4); opacity: 0; }
+  20% { opacity: .9; }
+  100% { transform: translateY(-42px) scale(1.15); opacity: 0; }
+}
 @keyframes ctw-drift {
   0% { transform: translateY(0) scale(1); opacity: 0; }
   15% { opacity: .5; }
   100% { transform: translateY(-260px) scale(1.3); opacity: 0; }
 }
 ${reduced ? `
-.ctw-exit-glow, .ctw-freed, .ctw-drift { animation: none; }
+.ctw-exit-glow, .ctw-freed, .ctw-drift, .ctw-bubble { animation: none; }
+.ctw-bubble { display: none; }
 .ctw-drift { opacity: 0; }
 .ctw-exit-glow { opacity: 1; filter: drop-shadow(0 0 12px ${SKIN.exitGlow}); }
 .ctw-hint { animation: none; box-shadow: 0 0 0 4px rgba(255,255,255,.9), 0 0 18px 6px ${SKIN.exitGlow}; }
