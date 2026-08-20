@@ -1,133 +1,48 @@
 /**
- * Procedural content generator for SpotFocus.
- * Produces a unique scene with randomly placed differences each round.
+ * Content generator for Spot Focus.
+ *
+ * The order here is the opposite of the version this replaces, and that is the point.
+ * The old generator filled the grid from a themed emoji bank and then hunted for
+ * differences among whatever landed, which is structurally why `changeSubtlety` could
+ * never be honoured: by the time the tier was consulted the cells were already
+ * committed. It also meant the round could quietly come up short, promising six
+ * differences and building five.
+ *
+ * This picks the difference-bearing items first, at the tier the engine asked for, and
+ * fills the rest of the board around them.
  */
 
-import type { SpotFocusDynamicParams } from '../../lib/dynamicDifficulty';
+import {
+  BY_ID,
+  ITEMS,
+  familyMembers,
+  type SpotItem,
+  type Subtlety,
+} from '../../games/attention/SpotFocus/items';
+import type { SpotFocusDynamicParams } from '../dynamicDifficulty';
 
-// ── Themed cell banks ────────────────────────────────────────────────────────
-
-interface CellDef {
+export interface SceneCell {
   id: string;
-  display: string;
-  label: string;
+  labelKey: string;
+  isDifference?: true;
 }
 
-interface SwapDef {
-  original: CellDef;
-  modified: CellDef;
+export interface GeneratedScene {
+  originalRows: SceneCell[][];
+  modifiedRows: SceneCell[][];
+  differenceCount: number;
+  /** Differences that had to drop to a bolder tier. Zero on a healthy catalogue. */
+  fallbacksUsed: number;
 }
 
-const KITCHEN_CELLS: CellDef[] = [
-  { id: 'kettle',  display: '🫖', label: 'Tea Kettle' },
-  { id: 'jar',     display: '🫙', label: 'Pickle Jar' },
-  { id: 'pot',     display: '🫕', label: 'Cooking Pot' },
-  { id: 'cooker',  display: '🍲', label: 'Pressure Cooker' },
-  { id: 'spoon',   display: '🥄', label: 'Serving Spoon' },
-  { id: 'tomato',  display: '🍅', label: 'Tomato' },
-  { id: 'curry',   display: '🌿', label: 'Curry Leaves' },
-  { id: 'stove',   display: '🔥', label: 'Gas Stove' },
-  { id: 'salt',    display: '🧂', label: 'Salt' },
-  { id: 'bowl',    display: '🥣', label: 'Bowl' },
-  { id: 'onion',   display: '🧅', label: 'Onion' },
-  { id: 'lime',    display: '🍋', label: 'Lime' },
-  { id: 'window',  display: '🪟', label: 'Window' },
-  { id: 'lamp',    display: '💡', label: 'Light' },
-  { id: 'oil',     display: '🫙', label: 'Oil Jar' },
-  { id: 'ladle',   display: '🥄', label: 'Ladle' },
-];
+/** Bolder is the direction we degrade in: a difference stays findable, just easier. */
+const BOLDER: Record<Subtlety, Subtlety | null> = {
+  subtle: 'medium',
+  medium: 'bold',
+  bold: null,
+};
 
-const KITCHEN_SWAPS: SwapDef[] = [
-  { original: { id: 'kettle', display: '🫖', label: 'Tea Kettle' },  modified: { id: 'kettle', display: '☕', label: 'Coffee Cup' } },
-  { original: { id: 'pot',    display: '🫕', label: 'Cooking Pot' }, modified: { id: 'pot',    display: '',   label: 'Empty' } },
-  { original: { id: 'tomato', display: '🍅', label: 'Tomato' },     modified: { id: 'tomato', display: '🍅🍅', label: 'Two Tomatoes' } },
-  { original: { id: 'bowl',   display: '🥣', label: 'Bowl' },      modified: { id: 'bowl',   display: '🪣', label: 'Bucket' } },
-  { original: { id: 'salt',   display: '🧂', label: 'Salt' },      modified: { id: 'salt',   display: '🫙', label: 'Jar' } },
-  { original: { id: 'onion',  display: '🧅', label: 'Onion' },     modified: { id: 'onion',  display: '🧅🧅', label: 'Two Onions' } },
-  { original: { id: 'lamp',   display: '💡', label: 'Light' },     modified: { id: 'lamp',   display: '',   label: 'Empty' } },
-  { original: { id: 'oil',    display: '🫙', label: 'Oil Jar' },   modified: { id: 'oil',    display: '',   label: 'Empty' } },
-  { original: { id: 'window', display: '🪟', label: 'Window' },    modified: { id: 'window', display: '🚪', label: 'Door' } },
-  { original: { id: 'lime',   display: '🍋', label: 'Lime' },      modified: { id: 'lime',   display: '🍊', label: 'Orange' } },
-];
-
-const GARDEN_CELLS: CellDef[] = [
-  { id: 'tulsi',     display: '🌿', label: 'Tulsi' },
-  { id: 'neem',      display: '🌳', label: 'Neem Tree' },
-  { id: 'marigold',  display: '🌺', label: 'Marigold' },
-  { id: 'hibiscus',  display: '🌸', label: 'Hibiscus' },
-  { id: 'pot',       display: '🪴', label: 'Pot' },
-  { id: 'watering',  display: '🚿', label: 'Watering Can' },
-  { id: 'bench',     display: '🪑', label: 'Bench' },
-  { id: 'jasmine',   display: '🌼', label: 'Jasmine' },
-  { id: 'soil',      display: '🟫', label: 'Soil Patch' },
-  { id: 'butterfly', display: '🦋', label: 'Butterfly' },
-  { id: 'sparrow',   display: '🐦', label: 'Sparrow' },
-  { id: 'sun',       display: '☀️', label: 'Sunny Patch' },
-  { id: 'rose',      display: '🌹', label: 'Rose' },
-  { id: 'aloe',      display: '🌵', label: 'Aloe Vera' },
-  { id: 'mango',     display: '🥭', label: 'Mango Tree' },
-  { id: 'coconut',   display: '🥥', label: 'Coconut Tree' },
-];
-
-const GARDEN_SWAPS: SwapDef[] = [
-  { original: { id: 'marigold',  display: '🌺', label: 'Marigold' },  modified: { id: 'marigold',  display: '🌻', label: 'Sunflower' } },
-  { original: { id: 'pot',       display: '🪴', label: 'Pot' },       modified: { id: 'pot',       display: '',   label: 'Empty' } },
-  { original: { id: 'watering',  display: '🚿', label: 'Watering' },  modified: { id: 'watering',  display: '🪣', label: 'Bucket' } },
-  { original: { id: 'butterfly', display: '🦋', label: 'Butterfly' }, modified: { id: 'butterfly', display: '🐛', label: 'Caterpillar' } },
-  { original: { id: 'sun',       display: '☀️', label: 'Sunny' },     modified: { id: 'sun',       display: '🌧️', label: 'Rain Cloud' } },
-  { original: { id: 'rose',      display: '🌹', label: 'Rose' },      modified: { id: 'rose',      display: '🌷', label: 'Tulip' } },
-  { original: { id: 'sparrow',   display: '🐦', label: 'Sparrow' },   modified: { id: 'sparrow',   display: '🐦‍⬛', label: 'Crow' } },
-  { original: { id: 'coconut',   display: '🥥', label: 'Coconut' },   modified: { id: 'coconut',   display: '🍌', label: 'Banana Tree' } },
-  { original: { id: 'aloe',      display: '🌵', label: 'Aloe Vera' }, modified: { id: 'aloe',      display: '🌴', label: 'Palm Tree' } },
-  { original: { id: 'mango',     display: '🥭', label: 'Mango' },     modified: { id: 'mango',     display: '🍎', label: 'Apple' } },
-];
-
-const LIVING_ROOM_CELLS: CellDef[] = [
-  { id: 'clock',    display: '🕰️', label: 'Clock' },
-  { id: 'photo',    display: '🖼️', label: 'Photo Frame' },
-  { id: 'window',   display: '🪟', label: 'Window' },
-  { id: 'fan',      display: '💨', label: 'Ceiling Fan' },
-  { id: 'sofa',     display: '🛋️', label: 'Sofa' },
-  { id: 'lamp',     display: '💡', label: 'Floor Lamp' },
-  { id: 'table',    display: '🪵', label: 'Coffee Table' },
-  { id: 'plant',    display: '🌿', label: 'Indoor Plant' },
-  { id: 'remote',   display: '📱', label: 'Remote' },
-  { id: 'cup',      display: '☕', label: 'Tea Cup' },
-  { id: 'book',     display: '📚', label: 'Books' },
-  { id: 'cat',      display: '🐈', label: 'Cat' },
-  { id: 'mat',      display: '🟩', label: 'Doormat' },
-  { id: 'shoes',    display: '👟', label: 'Shoes' },
-  { id: 'bag',      display: '👜', label: 'Bag' },
-  { id: 'umbrella', display: '☂️', label: 'Umbrella' },
-];
-
-const LIVING_ROOM_SWAPS: SwapDef[] = [
-  { original: { id: 'clock',    display: '🕰️', label: 'Clock' },      modified: { id: 'clock',    display: '⏰', label: 'Alarm Clock' } },
-  { original: { id: 'window',   display: '🪟', label: 'Window' },     modified: { id: 'window',   display: '🚪', label: 'Door' } },
-  { original: { id: 'lamp',     display: '💡', label: 'Lamp' },       modified: { id: 'lamp',     display: '',   label: 'Empty' } },
-  { original: { id: 'plant',    display: '🌿', label: 'Plant' },      modified: { id: 'plant',    display: '🌵', label: 'Cactus' } },
-  { original: { id: 'remote',   display: '📱', label: 'Remote' },     modified: { id: 'remote',   display: '📺', label: 'TV Remote' } },
-  { original: { id: 'book',     display: '📚', label: 'Books' },      modified: { id: 'book',     display: '📖', label: 'Single Book' } },
-  { original: { id: 'shoes',    display: '👟', label: 'Shoes' },      modified: { id: 'shoes',    display: '👟👟', label: 'Two Pairs' } },
-  { original: { id: 'umbrella', display: '☂️', label: 'Umbrella' },   modified: { id: 'umbrella', display: '',   label: 'Empty' } },
-  { original: { id: 'cat',      display: '🐈', label: 'Cat' },        modified: { id: 'cat',      display: '🐕', label: 'Dog' } },
-  { original: { id: 'cup',      display: '☕', label: 'Tea Cup' },     modified: { id: 'cup',      display: '🥤', label: 'Cold Drink' } },
-];
-
-interface ThemePool {
-  cells: CellDef[];
-  swaps: SwapDef[];
-}
-
-const THEME_POOLS: ThemePool[] = [
-  { cells: KITCHEN_CELLS,     swaps: KITCHEN_SWAPS },
-  { cells: GARDEN_CELLS,      swaps: GARDEN_SWAPS },
-  { cells: LIVING_ROOM_CELLS, swaps: LIVING_ROOM_SWAPS },
-];
-
-// ── Shuffle helper ───────────────────────────────────────────────────────────
-
-function shuffle<T>(arr: T[]): T[] {
+function shuffle<T>(arr: readonly T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -136,79 +51,102 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-// ── Generated content types ─────────────────────────────────────────────────
+/** The family members that count as a medium swap: kin, but not the near-identical twin. */
+const mediumKin = (item: SpotItem): SpotItem[] =>
+  familyMembers(item.family).filter((k) => k.id !== item.id && k.id !== item.twin);
 
-export interface SceneCell {
-  id: string;
-  display: string;
-  label: string;
-  isDifference?: true;
+/**
+ * Whether the catalogue can build a difference of this tier out of this item.
+ *
+ * Checked before an item is chosen, not after. Choosing first and asking later is how
+ * a subtle round ends up full of bold swaps: most items have no twin, so most draws
+ * would fail and fall through to a bolder tier.
+ */
+function eligible(item: SpotItem, tier: Subtlety): boolean {
+  if (tier === 'subtle') return Boolean(item.twin);
+  if (tier === 'medium') return mediumKin(item).length > 0;
+  return true;
 }
 
-export interface GeneratedScene {
-  label: string;
-  originalRows: SceneCell[][];
-  modifiedRows: SceneCell[][];
-  differenceCount: number;
+/** What `item` becomes at `tier`, or null if this particular draw cannot be built. */
+function swapFor(item: SpotItem, tier: Subtlety, usedFamilies: Set<string>): SpotItem | null {
+  if (tier === 'subtle') {
+    return item.twin ? BY_ID.get(item.twin) ?? null : null;
+  }
+  if (tier === 'medium') {
+    const kin = mediumKin(item);
+    return kin.length ? shuffle(kin)[0] : null;
+  }
+  // Its own family is excluded as well as the families already on the board. Without
+  // that an item can be drawn as its own replacement, producing a cell flagged as a
+  // difference that is identical on both sides.
+  const outsiders = ITEMS.filter(
+    (k) => k.family !== item.family && !usedFamilies.has(k.family),
+  );
+  return outsiders.length ? shuffle(outsiders)[0] : null;
 }
 
-// ── Main generator ──────────────────────────────────────────────────────────
+const cellOf = (item: SpotItem): SceneCell => ({ id: item.id, labelKey: item.labelKey });
 
 export function generateSpotFocusContent(params: SpotFocusDynamicParams): GeneratedScene {
-  // Pick a random theme
-  const theme = THEME_POOLS[Math.floor(Math.random() * THEME_POOLS.length)];
+  const { gridRows, gridCols, differenceCount, changeSubtlety } = params;
+  const total = gridRows * gridCols;
+  const wanted = Math.min(differenceCount, total);
 
-  const totalCells = params.gridRows * params.gridCols;
+  const usedFamilies = new Set<string>();
+  const originals: SpotItem[] = [];
+  const swaps = new Map<string, SpotItem>();
+  let fallbacksUsed = 0;
 
-  // Pick enough cells for the grid
-  const shuffledCells = shuffle(theme.cells).slice(0, totalCells);
+  // 1. The difference-bearing cells first, so the tier decides which items are eligible
+  //    rather than the other way round. The whole pool is swept at the requested tier
+  //    before dropping to a bolder one, so a single awkward draw never drags the round
+  //    down a tier: only genuinely running out of eligible items does.
+  let tier: Subtlety | null = changeSubtlety;
+  while (tier && swaps.size < wanted) {
+    for (const candidate of shuffle(ITEMS)) {
+      if (swaps.size === wanted) break;
+      if (usedFamilies.has(candidate.family)) continue;
+      if (!eligible(candidate, tier)) continue;
 
-  // Pick which cells will be differences
-  const availableSwaps = shuffle(theme.swaps).filter(
-    (swap) => shuffledCells.some((c) => c.id === swap.original.id)
-  );
-  const selectedSwaps = availableSwaps.slice(0, params.differenceCount);
+      const replacement = swapFor(candidate, tier, usedFamilies);
+      if (!replacement) continue;
 
-  // Build grids
+      originals.push(candidate);
+      swaps.set(candidate.id, replacement);
+      usedFamilies.add(candidate.family);
+      // A bold swap brings in an outsider, whose family is now spoken for too.
+      usedFamilies.add(replacement.family);
+      if (tier !== changeSubtlety) fallbacksUsed++;
+    }
+    tier = BOLDER[tier];
+  }
+
+  // 2. Fill the rest, keeping one family to a board so no object appears twice.
+  for (const candidate of shuffle(ITEMS)) {
+    if (originals.length === total) break;
+    if (usedFamilies.has(candidate.family)) continue;
+    originals.push(candidate);
+    usedFamilies.add(candidate.family);
+  }
+
+  // 3. Shuffle placement so the differences are not always the first cells.
+  const placed = shuffle(originals);
+
   const originalRows: SceneCell[][] = [];
   const modifiedRows: SceneCell[][] = [];
-
-  for (let r = 0; r < params.gridRows; r++) {
+  for (let r = 0; r < gridRows; r++) {
     const origRow: SceneCell[] = [];
     const modRow: SceneCell[] = [];
-
-    for (let c = 0; c < params.gridCols; c++) {
-      const idx = r * params.gridCols + c;
-      const cell = shuffledCells[idx];
-      if (!cell) continue;
-
-      const swap = selectedSwaps.find((s) => s.original.id === cell.id);
-
-      origRow.push({ id: cell.id, display: cell.display, label: cell.label });
-
-      if (swap) {
-        modRow.push({
-          id: swap.modified.id,
-          display: swap.modified.display,
-          label: swap.modified.label,
-          isDifference: true,
-        });
-      } else {
-        modRow.push({ id: cell.id, display: cell.display, label: cell.label });
-      }
+    for (let c = 0; c < gridCols; c++) {
+      const item = placed[r * gridCols + c];
+      origRow.push(cellOf(item));
+      const swap = swaps.get(item.id);
+      modRow.push(swap ? { ...cellOf(swap), isDifference: true } : cellOf(item));
     }
-
     originalRows.push(origRow);
     modifiedRows.push(modRow);
   }
 
-  const labels = ['Kitchen', 'Garden', 'Living Room'];
-  const themeIndex = THEME_POOLS.indexOf(theme);
-
-  return {
-    label: labels[themeIndex] ?? 'Scene',
-    originalRows,
-    modifiedRows,
-    differenceCount: selectedSwaps.length,
-  };
+  return { originalRows, modifiedRows, differenceCount: swaps.size, fallbacksUsed };
 }
