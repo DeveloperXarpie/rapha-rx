@@ -1,0 +1,2604 @@
+{
+  "items": [
+    {
+      "id": "bowl",
+      "atlas": "items_01.png",
+      "row": 0,
+      "col": 0,
+      "box": [
+        17,
+        25,
+        132,
+        125
+      ],
+      "pixels": 8175
+    },
+    {
+      "id": "blue-mug",
+      "atlas": "items_01.png",
+      "row": 0,
+      "col": 1,
+      "box": [
+        150,
+        18,
+        256,
+        129
+      ],
+      "pixels": 7972
+    },
+    {
+      "id": "pink-teacup-with-saucer",
+      "atlas": "items_01.png",
+      "row": 0,
+      "col": 2,
+      "box": [
+        268,
+        30,
+        391,
+        126
+      ],
+      "pixels": 8299
+    },
+    {
+      "id": "dinner-plate",
+      "atlas": "items_01.png",
+      "row": 0,
+      "col": 3,
+      "box": [
+        405,
+        22,
+        526,
+        126
+      ],
+      "pixels": 9200
+    },
+    {
+      "id": "drinking-glass",
+      "atlas": "items_01.png",
+      "row": 0,
+      "col": 4,
+      "box": [
+        546,
+        15,
+        619,
+        131
+      ],
+      "pixels": 6432
+    },
+    {
+      "id": "wine-glass",
+      "atlas": "items_01.png",
+      "row": 0,
+      "col": 5,
+      "box": [
+        660,
+        11,
+        723,
+        138
+      ],
+      "pixels": 4582
+    },
+    {
+      "id": "metal-spoon",
+      "atlas": "items_01.png",
+      "row": 0,
+      "col": 6,
+      "box": [
+        758,
+        15,
+        870,
+        132
+      ],
+      "pixels": 3052
+    },
+    {
+      "id": "fork",
+      "atlas": "items_01.png",
+      "row": 0,
+      "col": 7,
+      "box": [
+        882,
+        13,
+        994,
+        136
+      ],
+      "pixels": 2753
+    },
+    {
+      "id": "table-knife",
+      "atlas": "items_01.png",
+      "row": 0,
+      "col": 8,
+      "box": [
+        1002,
+        13,
+        1118,
+        137
+      ],
+      "pixels": 3162
+    },
+    {
+      "id": "wooden-spoon",
+      "atlas": "items_01.png",
+      "row": 0,
+      "col": 9,
+      "box": [
+        1138,
+        14,
+        1237,
+        135
+      ],
+      "pixels": 3182
+    },
+    {
+      "id": "red-kettle",
+      "atlas": "items_01.png",
+      "row": 1,
+      "col": 0,
+      "box": [
+        12,
+        141,
+        127,
+        273
+      ],
+      "pixels": 9545
+    },
+    {
+      "id": "blue-teapot",
+      "atlas": "items_01.png",
+      "row": 1,
+      "col": 1,
+      "box": [
+        134,
+        151,
+        271,
+        263
+      ],
+      "pixels": 8684
+    },
+    {
+      "id": "coffee-carafe",
+      "atlas": "items_01.png",
+      "row": 1,
+      "col": 2,
+      "box": [
+        283,
+        140,
+        391,
+        266
+      ],
+      "pixels": 8865
+    },
+    {
+      "id": "toaster",
+      "atlas": "items_01.png",
+      "row": 1,
+      "col": 3,
+      "box": [
+        398,
+        143,
+        522,
+        269
+      ],
+      "pixels": 11042
+    },
+    {
+      "id": "cooking-pot",
+      "atlas": "items_01.png",
+      "row": 1,
+      "col": 4,
+      "box": [
+        528,
+        152,
+        651,
+        256
+      ],
+      "pixels": 7874
+    },
+    {
+      "id": "frying-pan",
+      "atlas": "items_01.png",
+      "row": 1,
+      "col": 5,
+      "box": [
+        652,
+        148,
+        788,
+        262
+      ],
+      "pixels": 8213
+    },
+    {
+      "id": "chopping-board",
+      "atlas": "items_01.png",
+      "row": 1,
+      "col": 6,
+      "box": [
+        782,
+        141,
+        877,
+        270
+      ],
+      "pixels": 7139
+    },
+    {
+      "id": "stack-of-bowls",
+      "atlas": "items_01.png",
+      "row": 1,
+      "col": 7,
+      "box": [
+        895,
+        153,
+        994,
+        263
+      ],
+      "pixels": 8233
+    },
+    {
+      "id": "colander",
+      "atlas": "items_01.png",
+      "row": 1,
+      "col": 8,
+      "box": [
+        1003,
+        168,
+        1134,
+        259
+      ],
+      "pixels": 7400
+    },
+    {
+      "id": "salt-shaker",
+      "atlas": "items_01.png",
+      "row": 1,
+      "col": 9,
+      "box": [
+        1159,
+        147,
+        1221,
+        270
+      ],
+      "pixels": 5451
+    },
+    {
+      "id": "pepper-grinder",
+      "atlas": "items_01.png",
+      "row": 2,
+      "col": 0,
+      "box": [
+        31,
+        278,
+        88,
+        406
+      ],
+      "pixels": 5128
+    },
+    {
+      "id": "cooking-oil-bottle",
+      "atlas": "items_01.png",
+      "row": 2,
+      "col": 1,
+      "box": [
+        156,
+        275,
+        227,
+        405
+      ],
+      "pixels": 5843
+    },
+    {
+      "id": "spice-jar",
+      "atlas": "items_01.png",
+      "row": 2,
+      "col": 2,
+      "box": [
+        279,
+        279,
+        353,
+        406
+      ],
+      "pixels": 8009
+    },
+    {
+      "id": "herb-jar",
+      "atlas": "items_01.png",
+      "row": 2,
+      "col": 3,
+      "box": [
+        403,
+        278,
+        478,
+        405
+      ],
+      "pixels": 8076
+    },
+    {
+      "id": "honey-jar",
+      "atlas": "items_01.png",
+      "row": 2,
+      "col": 4,
+      "box": [
+        519,
+        275,
+        615,
+        403
+      ],
+      "pixels": 9129
+    },
+    {
+      "id": "jam-jar",
+      "atlas": "items_01.png",
+      "row": 2,
+      "col": 5,
+      "box": [
+        638,
+        281,
+        745,
+        404
+      ],
+      "pixels": 9274
+    },
+    {
+      "id": "cookie-jar",
+      "atlas": "items_01.png",
+      "row": 2,
+      "col": 6,
+      "box": [
+        776,
+        277,
+        864,
+        405
+      ],
+      "pixels": 9162
+    },
+    {
+      "id": "sugar-cube-jar",
+      "atlas": "items_01.png",
+      "row": 2,
+      "col": 7,
+      "box": [
+        899,
+        279,
+        986,
+        405
+      ],
+      "pixels": 9138
+    },
+    {
+      "id": "kitchen-utensil-holder",
+      "atlas": "items_01.png",
+      "row": 2,
+      "col": 8,
+      "box": [
+        1025,
+        267,
+        1126,
+        408
+      ],
+      "pixels": 8778
+    },
+    {
+      "id": "oven-mitt",
+      "atlas": "items_01.png",
+      "row": 2,
+      "col": 9,
+      "box": [
+        1150,
+        284,
+        1238,
+        405
+      ],
+      "pixels": 6919
+    },
+    {
+      "id": "tomato",
+      "atlas": "items_01.png",
+      "row": 3,
+      "col": 0,
+      "box": [
+        14,
+        420,
+        118,
+        532
+      ],
+      "pixels": 7745
+    },
+    {
+      "id": "lemon",
+      "atlas": "items_01.png",
+      "row": 3,
+      "col": 1,
+      "box": [
+        137,
+        416,
+        240,
+        536
+      ],
+      "pixels": 7588
+    },
+    {
+      "id": "orange",
+      "atlas": "items_01.png",
+      "row": 3,
+      "col": 2,
+      "box": [
+        262,
+        420,
+        369,
+        533
+      ],
+      "pixels": 8073
+    },
+    {
+      "id": "red-apple",
+      "atlas": "items_01.png",
+      "row": 3,
+      "col": 3,
+      "box": [
+        392,
+        418,
+        489,
+        532
+      ],
+      "pixels": 7779
+    },
+    {
+      "id": "green-apple",
+      "atlas": "items_01.png",
+      "row": 3,
+      "col": 4,
+      "box": [
+        515,
+        417,
+        616,
+        533
+      ],
+      "pixels": 7792
+    },
+    {
+      "id": "banana",
+      "atlas": "items_01.png",
+      "row": 3,
+      "col": 5,
+      "box": [
+        626,
+        420,
+        745,
+        531
+      ],
+      "pixels": 5088
+    },
+    {
+      "id": "blueberry-cupcake",
+      "atlas": "items_01.png",
+      "row": 3,
+      "col": 6,
+      "box": [
+        773,
+        418,
+        864,
+        532
+      ],
+      "pixels": 7102
+    },
+    {
+      "id": "chocolate-chip-cookie",
+      "atlas": "items_01.png",
+      "row": 3,
+      "col": 7,
+      "box": [
+        891,
+        433,
+        994,
+        525
+      ],
+      "pixels": 6890
+    },
+    {
+      "id": "pink-doughnut",
+      "atlas": "items_01.png",
+      "row": 3,
+      "col": 8,
+      "box": [
+        1012,
+        426,
+        1121,
+        532
+      ],
+      "pixels": 8414
+    },
+    {
+      "id": "strawberry-cake-slice",
+      "atlas": "items_01.png",
+      "row": 3,
+      "col": 9,
+      "box": [
+        1139,
+        419,
+        1238,
+        531
+      ],
+      "pixels": 7114
+    },
+    {
+      "id": "daisy-flower-pot",
+      "atlas": "items_01.png",
+      "row": 4,
+      "col": 0,
+      "box": [
+        13,
+        540,
+        124,
+        679
+      ],
+      "pixels": 9680
+    },
+    {
+      "id": "sunflower-pot",
+      "atlas": "items_01.png",
+      "row": 4,
+      "col": 1,
+      "box": [
+        142,
+        545,
+        245,
+        681
+      ],
+      "pixels": 8252
+    },
+    {
+      "id": "lavender-pot",
+      "atlas": "items_01.png",
+      "row": 4,
+      "col": 2,
+      "box": [
+        266,
+        542,
+        365,
+        681
+      ],
+      "pixels": 8278
+    },
+    {
+      "id": "monstera-plant",
+      "atlas": "items_01.png",
+      "row": 4,
+      "col": 3,
+      "box": [
+        382,
+        545,
+        502,
+        680
+      ],
+      "pixels": 9533
+    },
+    {
+      "id": "cactus",
+      "atlas": "items_01.png",
+      "row": 4,
+      "col": 4,
+      "box": [
+        529,
+        537,
+        604,
+        681
+      ],
+      "pixels": 7637
+    },
+    {
+      "id": "yellow-tulips-in-vase",
+      "atlas": "items_01.png",
+      "row": 4,
+      "col": 5,
+      "box": [
+        635,
+        540,
+        742,
+        681
+      ],
+      "pixels": 7849
+    },
+    {
+      "id": "red-roses-in-jug",
+      "atlas": "items_01.png",
+      "row": 4,
+      "col": 6,
+      "box": [
+        763,
+        542,
+        871,
+        681
+      ],
+      "pixels": 9168
+    },
+    {
+      "id": "pink-hydrangea-pot",
+      "atlas": "items_01.png",
+      "row": 4,
+      "col": 7,
+      "box": [
+        888,
+        547,
+        998,
+        681
+      ],
+      "pixels": 9447
+    },
+    {
+      "id": "leafy-plant-in-basket",
+      "atlas": "items_01.png",
+      "row": 4,
+      "col": 8,
+      "box": [
+        1010,
+        539,
+        1127,
+        681
+      ],
+      "pixels": 10029
+    },
+    {
+      "id": "white-orchid",
+      "atlas": "items_01.png",
+      "row": 4,
+      "col": 9,
+      "box": [
+        1143,
+        538,
+        1241,
+        680
+      ],
+      "pixels": 7746
+    },
+    {
+      "id": "red-alarm-clock",
+      "atlas": "items_01.png",
+      "row": 5,
+      "col": 0,
+      "box": [
+        20,
+        681,
+        113,
+        808
+      ],
+      "pixels": 8197
+    },
+    {
+      "id": "blue-wall-clock",
+      "atlas": "items_01.png",
+      "row": 5,
+      "col": 1,
+      "box": [
+        136,
+        688,
+        253,
+        807
+      ],
+      "pixels": 10315
+    },
+    {
+      "id": "hourglass",
+      "atlas": "items_01.png",
+      "row": 5,
+      "col": 2,
+      "box": [
+        284,
+        688,
+        352,
+        807
+      ],
+      "pixels": 5710
+    },
+    {
+      "id": "globe",
+      "atlas": "items_01.png",
+      "row": 5,
+      "col": 3,
+      "box": [
+        386,
+        684,
+        485,
+        809
+      ],
+      "pixels": 8050
+    },
+    {
+      "id": "stack-of-books",
+      "atlas": "items_01.png",
+      "row": 5,
+      "col": 4,
+      "box": [
+        502,
+        698,
+        626,
+        800
+      ],
+      "pixels": 8909
+    },
+    {
+      "id": "open-book",
+      "atlas": "items_01.png",
+      "row": 5,
+      "col": 5,
+      "box": [
+        633,
+        704,
+        765,
+        802
+      ],
+      "pixels": 8008
+    },
+    {
+      "id": "framed-beach-picture",
+      "atlas": "items_01.png",
+      "row": 5,
+      "col": 6,
+      "box": [
+        768,
+        692,
+        869,
+        807
+      ],
+      "pixels": 9582
+    },
+    {
+      "id": "window-with-curtains",
+      "atlas": "items_01.png",
+      "row": 5,
+      "col": 7,
+      "box": [
+        885,
+        688,
+        998,
+        808
+      ],
+      "pixels": 11604
+    },
+    {
+      "id": "framed-mountain-picture",
+      "atlas": "items_01.png",
+      "row": 5,
+      "col": 8,
+      "box": [
+        1012,
+        701,
+        1122,
+        800
+      ],
+      "pixels": 10033
+    },
+    {
+      "id": "oval-mirror",
+      "atlas": "items_01.png",
+      "row": 5,
+      "col": 9,
+      "box": [
+        1142,
+        691,
+        1238,
+        806
+      ],
+      "pixels": 8037
+    },
+    {
+      "id": "yellow-cushion",
+      "atlas": "items_01.png",
+      "row": 6,
+      "col": 0,
+      "box": [
+        13,
+        812,
+        128,
+        924
+      ],
+      "pixels": 8959
+    },
+    {
+      "id": "blue-patterned-cushion",
+      "atlas": "items_01.png",
+      "row": 6,
+      "col": 1,
+      "box": [
+        139,
+        814,
+        251,
+        920
+      ],
+      "pixels": 9068
+    },
+    {
+      "id": "pink-polka-dot-cushion",
+      "atlas": "items_01.png",
+      "row": 6,
+      "col": 2,
+      "box": [
+        261,
+        814,
+        372,
+        920
+      ],
+      "pixels": 9322
+    },
+    {
+      "id": "blue-checked-blanket",
+      "atlas": "items_01.png",
+      "row": 6,
+      "col": 3,
+      "box": [
+        380,
+        815,
+        499,
+        922
+      ],
+      "pixels": 8780
+    },
+    {
+      "id": "folded-towels",
+      "atlas": "items_01.png",
+      "row": 6,
+      "col": 4,
+      "box": [
+        510,
+        815,
+        624,
+        919
+      ],
+      "pixels": 9050
+    },
+    {
+      "id": "basket-of-towels",
+      "atlas": "items_01.png",
+      "row": 6,
+      "col": 5,
+      "box": [
+        639,
+        814,
+        757,
+        925
+      ],
+      "pixels": 9290
+    },
+    {
+      "id": "rubber-duck",
+      "atlas": "items_01.png",
+      "row": 6,
+      "col": 6,
+      "box": [
+        776,
+        817,
+        873,
+        917
+      ],
+      "pixels": 6295
+    },
+    {
+      "id": "soap-dish-with-soap",
+      "atlas": "items_01.png",
+      "row": 6,
+      "col": 7,
+      "box": [
+        894,
+        833,
+        1018,
+        914
+      ],
+      "pixels": 6868
+    },
+    {
+      "id": "liquid-soap-dispenser",
+      "atlas": "items_01.png",
+      "row": 6,
+      "col": 8,
+      "box": [
+        1048,
+        812,
+        1113,
+        925
+      ],
+      "pixels": 4890
+    },
+    {
+      "id": "toothbrush-cup",
+      "atlas": "items_01.png",
+      "row": 6,
+      "col": 9,
+      "box": [
+        1148,
+        813,
+        1228,
+        928
+      ],
+      "pixels": 5657
+    },
+    {
+      "id": "scissors",
+      "atlas": "items_01.png",
+      "row": 7,
+      "col": 0,
+      "box": [
+        16,
+        920,
+        135,
+        1027
+      ],
+      "pixels": 3693
+    },
+    {
+      "id": "colourful-buttons",
+      "atlas": "items_01.png",
+      "row": 7,
+      "col": 1,
+      "box": [
+        147,
+        926,
+        253,
+        1017
+      ],
+      "pixels": 6003
+    },
+    {
+      "id": "keys-with-key-tag",
+      "atlas": "items_01.png",
+      "row": 7,
+      "col": 2,
+      "box": [
+        273,
+        922,
+        379,
+        1024
+      ],
+      "pixels": 4518
+    },
+    {
+      "id": "padlock",
+      "atlas": "items_01.png",
+      "row": 7,
+      "col": 3,
+      "box": [
+        404,
+        925,
+        486,
+        1028
+      ],
+      "pixels": 4390
+    },
+    {
+      "id": "remote-control",
+      "atlas": "items_01.png",
+      "row": 7,
+      "col": 4,
+      "box": [
+        524,
+        921,
+        605,
+        1033
+      ],
+      "pixels": 4985
+    },
+    {
+      "id": "game-controller",
+      "atlas": "items_01.png",
+      "row": 7,
+      "col": 5,
+      "box": [
+        628,
+        938,
+        758,
+        1026
+      ],
+      "pixels": 7320
+    },
+    {
+      "id": "flashlight",
+      "atlas": "items_01.png",
+      "row": 7,
+      "col": 6,
+      "box": [
+        772,
+        922,
+        883,
+        1022
+      ],
+      "pixels": 5123
+    },
+    {
+      "id": "tissue-box",
+      "atlas": "items_01.png",
+      "row": 7,
+      "col": 7,
+      "box": [
+        898,
+        924,
+        1009,
+        1022
+      ],
+      "pixels": 7121
+    },
+    {
+      "id": "white-candle",
+      "atlas": "items_01.png",
+      "row": 7,
+      "col": 8,
+      "box": [
+        1040,
+        923,
+        1117,
+        1024
+      ],
+      "pixels": 5644
+    },
+    {
+      "id": "purple-candle",
+      "atlas": "items_01.png",
+      "row": 7,
+      "col": 9,
+      "box": [
+        1151,
+        928,
+        1230,
+        1023
+      ],
+      "pixels": 5434
+    },
+    {
+      "id": "wicker-basket",
+      "atlas": "items_01.png",
+      "row": 8,
+      "col": 0,
+      "box": [
+        14,
+        1013,
+        134,
+        1136
+      ],
+      "pixels": 9144
+    },
+    {
+      "id": "laundry-basket",
+      "atlas": "items_01.png",
+      "row": 8,
+      "col": 1,
+      "box": [
+        144,
+        1031,
+        270,
+        1135
+      ],
+      "pixels": 9518
+    },
+    {
+      "id": "vacuum-cleaner",
+      "atlas": "items_01.png",
+      "row": 8,
+      "col": 2,
+      "box": [
+        283,
+        1019,
+        392,
+        1140
+      ],
+      "pixels": 5188
+    },
+    {
+      "id": "broom",
+      "atlas": "items_01.png",
+      "row": 8,
+      "col": 3,
+      "box": [
+        414,
+        990,
+        504,
+        1136
+      ],
+      "pixels": 3257
+    },
+    {
+      "id": "dustpan-and-brush",
+      "atlas": "items_01.png",
+      "row": 8,
+      "col": 4,
+      "box": [
+        527,
+        1038,
+        625,
+        1134
+      ],
+      "pixels": 5779
+    },
+    {
+      "id": "watering-can",
+      "atlas": "items_01.png",
+      "row": 8,
+      "col": 5,
+      "box": [
+        640,
+        1032,
+        774,
+        1133
+      ],
+      "pixels": 6863
+    },
+    {
+      "id": "spray-bottle",
+      "atlas": "items_01.png",
+      "row": 8,
+      "col": 6,
+      "box": [
+        797,
+        1027,
+        865,
+        1138
+      ],
+      "pixels": 4713
+    },
+    {
+      "id": "potted-leafy-plant",
+      "atlas": "items_01.png",
+      "row": 8,
+      "col": 7,
+      "box": [
+        894,
+        1023,
+        1017,
+        1139
+      ],
+      "pixels": 6879
+    },
+    {
+      "id": "dog",
+      "atlas": "items_01.png",
+      "row": 8,
+      "col": 8,
+      "box": [
+        1028,
+        1027,
+        1115,
+        1142
+      ],
+      "pixels": 6536
+    },
+    {
+      "id": "cat",
+      "atlas": "items_01.png",
+      "row": 8,
+      "col": 9,
+      "box": [
+        1152,
+        1027,
+        1238,
+        1143
+      ],
+      "pixels": 6552
+    },
+    {
+      "id": "house",
+      "atlas": "items_01.png",
+      "row": 9,
+      "col": 0,
+      "box": [
+        10,
+        1134,
+        149,
+        1245
+      ],
+      "pixels": 10026
+    },
+    {
+      "id": "birdhouse",
+      "atlas": "items_01.png",
+      "row": 9,
+      "col": 1,
+      "box": [
+        158,
+        1138,
+        262,
+        1247
+      ],
+      "pixels": 6947
+    },
+    {
+      "id": "lantern",
+      "atlas": "items_01.png",
+      "row": 9,
+      "col": 2,
+      "box": [
+        310,
+        1138,
+        377,
+        1246
+      ],
+      "pixels": 5092
+    },
+    {
+      "id": "table-lamp",
+      "atlas": "items_01.png",
+      "row": 9,
+      "col": 3,
+      "box": [
+        414,
+        1139,
+        494,
+        1248
+      ],
+      "pixels": 5217
+    },
+    {
+      "id": "candlestick",
+      "atlas": "items_01.png",
+      "row": 9,
+      "col": 4,
+      "box": [
+        537,
+        1132,
+        605,
+        1248
+      ],
+      "pixels": 3263
+    },
+    {
+      "id": "desk-lamp",
+      "atlas": "items_01.png",
+      "row": 9,
+      "col": 5,
+      "box": [
+        637,
+        1136,
+        734,
+        1248
+      ],
+      "pixels": 4178
+    },
+    {
+      "id": "green-alarm-clock",
+      "atlas": "items_01.png",
+      "row": 9,
+      "col": 6,
+      "box": [
+        770,
+        1140,
+        858,
+        1246
+      ],
+      "pixels": 6661
+    },
+    {
+      "id": "globe-2",
+      "atlas": "items_01.png",
+      "row": 9,
+      "col": 7,
+      "box": [
+        901,
+        1141,
+        991,
+        1249
+      ],
+      "pixels": 6454
+    },
+    {
+      "id": "small-potted-plant",
+      "atlas": "items_01.png",
+      "row": 9,
+      "col": 8,
+      "box": [
+        1024,
+        1143,
+        1104,
+        1246
+      ],
+      "pixels": 5483
+    },
+    {
+      "id": "stack-of-folded-towels",
+      "atlas": "items_01.png",
+      "row": 9,
+      "col": 9,
+      "box": [
+        1127,
+        1150,
+        1242,
+        1245
+      ],
+      "pixels": 8006
+    },
+    {
+      "id": "red-sofa",
+      "atlas": "items_02.png",
+      "row": 0,
+      "col": 0,
+      "box": [
+        10,
+        34,
+        143,
+        133
+      ],
+      "pixels": 9048
+    },
+    {
+      "id": "yellow-armchair",
+      "atlas": "items_02.png",
+      "row": 0,
+      "col": 1,
+      "box": [
+        146,
+        22,
+        265,
+        133
+      ],
+      "pixels": 9006
+    },
+    {
+      "id": "rocking-chair",
+      "atlas": "items_02.png",
+      "row": 0,
+      "col": 2,
+      "box": [
+        269,
+        8,
+        382,
+        139
+      ],
+      "pixels": 7225
+    },
+    {
+      "id": "dining-chair",
+      "atlas": "items_02.png",
+      "row": 0,
+      "col": 3,
+      "box": [
+        398,
+        9,
+        481,
+        141
+      ],
+      "pixels": 5494
+    },
+    {
+      "id": "round-dining-table",
+      "atlas": "items_02.png",
+      "row": 0,
+      "col": 4,
+      "box": [
+        493,
+        6,
+        635,
+        143
+      ],
+      "pixels": 8237
+    },
+    {
+      "id": "coffee-table",
+      "atlas": "items_02.png",
+      "row": 0,
+      "col": 5,
+      "box": [
+        643,
+        21,
+        762,
+        140
+      ],
+      "pixels": 7378
+    },
+    {
+      "id": "bedside-lamp",
+      "atlas": "items_02.png",
+      "row": 0,
+      "col": 6,
+      "box": [
+        780,
+        4,
+        869,
+        140
+      ],
+      "pixels": 6952
+    },
+    {
+      "id": "wardrobe",
+      "atlas": "items_02.png",
+      "row": 0,
+      "col": 7,
+      "box": [
+        891,
+        7,
+        994,
+        141
+      ],
+      "pixels": 11256
+    },
+    {
+      "id": "chest-of-drawers",
+      "atlas": "items_02.png",
+      "row": 0,
+      "col": 8,
+      "box": [
+        1011,
+        5,
+        1117,
+        141
+      ],
+      "pixels": 9165
+    },
+    {
+      "id": "single-bed",
+      "atlas": "items_02.png",
+      "row": 0,
+      "col": 9,
+      "box": [
+        1122,
+        29,
+        1246,
+        143
+      ],
+      "pixels": 8619
+    },
+    {
+      "id": "bunk-bed",
+      "atlas": "items_02.png",
+      "row": 1,
+      "col": 0,
+      "box": [
+        8,
+        146,
+        138,
+        277
+      ],
+      "pixels": 11337
+    },
+    {
+      "id": "study-desk",
+      "atlas": "items_02.png",
+      "row": 1,
+      "col": 1,
+      "box": [
+        143,
+        142,
+        271,
+        277
+      ],
+      "pixels": 9528
+    },
+    {
+      "id": "office-chair",
+      "atlas": "items_02.png",
+      "row": 1,
+      "col": 2,
+      "box": [
+        287,
+        143,
+        380,
+        278
+      ],
+      "pixels": 7149
+    },
+    {
+      "id": "wooden-stool",
+      "atlas": "items_02.png",
+      "row": 1,
+      "col": 3,
+      "box": [
+        397,
+        154,
+        495,
+        277
+      ],
+      "pixels": 6419
+    },
+    {
+      "id": "coat-stand",
+      "atlas": "items_02.png",
+      "row": 1,
+      "col": 4,
+      "box": [
+        515,
+        142,
+        605,
+        286
+      ],
+      "pixels": 6910
+    },
+    {
+      "id": "shoe-rack",
+      "atlas": "items_02.png",
+      "row": 1,
+      "col": 5,
+      "box": [
+        632,
+        157,
+        756,
+        280
+      ],
+      "pixels": 11899
+    },
+    {
+      "id": "tall-drawer-cabinet",
+      "atlas": "items_02.png",
+      "row": 1,
+      "col": 6,
+      "box": [
+        771,
+        148,
+        872,
+        279
+      ],
+      "pixels": 10672
+    },
+    {
+      "id": "baby-crib",
+      "atlas": "items_02.png",
+      "row": 1,
+      "col": 7,
+      "box": [
+        885,
+        149,
+        1000,
+        284
+      ],
+      "pixels": 8810
+    },
+    {
+      "id": "hammock",
+      "atlas": "items_02.png",
+      "row": 1,
+      "col": 8,
+      "box": [
+        1005,
+        145,
+        1145,
+        254
+      ],
+      "pixels": 6101
+    },
+    {
+      "id": "bean-bag-chair",
+      "atlas": "items_02.png",
+      "row": 1,
+      "col": 9,
+      "box": [
+        1141,
+        166,
+        1249,
+        271
+      ],
+      "pixels": 8003
+    },
+    {
+      "id": "refrigerator",
+      "atlas": "items_02.png",
+      "row": 2,
+      "col": 0,
+      "box": [
+        23,
+        280,
+        110,
+        415
+      ],
+      "pixels": 10257
+    },
+    {
+      "id": "microwave-oven",
+      "atlas": "items_02.png",
+      "row": 2,
+      "col": 1,
+      "box": [
+        133,
+        306,
+        259,
+        398
+      ],
+      "pixels": 9506
+    },
+    {
+      "id": "blender",
+      "atlas": "items_02.png",
+      "row": 2,
+      "col": 2,
+      "box": [
+        284,
+        281,
+        355,
+        413
+      ],
+      "pixels": 6292
+    },
+    {
+      "id": "stand-mixer",
+      "atlas": "items_02.png",
+      "row": 2,
+      "col": 3,
+      "box": [
+        385,
+        290,
+        497,
+        410
+      ],
+      "pixels": 9844
+    },
+    {
+      "id": "rice-cooker",
+      "atlas": "items_02.png",
+      "row": 2,
+      "col": 4,
+      "box": [
+        510,
+        292,
+        620,
+        406
+      ],
+      "pixels": 8721
+    },
+    {
+      "id": "air-fryer",
+      "atlas": "items_02.png",
+      "row": 2,
+      "col": 5,
+      "box": [
+        643,
+        290,
+        740,
+        409
+      ],
+      "pixels": 9279
+    },
+    {
+      "id": "pressure-cooker",
+      "atlas": "items_02.png",
+      "row": 2,
+      "col": 6,
+      "box": [
+        756,
+        290,
+        871,
+        409
+      ],
+      "pixels": 9064
+    },
+    {
+      "id": "waffle-maker",
+      "atlas": "items_02.png",
+      "row": 2,
+      "col": 7,
+      "box": [
+        888,
+        285,
+        1000,
+        416
+      ],
+      "pixels": 8195
+    },
+    {
+      "id": "sandwich-toaster",
+      "atlas": "items_02.png",
+      "row": 2,
+      "col": 8,
+      "box": [
+        1014,
+        292,
+        1129,
+        413
+      ],
+      "pixels": 8881
+    },
+    {
+      "id": "table-fan",
+      "atlas": "items_02.png",
+      "row": 2,
+      "col": 9,
+      "box": [
+        1140,
+        281,
+        1234,
+        414
+      ],
+      "pixels": 8088
+    },
+    {
+      "id": "air-conditioner",
+      "atlas": "items_02.png",
+      "row": 3,
+      "col": 0,
+      "box": [
+        6,
+        443,
+        135,
+        541
+      ],
+      "pixels": 8918
+    },
+    {
+      "id": "washing-machine",
+      "atlas": "items_02.png",
+      "row": 3,
+      "col": 1,
+      "box": [
+        142,
+        416,
+        253,
+        551
+      ],
+      "pixels": 13346
+    },
+    {
+      "id": "clothes-iron",
+      "atlas": "items_02.png",
+      "row": 3,
+      "col": 2,
+      "box": [
+        262,
+        427,
+        382,
+        539
+      ],
+      "pixels": 7565
+    },
+    {
+      "id": "sewing-machine",
+      "atlas": "items_02.png",
+      "row": 3,
+      "col": 3,
+      "box": [
+        386,
+        428,
+        505,
+        548
+      ],
+      "pixels": 9632
+    },
+    {
+      "id": "hair-dryer",
+      "atlas": "items_02.png",
+      "row": 3,
+      "col": 4,
+      "box": [
+        518,
+        423,
+        626,
+        552
+      ],
+      "pixels": 6030
+    },
+    {
+      "id": "electric-shaver",
+      "atlas": "items_02.png",
+      "row": 3,
+      "col": 5,
+      "box": [
+        659,
+        420,
+        723,
+        547
+      ],
+      "pixels": 5435
+    },
+    {
+      "id": "laptop",
+      "atlas": "items_02.png",
+      "row": 3,
+      "col": 6,
+      "box": [
+        754,
+        432,
+        893,
+        553
+      ],
+      "pixels": 11266
+    },
+    {
+      "id": "desktop-monitor",
+      "atlas": "items_02.png",
+      "row": 3,
+      "col": 7,
+      "box": [
+        888,
+        422,
+        1014,
+        550
+      ],
+      "pixels": 11652
+    },
+    {
+      "id": "tablet",
+      "atlas": "items_02.png",
+      "row": 3,
+      "col": 8,
+      "box": [
+        1032,
+        428,
+        1128,
+        545
+      ],
+      "pixels": 9177
+    },
+    {
+      "id": "smartphone",
+      "atlas": "items_02.png",
+      "row": 3,
+      "col": 9,
+      "box": [
+        1160,
+        420,
+        1224,
+        544
+      ],
+      "pixels": 6697
+    },
+    {
+      "id": "headphones",
+      "atlas": "items_02.png",
+      "row": 4,
+      "col": 0,
+      "box": [
+        10,
+        548,
+        118,
+        663
+      ],
+      "pixels": 7009
+    },
+    {
+      "id": "smartwatch",
+      "atlas": "items_02.png",
+      "row": 4,
+      "col": 1,
+      "box": [
+        136,
+        557,
+        233,
+        670
+      ],
+      "pixels": 7567
+    },
+    {
+      "id": "digital-camera",
+      "atlas": "items_02.png",
+      "row": 4,
+      "col": 2,
+      "box": [
+        252,
+        561,
+        364,
+        663
+      ],
+      "pixels": 8320
+    },
+    {
+      "id": "printer",
+      "atlas": "items_02.png",
+      "row": 4,
+      "col": 3,
+      "box": [
+        377,
+        557,
+        506,
+        668
+      ],
+      "pixels": 10405
+    },
+    {
+      "id": "bluetooth-speaker",
+      "atlas": "items_02.png",
+      "row": 4,
+      "col": 4,
+      "box": [
+        528,
+        558,
+        597,
+        668
+      ],
+      "pixels": 6345
+    },
+    {
+      "id": "game-console",
+      "atlas": "items_02.png",
+      "row": 4,
+      "col": 5,
+      "box": [
+        630,
+        552,
+        755,
+        669
+      ],
+      "pixels": 9216
+    },
+    {
+      "id": "wi-fi-router",
+      "atlas": "items_02.png",
+      "row": 4,
+      "col": 6,
+      "box": [
+        770,
+        556,
+        881,
+        668
+      ],
+      "pixels": 5505
+    },
+    {
+      "id": "usb-flash-drive",
+      "atlas": "items_02.png",
+      "row": 4,
+      "col": 7,
+      "box": [
+        899,
+        557,
+        993,
+        663
+      ],
+      "pixels": 4930
+    },
+    {
+      "id": "computer-mouse",
+      "atlas": "items_02.png",
+      "row": 4,
+      "col": 8,
+      "box": [
+        1011,
+        563,
+        1110,
+        657
+      ],
+      "pixels": 5906
+    },
+    {
+      "id": "computer-keyboard",
+      "atlas": "items_02.png",
+      "row": 4,
+      "col": 9,
+      "box": [
+        1116,
+        562,
+        1250,
+        666
+      ],
+      "pixels": 7875
+    },
+    {
+      "id": "backpack",
+      "atlas": "items_02.png",
+      "row": 5,
+      "col": 0,
+      "box": [
+        8,
+        667,
+        119,
+        796
+      ],
+      "pixels": 10633
+    },
+    {
+      "id": "handbag",
+      "atlas": "items_02.png",
+      "row": 5,
+      "col": 1,
+      "box": [
+        127,
+        671,
+        242,
+        795
+      ],
+      "pixels": 8537
+    },
+    {
+      "id": "suitcase",
+      "atlas": "items_02.png",
+      "row": 5,
+      "col": 2,
+      "box": [
+        269,
+        665,
+        356,
+        800
+      ],
+      "pixels": 7946
+    },
+    {
+      "id": "wallet",
+      "atlas": "items_02.png",
+      "row": 5,
+      "col": 3,
+      "box": [
+        378,
+        686,
+        483,
+        783
+      ],
+      "pixels": 7521
+    },
+    {
+      "id": "sunglasses",
+      "atlas": "items_02.png",
+      "row": 5,
+      "col": 4,
+      "box": [
+        496,
+        704,
+        627,
+        769
+      ],
+      "pixels": 5123
+    },
+    {
+      "id": "baseball-cap",
+      "atlas": "items_02.png",
+      "row": 5,
+      "col": 5,
+      "box": [
+        636,
+        681,
+        761,
+        777
+      ],
+      "pixels": 7198
+    },
+    {
+      "id": "scarf",
+      "atlas": "items_02.png",
+      "row": 5,
+      "col": 6,
+      "box": [
+        771,
+        676,
+        861,
+        798
+      ],
+      "pixels": 7595
+    },
+    {
+      "id": "sneakers",
+      "atlas": "items_02.png",
+      "row": 5,
+      "col": 7,
+      "box": [
+        873,
+        681,
+        1002,
+        791
+      ],
+      "pixels": 8994
+    },
+    {
+      "id": "hiking-boots",
+      "atlas": "items_02.png",
+      "row": 5,
+      "col": 8,
+      "box": [
+        1014,
+        677,
+        1127,
+        793
+      ],
+      "pixels": 8366
+    },
+    {
+      "id": "ball-of-yarn",
+      "atlas": "items_02.png",
+      "row": 5,
+      "col": 9,
+      "box": [
+        1134,
+        689,
+        1248,
+        782
+      ],
+      "pixels": 7028
+    },
+    {
+      "id": "umbrella",
+      "atlas": "items_02.png",
+      "row": 6,
+      "col": 0,
+      "box": [
+        7,
+        799,
+        128,
+        917
+      ],
+      "pixels": 5896
+    },
+    {
+      "id": "raincoat",
+      "atlas": "items_02.png",
+      "row": 6,
+      "col": 1,
+      "box": [
+        134,
+        793,
+        252,
+        918
+      ],
+      "pixels": 9131
+    },
+    {
+      "id": "t-shirt",
+      "atlas": "items_02.png",
+      "row": 6,
+      "col": 2,
+      "box": [
+        254,
+        806,
+        374,
+        912
+      ],
+      "pixels": 8050
+    },
+    {
+      "id": "hoodie",
+      "atlas": "items_02.png",
+      "row": 6,
+      "col": 3,
+      "box": [
+        380,
+        790,
+        501,
+        916
+      ],
+      "pixels": 10690
+    },
+    {
+      "id": "pink-dress",
+      "atlas": "items_02.png",
+      "row": 6,
+      "col": 4,
+      "box": [
+        513,
+        795,
+        625,
+        917
+      ],
+      "pixels": 7988
+    },
+    {
+      "id": "jeans",
+      "atlas": "items_02.png",
+      "row": 6,
+      "col": 5,
+      "box": [
+        644,
+        788,
+        726,
+        917
+      ],
+      "pixels": 7341
+    },
+    {
+      "id": "leather-belt",
+      "atlas": "items_02.png",
+      "row": 6,
+      "col": 6,
+      "box": [
+        751,
+        824,
+        876,
+        901
+      ],
+      "pixels": 7033
+    },
+    {
+      "id": "necklace",
+      "atlas": "items_02.png",
+      "row": 6,
+      "col": 7,
+      "box": [
+        891,
+        803,
+        988,
+        919
+      ],
+      "pixels": 2422
+    },
+    {
+      "id": "bracelet",
+      "atlas": "items_02.png",
+      "row": 6,
+      "col": 8,
+      "box": [
+        1011,
+        811,
+        1128,
+        907
+      ],
+      "pixels": 4745
+    },
+    {
+      "id": "ring",
+      "atlas": "items_02.png",
+      "row": 6,
+      "col": 9,
+      "box": [
+        1144,
+        799,
+        1234,
+        911
+      ],
+      "pixels": 4216
+    },
+    {
+      "id": "perfume-bottle",
+      "atlas": "items_02.png",
+      "row": 7,
+      "col": 0,
+      "box": [
+        15,
+        917,
+        107,
+        1027
+      ],
+      "pixels": 6682
+    },
+    {
+      "id": "lipstick",
+      "atlas": "items_02.png",
+      "row": 7,
+      "col": 1,
+      "box": [
+        172,
+        917,
+        235,
+        1027
+      ],
+      "pixels": 3982
+    },
+    {
+      "id": "nail-polish",
+      "atlas": "items_02.png",
+      "row": 7,
+      "col": 2,
+      "box": [
+        272,
+        917,
+        339,
+        1027
+      ],
+      "pixels": 4871
+    },
+    {
+      "id": "hair-comb",
+      "atlas": "items_02.png",
+      "row": 7,
+      "col": 3,
+      "box": [
+        373,
+        922,
+        495,
+        1027
+      ],
+      "pixels": 5394
+    },
+    {
+      "id": "hairbrush",
+      "atlas": "items_02.png",
+      "row": 7,
+      "col": 4,
+      "box": [
+        504,
+        915,
+        622,
+        1028
+      ],
+      "pixels": 4996
+    },
+    {
+      "id": "shampoo-bottle",
+      "atlas": "items_02.png",
+      "row": 7,
+      "col": 5,
+      "box": [
+        656,
+        917,
+        721,
+        1024
+      ],
+      "pixels": 4672
+    },
+    {
+      "id": "lotion-bottle",
+      "atlas": "items_02.png",
+      "row": 7,
+      "col": 6,
+      "box": [
+        779,
+        917,
+        834,
+        1026
+      ],
+      "pixels": 4329
+    },
+    {
+      "id": "toilet-paper-roll",
+      "atlas": "items_02.png",
+      "row": 7,
+      "col": 7,
+      "box": [
+        887,
+        921,
+        998,
+        1022
+      ],
+      "pixels": 7424
+    },
+    {
+      "id": "plunger",
+      "atlas": "items_02.png",
+      "row": 7,
+      "col": 8,
+      "box": [
+        1022,
+        914,
+        1094,
+        1023
+      ],
+      "pixels": 3272
+    },
+    {
+      "id": "shower-head",
+      "atlas": "items_02.png",
+      "row": 7,
+      "col": 9,
+      "box": [
+        1127,
+        913,
+        1247,
+        1022
+      ],
+      "pixels": 6101
+    },
+    {
+      "id": "bath-towel",
+      "atlas": "items_02.png",
+      "row": 8,
+      "col": 0,
+      "box": [
+        4,
+        1033,
+        140,
+        1127
+      ],
+      "pixels": 8113
+    },
+    {
+      "id": "bathroom-bin",
+      "atlas": "items_02.png",
+      "row": 8,
+      "col": 1,
+      "box": [
+        148,
+        1030,
+        222,
+        1138
+      ],
+      "pixels": 6756
+    },
+    {
+      "id": "laundry-detergent-bottle",
+      "atlas": "items_02.png",
+      "row": 8,
+      "col": 2,
+      "box": [
+        263,
+        1025,
+        349,
+        1140
+      ],
+      "pixels": 6764
+    },
+    {
+      "id": "first-aid-kit",
+      "atlas": "items_02.png",
+      "row": 8,
+      "col": 3,
+      "box": [
+        383,
+        1029,
+        496,
+        1137
+      ],
+      "pixels": 9225
+    },
+    {
+      "id": "thermometer",
+      "atlas": "items_02.png",
+      "row": 8,
+      "col": 4,
+      "box": [
+        489,
+        1026,
+        618,
+        1140
+      ],
+      "pixels": 3804
+    },
+    {
+      "id": "stethoscope",
+      "atlas": "items_02.png",
+      "row": 8,
+      "col": 5,
+      "box": [
+        642,
+        1023,
+        748,
+        1138
+      ],
+      "pixels": 3566
+    },
+    {
+      "id": "medicine-bottle",
+      "atlas": "items_02.png",
+      "row": 8,
+      "col": 6,
+      "box": [
+        775,
+        1027,
+        839,
+        1136
+      ],
+      "pixels": 5674
+    },
+    {
+      "id": "adhesive-bandages",
+      "atlas": "items_02.png",
+      "row": 8,
+      "col": 7,
+      "box": [
+        878,
+        1028,
+        982,
+        1136
+      ],
+      "pixels": 7731
+    },
+    {
+      "id": "toolbox",
+      "atlas": "items_02.png",
+      "row": 8,
+      "col": 8,
+      "box": [
+        995,
+        1031,
+        1126,
+        1135
+      ],
+      "pixels": 9348
+    },
+    {
+      "id": "hammer",
+      "atlas": "items_02.png",
+      "row": 8,
+      "col": 9,
+      "box": [
+        1132,
+        1026,
+        1232,
+        1136
+      ],
+      "pixels": 3444
+    },
+    {
+      "id": "screwdriver",
+      "atlas": "items_02.png",
+      "row": 9,
+      "col": 0,
+      "box": [
+        7,
+        1127,
+        113,
+        1245
+      ],
+      "pixels": 3342
+    },
+    {
+      "id": "wrench",
+      "atlas": "items_02.png",
+      "row": 9,
+      "col": 1,
+      "box": [
+        108,
+        1137,
+        236,
+        1242
+      ],
+      "pixels": 3938
+    },
+    {
+      "id": "pliers",
+      "atlas": "items_02.png",
+      "row": 9,
+      "col": 2,
+      "box": [
+        229,
+        1136,
+        325,
+        1252
+      ],
+      "pixels": 3695
+    },
+    {
+      "id": "paintbrush",
+      "atlas": "items_02.png",
+      "row": 9,
+      "col": 3,
+      "box": [
+        349,
+        1138,
+        468,
+        1248
+      ],
+      "pixels": 4457
+    },
+    {
+      "id": "paint-bucket",
+      "atlas": "items_02.png",
+      "row": 9,
+      "col": 4,
+      "box": [
+        502,
+        1127,
+        607,
+        1245
+      ],
+      "pixels": 9301
+    },
+    {
+      "id": "power-drill",
+      "atlas": "items_02.png",
+      "row": 9,
+      "col": 5,
+      "box": [
+        631,
+        1138,
+        755,
+        1250
+      ],
+      "pixels": 6250
+    },
+    {
+      "id": "tape-measure",
+      "atlas": "items_02.png",
+      "row": 9,
+      "col": 6,
+      "box": [
+        765,
+        1151,
+        898,
+        1238
+      ],
+      "pixels": 6204
+    },
+    {
+      "id": "light-bulb",
+      "atlas": "items_02.png",
+      "row": 9,
+      "col": 7,
+      "box": [
+        907,
+        1134,
+        977,
+        1244
+      ],
+      "pixels": 4674
+    },
+    {
+      "id": "extension-power-strip",
+      "atlas": "items_02.png",
+      "row": 9,
+      "col": 8,
+      "box": [
+        996,
+        1138,
+        1133,
+        1244
+      ],
+      "pixels": 9692
+    },
+    {
+      "id": "step-ladder",
+      "atlas": "items_02.png",
+      "row": 9,
+      "col": 9,
+      "box": [
+        1140,
+        1123,
+        1248,
+        1247
+      ],
+      "pixels": 5568
+    }
+  ]
+}
