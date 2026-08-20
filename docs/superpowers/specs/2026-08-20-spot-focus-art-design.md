@@ -1,8 +1,8 @@
 # Spot Focus - art and design rework - design spec
 
 Date: 2026-08-20
-Status: draft, awaiting review
-Source art: `assets-src/spot-focus/`
+Status: approved; revised 2026-08-20 for the delivered art set
+Source art: `assets-src/Spot_Focus_Assets/`
 Reference mockup: `assets-src/spot-focus/-abs.png`
 
 ## 1. What changes and why
@@ -59,79 +59,77 @@ along with an art change.
 Unchanged: the three phases, the metrics contract, and the `spot-focus` case in
 `computePerformanceRatio`, which reads `falseTaps` only.
 
-## 3. Art to be supplied
+## 3. Art supplied
 
-Two new files in `assets-src/spot-focus/`.
-The existing `ui_base.png`, `ui_solved.png` and `-abs.png` stay as reference and are
-not sliced for items.
+Delivered in `assets-src/Spot_Focus_Assets/`.
+No art needs commissioning; this section records what arrived and what is usable.
 
-### 3.1 `items.png` - the object sheet
+| File | Size | What it is |
+|---|---|---|
+| `items_01.png` | 1254 x 1254 RGBA | 10 x 10 atlas, 100 objects, cells of 125.4 px |
+| `items_02.png` | 1254 x 1254 RGBA | 10 x 10 atlas, 100 objects, cells of 125.4 px |
+| `spot_focus_bg.png` | 941 x 1672 RGB | The scene plate, clean of UI |
+| `spot_focus_UI.png` | 1024 x 1024 RGBA | UI kit |
+| `items_0*_100_items.docx` | - | The object names, in atlas order |
 
-- Alpha-cut PNG, transparent background.
-- Objects roughly 512 px on the long side.
-- Loosely scattered with clear gaps between objects, in the shape of
-  `assets-src/ShoppingList/items-2.png`.
-- Consistent lighting and a consistent three-quarter viewing angle across the whole
-  sheet, because two objects sit side by side in one grid and a mismatch reads as a
-  difference that is not one.
-- No cast shadows baked onto a ground plane.
-  The cards are white and flat; a baked shadow will look wrong on the pink found state.
+`__MACOSX/` is archive residue and is not committed.
 
-**48 sprites: 16 base objects, each with one medium and one subtle variant.**
+### 3.1 The atlases
 
-The theme is domestic, matching the mockup, and leans Indian where the object allows.
-The app's existing content banks are Indian domestic (tulsi, pressure cooker, sambar
-masala) and the residents are in Indian care homes, so a purely Western kitchen would
-be a step backwards from what is already there.
+Both are exact 10 x 10 grids with every cell occupied, verified by counting alpha mass
+per cell.
 
-| # | Base object | Medium variant | Subtle variant |
-|---|---|---|---|
-| 1 | Blue enamel teapot with daisy pattern | Steel teapot | Same blue teapot, no daisies |
-| 2 | Tomato with green crown | Red apple | Tomato with the crown removed |
-| 3 | Galvanised metal watering can | Green plastic watering can | Same can, plain spout instead of a rose spout |
-| 4 | Yellow rubber duck | Yellow toy elephant | Duck with a blue wing patch |
-| 5 | Red oven mitt with white polka dots | Blue striped oven mitt | Same red mitt, plain, no dots |
-| 6 | Honey jar, glass, cloth lid tied with string | Red jam jar with a paper label | Same honey jar, no cloth tie |
-| 7 | Glass cookie jar with a wooden lid, full | Glass jar of pink sweets | Same cookie jar, half full |
-| 8 | Green apple with a leaf | Orange | Green apple, no leaf |
-| 9 | Wicker laundry basket with white cloth | Wicker basket with folded towels | Darker wicker, same white cloth |
-| 10 | Five red roses in a white jug | Five sunflowers in a white jug | Three red roses in the same jug |
-| 11 | Stack of three books, blue on red on green | Stack of folded towels | Same stack, top book yellow |
-| 12 | Blue dustpan and brush | Red dustpan and brush | Same blue dustpan, brush bristles orange |
-| 13 | Three-tier steel tiffin box | Round steel dabba | Two-tier steel tiffin box |
-| 14 | Brass lota water pot | Steel tumbler | Same lota, engraved band around the middle |
-| 15 | Round wall clock, white face, reading 10:10 | Table alarm clock with bells | Same wall clock reading 3:00 |
-| 16 | Table lamp with a yellow shade | Standing floor lamp | Same lamp, cream shade |
+Slicing is **per grid cell, then trimmed to the alpha bounding box within that cell**,
+not by connected component.
+Atlas 1 yields exactly 100 components, but atlas 2 yields 107 for its 100 objects: at
+least one object separates into pieces under alpha labelling.
+Cell cropping merges those correctly, which is the same conclusion
+`slice_shopping_assets.py` reached about the halved onion.
 
-Every base object carries both variants.
-An earlier draft asked for subtle variants on only half the pool, which would have made
-the generator's fallback fire routinely at high difficulty scores - the exact case the
-subtle tier exists to serve.
-If a subtle variant reads too weakly once drawn, it is dropped from `items.ts` and the
-generator falls back as described in section 5.2; the pool degrades gracefully rather
-than being authored short from the start.
+### 3.2 The names
 
-### 3.2 `backdrop.png` - the scene plate
+Unlike `ShoppingList_items.docx`, these two lists are accurate: rows 1 to 3 of atlas 1
+were checked against the rendered sheet name by name and match left-to-right,
+top-to-bottom.
+They are still transcribed into the slicing script rather than parsed from the `.docx`,
+so the ids are reviewable in a diff.
 
-The sky, clouds, tree canopy at the top corners, meadow and stone path from the
-mockup, **with no UI painted on it**.
-No signboard, no title text, no pills, no panels, no cards.
+**Atlas 1 lists "Globe" twice**, at positions 54 and 97, and the two cells are the same
+object.
+An identical pair is unusable as a difference: a resident told to find six differences
+would be hunting one that cannot be seen.
+Position 97 is dropped from the catalogue, leaving 199 usable objects.
+The slicing script still cuts it, so the file count matches the atlas; only `items.ts`
+omits it.
 
-Portrait, at least 1400 px tall, and safe to crop horizontally: the game renders on
-tablets in both orientations, so nothing load-bearing should sit near the left or right
-edge.
+### 3.3 The UI kit is mostly unusable, and that is fine
 
-Re-encoded to JPEG by the slicing script, as `bg-home.png` and `bg-store.png` were for
-Market Memory.
-A painterly opaque plate is roughly 200 KB as JPEG against 2 MB as PNG.
+`spot_focus_UI.png` carries English text baked into the art: the signboard reads "Can
+you spot the Differences?", the ribbons read "Original" and "Find Differences Here", and
+the instruction line is painted as pixels.
+This app ships `en`, `hi` and `kn`.
+Shipping a Kannada session with an English signboard is not acceptable, and there is no
+clean plate underneath the text to slice.
 
-### 3.3 Sliced from the mockup, not commissioned
+So the kit is used as a **colour and shape reference**, not as sprites, following the
+precedent set for Market Memory's HINT tile and cart tray: art with baked-in dynamic
+content gets rebuilt in CSS from the kit's own palette.
 
-The wooden signboard is large and clean enough in `-abs.png` to slice directly:
-roughly 570 x 165 px at `(200, 175)` to `(770, 340)`.
-It is cut with its daisy and leaf ornaments, and the title text is **not** part of the
-sprite - the plate is cut empty and the translated heading is drawn over it, because
-the heading exists in `en`, `hi` and `kn`.
+| Piece | Treatment |
+|---|---|
+| Signboard plank | CSS: wood gradient, rounded frame, from `signWood` and `signFrame` |
+| Daisy and leaf ornaments | **Sliced** - they carry no text, and CSS cannot draw them |
+| Blue "Original" ribbon | CSS from `ribbonBlue` |
+| Red "Find Differences Here" ribbon | CSS from `ribbonRed` |
+| Instruction line | Live text, already in the locale files |
+| White item card | CSS: white fill, radius, soft shadow |
+| Blue grid panel | CSS from `panelFrame` |
+| "Level 1" pill and X button | Neither is ours; `GameShell` already draws both |
+
+Rebuilding these in CSS is not a compromise.
+They are flat rounded rectangles with text.
+CSS renders them crisply at any size and in any language, where a sprite would blur when
+scaled and would be wrong in two of the three languages.
 
 ## 4. Asset pipeline
 
@@ -142,73 +140,82 @@ constants in section 6 are derived from the image and never eyeballed.
 
 | Job | Source | Output |
 |---|---|---|
-| Object sprites, by connected component | `items.png` | `item-<slug>.png`, 48 files |
-| Backdrop, re-encoded | `backdrop.png` | `bg-scene.jpg` |
-| Signboard, by measured crop box | `-abs.png` | `ui-signboard.png` |
-| Manifest | all | `manifest.json` |
+| Object sprites, per grid cell, alpha-trimmed | `items_01.png`, `items_02.png` | `item-<slug>.png`, 200 files |
+| Backdrop, re-encoded to JPEG at quality 88 | `spot_focus_bg.png` | `bg-scene.jpg` |
+| Signboard ornaments, by measured crop box | `spot_focus_UI.png` | `ui-sprig-left.png`, `ui-sprig-right.png` |
+| Manifest of slug to source cell to crop box | all | `manifest.json` |
 
-Connected-component labelling rather than a grid, because the sheet is scattered rather
-than ruled.
-Small fragments are merged into the nearest large component, so the daisy on the teapot
-or the string on the honey jar does not become its own sprite.
+No stand-in mode is needed; the real art is here.
 
-Until `items.png` and `backdrop.png` arrive, the script slices stand-in objects out of
-`-abs.png` at the card boxes measured in section 6 and re-encodes the mockup itself as
-the backdrop.
-The stand-ins are named with the same slugs as the real sprites, so the real sheet drops
-in with no code change.
-The script prints a loud warning when it is running in stand-in mode.
+Sprites are written at their trimmed size, roughly 110 px on the long edge.
+A card renders at about 130 px on a 1024 px tablet, so this is close to a 1:1 draw and
+comfortably inside a 2x device pixel ratio.
 
 ## 5. Content model
 
 ### 5.1 `items.ts`
 
 New file, `src/games/attention/SpotFocus/items.ts`.
-The catalogue that grows when more art is drawn.
 
 ```ts
 export type Subtlety = 'bold' | 'medium' | 'subtle';
 
-export interface Variant {
-  slug: string;        // sprite file, item-<slug>.png
-  labelKey: string;    // i18n key, with an English fallback at the call site
-  subtlety: 'medium' | 'subtle';
-}
-
 export interface SpotItem {
-  id: string;
-  slug: string;
-  labelKey: string;
-  variants: Variant[];
+  id: string;          // stable, kebab-case, also the sprite slug
+  labelKey: string;    // `spot-focus.item.<id>`
+  family: string;      // objects that read as the same kind of thing
+  twin?: string;       // id of a near-identical partner, if one exists
 }
 ```
 
-`bold` is not stored on an item.
-A bold difference is any other item in the pool, so it is derived at generation time
-rather than authored, and no table can drift out of step with the sprite list.
+The three subtlety tiers fall out of `family` and `twin` rather than out of extra art.
+This is the whole reason 200 objects is a better delivery than the 48 sprites an earlier
+draft of this spec asked for.
+
+| Tier | How a difference is built | Example |
+|---|---|---|
+| `subtle` | Swap the item for its `twin` | red alarm clock to green alarm clock |
+| `medium` | Swap for another member of the same `family` that is not its twin | blue teapot to red kettle |
+| `bold` | Swap for an item from a different `family` | teapot to rubber duck |
+
+`twin` is symmetric and authored on both members of a pair.
+A test asserts that symmetry, because a one-sided twin silently halves the subtle pool.
+
+Families are authored rather than derived from the names.
+"Red kettle", "Blue teapot" and "Coffee carafe" share no words but are one family.
 
 ### 5.2 Generator
 
 `generateSpotFocusContent` is rewritten around the catalogue.
 
-1. Draw `gridRows * gridCols` distinct items from the pool for the original grid.
-2. Choose `differenceCount` of those cells to alter.
-3. For each, build a difference at the requested `changeSubtlety`.
+The order matters, and it is the opposite of the current implementation.
+Today the grid is filled first and differences are chosen from whatever landed, which is
+precisely why a subtlety tier could never be honoured: by the time the tier is consulted
+the cells are already committed.
+
+1. Read `changeSubtlety` and `differenceCount` from the params.
+2. Pick `differenceCount` items that **can support** a difference at that tier: items
+   with a `twin` for `subtle`, items whose `family` has another member for `medium`, any
+   item for `bold`.
+3. Fill the remaining cells from items that are not in the same family as any chosen
+   difference item, so a family never appears twice on the board.
+4. Shuffle the cell positions.
+5. Build the modified grid by applying each swap.
 
 **Subtlety fallback.**
-If the requested tier has no variant for a chosen cell, fall back one tier towards
+If step 2 cannot find enough items at the requested tier, fall back one tier towards
 bolder (`subtle` to `medium` to `bold`) rather than returning fewer differences than
 asked.
-The count is what the resident is told to find, so the count is the promise that must
-hold; the class of difference is the thing that degrades.
-A round that resolves entirely by fallback is a signal the art pool is too thin, so the
-generator returns a `fallbacksUsed` count and a test asserts it stays at zero for every
-grid size and subtlety the difficulty engine can request.
+The count is what the resident is told to find, so the count is the promise that has to
+hold; the class of difference is what degrades.
+The generator returns a `fallbacksUsed` count, and a test asserts it stays at zero for
+every grid size and subtlety `getSpotFocusParams` can request.
 
 **No accidental duplicates.**
-A bold swap draws its replacement from items *not already visible in either grid*.
-Without that guard a bold swap can put a second teapot on the board, and a resident who
-spots two teapots has found a real difference that the game does not credit.
+Step 3's family exclusion is what stops a bold swap putting a second teapot on the
+board.
+A resident who spots two teapots has found a real difference that the game does not
+credit, which is worse than a round being slightly easier.
 
 ## 6. Geometry and palette
 
@@ -222,7 +229,7 @@ Measured from `-abs.png`, 941 x 1672.
 | Card rows | 4 in the mockup, 3 at runtime |
 | Left panel cards | x 35, 178, 320 |
 | Right panel cards | x 494, 637, 780 |
-| Signboard | 570 x 165 at (200, 175) |
+| Signboard sprigs | 110 x 134 each, at (18, 196) and (498, 196) in `spot_focus_UI.png` |
 
 The mockup draws a 4 x 3 grid.
 `getSpotFocusParams` returns `gridRows: 3` and `gridCols: 3` or `4`, so the runtime grid
@@ -281,12 +288,34 @@ The badge is small and sits clear of the object.
 Reduced motion is respected through the existing `useReducedMotion` hook: the card's
 pink fill appears without its scale-in.
 
+### 7.2 Cards are labelled by position, not by object
+
+The current code sets each cell's `aria-label` to the object's name.
+
+That is the wrong call for this game, and not only because 199 object names across three
+languages is 597 strings nobody can review.
+Naming the objects **gives away the answers**: a screen reader that reads "Green apple"
+on the left and "Orange" in the same position on the right has just announced a
+difference the player was asked to find.
+
+Cards are therefore labelled by position, from the existing locale file:
+`spot-focus.aria.cell` = "Picture {{col}} in row {{row}}", with the found ones adding
+"found".
+Progress stays on the existing `role="status" aria-live="polite"` region.
+
+This is honest rather than generous.
+Spot the difference is irreducibly visual and no labelling scheme makes it playable
+without sight; what labelling can do is not hand the answers to a partially sighted
+resident using magnification with speech.
+`items.ts` still carries a `labelKey` per item so the names are available for future use
+- a "what did I miss?" review panel is the obvious one - but nothing renders it today.
+
 ## 8. Testing
 
 | Test | What it protects |
 |---|---|
-| `__tests__/sprites.test.ts` | Every catalogue entry and variant resolves to a file that exists in `public/spot-assets/`, enumerated with `import.meta.glob`. Catches a rename in the slicing script silently leaving broken images on the board. |
-| `__tests__/items.test.ts` | No duplicate slugs; every item carries both a `medium` and a `subtle` variant, so the generator never has to fall back on a full art set. |
+| `__tests__/sprites.test.ts` | Every catalogue id resolves to a sprite that exists in `public/spot-assets/`, enumerated with `import.meta.glob`. Catches a rename in the slicing script silently leaving broken images on the board. |
+| `__tests__/items.test.ts` | No duplicate ids; the dropped duplicate globe is absent; every `twin` is symmetric and points at a real id in the same family; every family used for `medium` has at least two members; enough twinned items exist to satisfy the largest `differenceCount` the difficulty engine can request. |
 | `contentGenerators/__tests__/spotFocus.test.ts` | Grid dimensions match the params; `differenceCount` differences are always produced; `fallbacksUsed` is zero across every grid size and subtlety `getSpotFocusParams` can return; no item appears twice in a grid; a bold swap never introduces an object already on the board. |
 
 Following the MarketMemory precedent, `sprites.test.ts` enumerates disk with Vite's glob
@@ -303,7 +332,6 @@ rather than `node:fs`, because `tsconfig.app.json` restricts ambient types to
 
 ## 10. Sequencing
 
-The pipeline, catalogue, generator, palette and the whole screen are built first,
-against stand-in sprites cut from `-abs.png`.
-When `items.png` and `backdrop.png` land, the script is rerun and the real art drops in
-with no layout work.
+The art is in hand, so there is no stand-in phase.
+Order is bottom-up: slicing script, then catalogue, then generator, then the screen,
+each with its own tests, so a failure lands on the layer that caused it.
