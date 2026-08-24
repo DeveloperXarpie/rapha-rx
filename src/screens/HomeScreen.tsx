@@ -47,6 +47,10 @@ const GAME_BY_CATEGORY: Record<GameCategory, { id: string; nameKey: string; icon
   ],
 };
 
+// Taps on the version label needed to reveal the session shortcuts in a
+// production build. Deliberately more than a resident would ever land on.
+const DEV_UNLOCK_TAPS = 5;
+
 function formatSessionDate(dateStr: string): string {
   const sessionDate = new Date(dateStr + 'T00:00:00');
   const today = new Date();
@@ -79,6 +83,7 @@ export default function HomeScreen() {
   const [isResumable, setIsResumable] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [versionTaps, setVersionTaps] = useState(0);
 
   const firstName = profile?.nickname ?? profile?.firstName ?? '';
 
@@ -104,8 +109,8 @@ export default function HomeScreen() {
     navigate('/app/rotation');
   }
 
-  // Dev-only. Re-runs the previous/resumable lookup once the Dexie write lands,
-  // so the screen reflects the new session state without a manual refresh.
+  // Re-runs the previous/resumable lookup once the Dexie write lands, so the
+  // screen reflects the new session state without a manual refresh.
   async function handleDevAction(action: () => Promise<void>) {
     await action();
     setRefreshKey((k) => k + 1);
@@ -270,12 +275,19 @@ export default function HomeScreen() {
         >
           {t('nav.settings', 'Settings')}
         </button>
-        <span className="text-small text-caption-text opacity-50">v{version}</span>
+        <button
+          onClick={() => setVersionTaps((n) => n + 1)}
+          aria-label={`Version ${version}`}
+          className="text-small text-caption-text opacity-50"
+        >
+          v{version}
+        </button>
       </div>
 
-      {/* Dev-only session shortcuts. Stripped from production builds — Vite
-          substitutes import.meta.env.DEV as a literal false. */}
-      {import.meta.env.DEV && (
+      {/* Session shortcuts. In production they stay hidden until the version
+          label is tapped DEV_UNLOCK_TAPS times, so a resident cannot reach them
+          by accident; the unlock lasts only as long as the screen is mounted. */}
+      {(import.meta.env.DEV || versionTaps >= DEV_UNLOCK_TAPS) && (
         <div className="pt-3 flex items-center justify-center gap-3">
           <button
             onClick={() => handleDevAction(devCompleteToday)}

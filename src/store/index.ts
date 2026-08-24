@@ -44,9 +44,9 @@ interface AppState {
   restoreSession: (state: CurrentSession) => void;
   tickCategory: () => void;
 
-  // Dev-only session shortcuts. Every call site is behind `import.meta.env.DEV`,
-  // which Vite substitutes as a literal `false` in production, so these are
-  // unreachable in a built bundle.
+  // Session shortcuts. Shown outright in dev; in a production build HomeScreen
+  // keeps them hidden until the version label is tapped five times, so they ship
+  // in the bundle but stay out of a resident's way.
   devCompleteToday: () => Promise<void>;
   devResetToday: () => Promise<void>;
 
@@ -197,7 +197,7 @@ export const useAppStore = create<AppState>()(
         });
       },
 
-      // ─── Dev-only ──────────────────────────────────────────────────────────
+      // ─── Session shortcuts ─────────────────────────────────────────────────
       // Marks today as fully done so HomeScreen shows the Practice Mode game
       // list without playing a session. Awaits the Dexie write, because the
       // store rehydrates from Dexie on profile load and a state-only change
