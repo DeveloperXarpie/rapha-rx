@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { boardMetrics, escapeOffset, exitRect, pieceOrigin, pieceSize, MAX_CELL, MIN_CELL } from '../geometry';
+import { boardMetrics, escapeOffset, exitRect, pieceOrigin, pieceSize, MAX_CELL, MIN_CELL, WALL_RATIO } from '../geometry';
 import { parseLevel, type LevelDef } from '../model';
 
 const DEF: LevelDef = {
@@ -27,7 +27,7 @@ describe('boardMetrics', () => {
     expect(wide.cell).toBeLessThan(MAX_CELL);
     expect(tall.cell).toBeLessThan(MAX_CELL);
     // 5 columns against 4 rows: the same pixel budget is tighter horizontally.
-    expect(boardMetrics(board, 500, 500).cell).toBe(Math.floor(500 / (5 + 0.44)));
+    expect(boardMetrics(board, 500, 500).cell).toBe(Math.floor(500 / (5 + WALL_RATIO * 2)));
   });
 
   it('clamps between the touch-target floor and the ceiling', () => {

@@ -3,7 +3,7 @@
  * the space it has, and where each cell sits.
  */
 
-import type { Board, Exit, Piece } from './model';
+import type { Board, Exit, ExitSide, Piece } from './model';
 
 /**
  * A 1x1 block at the smallest cell is 56px, under the app's 80px touch-target minimum.
@@ -13,8 +13,11 @@ import type { Board, Exit, Piece } from './model';
 export const MIN_CELL = 56;
 export const MAX_CELL = 96;
 
-/** Wall thickness as a fraction of one cell, so the frame scales with the board. */
-const WALL_RATIO = 0.22;
+/**
+ * Wall thickness as a fraction of one cell, so the frame scales with the board. Set from
+ * the art: the mock draws its rails at 47px against a 135px cell.
+ */
+export const WALL_RATIO = 0.35;
 
 export interface BoardMetrics {
   cell: number;
@@ -46,6 +49,35 @@ export function pieceOrigin(piece: Piece, m: BoardMetrics): { x: number; y: numb
 
 export function pieceSize(piece: Piece, m: BoardMetrics): { w: number; h: number } {
   return { w: piece.w * m.cell, h: piece.h * m.cell };
+}
+
+/** The four rails and the four corner ornaments, in the order they are drawn. */
+export const SIDES: ExitSide[] = ['top', 'right', 'bottom', 'left'];
+export const CORNERS = ['tl', 'tr', 'bl', 'br'] as const;
+export type Corner = (typeof CORNERS)[number];
+
+/** One rail of the frame, corner to corner. The corner ornaments cover the overlaps. */
+export function railRect(side: ExitSide, m: BoardMetrics): { left: number; top: number; width: number; height: number } {
+  switch (side) {
+    case 'top':    return { left: 0, top: 0, width: m.boardW, height: m.wall };
+    case 'bottom': return { left: 0, top: m.boardH - m.wall, width: m.boardW, height: m.wall };
+    case 'left':   return { left: 0, top: 0, width: m.wall, height: m.boardH };
+    case 'right':  return { left: m.boardW - m.wall, top: 0, width: m.wall, height: m.boardH };
+  }
+}
+
+/**
+ * One corner ornament, centred on where the two rails' mid-lines cross rather than on
+ * the box corner. That is where the mock sits its spiral: overhanging the frame a little
+ * on both axes and lapping a little way into the board, which is what makes it read as
+ * capping the join rather than as a fifth piece of stone.
+ */
+export function cornerRect(corner: Corner, m: BoardMetrics, size: number): { left: number; top: number } {
+  const near = m.wall / 2 - size / 2;
+  return {
+    left: corner === 'tl' || corner === 'bl' ? near : m.boardW - m.wall / 2 - size / 2,
+    top: corner === 'tl' || corner === 'tr' ? near : m.boardH - m.wall / 2 - size / 2,
+  };
 }
 
 /** The gap in the wall, in board-box coordinates. */

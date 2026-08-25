@@ -5,14 +5,17 @@ import type { LevelConfig } from '../../types';
 import { Button } from '../../../components/ui/Button';
 import { useReducedMotion } from '../../../lib/useReducedMotion';
 
-import { boardMetrics, escapeOffset, exitRect, pieceOrigin, pieceSize } from './geometry';
+import {
+  boardMetrics, cornerRect, CORNERS, escapeOffset, exitRect, pieceOrigin, pieceSize, railRect, SIDES,
+} from './geometry';
 import {
   allowedAxes, applyMove, isSolved, keyEscapeSlide, parseLevel, travelRange,
   type Axis, type Board, type LevelDef, type Piece,
 } from './model';
 import { nextBestMove } from './solver';
 import { pickLevel } from './levels';
-import { blockFace, blockOrnament, SKIN } from './skin';
+import { blockSlab, cornerFlip, floorPaint, keyFacing, railPaint, SKIN } from './skin';
+import { CORNER_RATIO } from './sprites';
 import { ClearTheWayStyles } from './styles';
 
 // ─── Params ───────────────────────────────────────────────────────────────────
@@ -287,6 +290,7 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
   const hintUnlocked = phase === 'play' && level.minMoves > 0 && moves >= level.minMoves * HINT_AFTER_RATIO;
   const gap = exitRect(board.exit, board, metrics);
   const escape = escapeOffset(board.exit, metrics);
+  const cornerSize = Math.round(metrics.wall * CORNER_RATIO);
   const gone = phase === 'escaping' || phase === 'done';
   const swimming = phase === 'swimming';
 
@@ -305,7 +309,12 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
             // Wide enough to hold the exit beacon, which is drawn outside the wall.
             padding: metrics.cell * 0.6,
             borderRadius: 28,
-            background: SKIN.backdrop,
+            backgroundImage: `url(${SKIN.backdrop})`,
+            backgroundSize: 'cover',
+            // Bottom, so the seabed and its anchor stay in shot as the panel gets shorter.
+            backgroundPosition: 'center bottom',
+            // No `overflow: hidden` here: the freed fish swims past the frame on its way
+            // out, and clipping the panel would cut it off mid-escape.
             boxShadow: 'inset 0 2px 22px rgba(0,0,0,.35)',
           }}
         >
@@ -325,51 +334,72 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
             />
           ))}
 
-          {/* The frame: wall everywhere, floor inset, one gap painted back to floor. */}
-          <div
-            className="relative"
-            style={{
-              width: metrics.boardW,
-              height: metrics.boardH,
-              background: SKIN.wallFill,
-              border: `2px solid ${SKIN.wallEdge}`,
-              borderRadius: 18,
-              boxShadow: '0 8px 0 rgba(0,0,0,.28)',
-            }}
-          >
+          {/* The frame: floor inset, four rails around it, one gap painted back to floor. */}
+          <div className="relative" style={{ width: metrics.boardW, height: metrics.boardH }}>
             <div
               className="absolute"
               style={{
+                // Inset by the wall so the floor tile's own joints land on the cell grid
+                // rather than a wall's width off it.
                 left: metrics.wall,
                 top: metrics.wall,
                 width: metrics.boardW - metrics.wall * 2,
                 height: metrics.boardH - metrics.wall * 2,
-                background: SKIN.floorFill,
-                borderRadius: 8,
-                boxShadow: `inset 0 0 0 1px ${SKIN.floorLine}`,
+                ...floorPaint(metrics.cell),
+                boxShadow: '0 8px 0 rgba(0,0,0,.28)',
               }}
             />
 
-            {/* The gap in the wall, and the beacon that advertises it. */}
+            {SIDES.map((side) => (
+              <div
+                key={side}
+                className="absolute"
+                style={{ ...railRect(side, metrics), ...railPaint(side, metrics.wall) }}
+                aria-hidden
+              />
+            ))}
+
+            {/* The gap: the rail painted back to floor, and the beacon beyond it. */}
             <div
               className="absolute"
-              style={{ left: gap.x, top: gap.y, width: gap.w, height: gap.h, background: SKIN.floorFill }}
+              style={{
+                left: gap.x, top: gap.y, width: gap.w, height: gap.h,
+                ...floorPaint(metrics.cell),
+                // Kept in step with the floor beside it, so the gap reads as the floor
+                // running out through the wall rather than as a tile patched into it.
+                backgroundPosition: `${metrics.wall - gap.x}px ${metrics.wall - gap.y}px`,
+              }}
             />
-            <div
-              className="ctw-exit-glow absolute flex items-center justify-center font-black"
+
+            {CORNERS.map((corner) => (
+              <img
+                key={corner}
+                src={SKIN.corner}
+                alt=""
+                className="absolute pointer-events-none"
+                style={{
+                  ...cornerRect(corner, metrics, cornerSize),
+                  width: cornerSize,
+                  height: cornerSize,
+                  transform: cornerFlip(corner),
+                }}
+                aria-hidden
+              />
+            ))}
+
+            <img
+              src={SKIN.exitArrow}
+              alt=""
+              className="ctw-exit-glow absolute pointer-events-none"
               style={{
                 left: gap.x + gap.w,
-                top: gap.y,
-                width: metrics.cell * 0.5,
-                height: gap.h,
-                color: SKIN.exitArrow,
-                fontSize: metrics.cell * 0.42,
-                lineHeight: 1,
+                top: gap.y + gap.h / 2 - metrics.cell * 0.35,
+                width: metrics.cell * 0.6,
+                height: metrics.cell * 0.7,
+                objectFit: 'contain',
               }}
               aria-hidden
-            >
-              »
-            </div>
+            />
 
             {board.pieces.map((piece) => {
               const origin = pieceOrigin(piece, metrics);
@@ -380,8 +410,6 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
               const flying = piece.isKey && gone;
               const outX = flying && !reduced ? escape.x : 0;
               const outY = flying && !reduced ? escape.y : 0;
-              const face = blockFace(piece);
-              const ornament = blockOrnament(piece);
               const radius = Math.round(metrics.cell * 0.18);
 
               return (
@@ -402,7 +430,7 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
                     top: 0,
                     width: size.w,
                     height: size.h,
-                    padding: 3,
+                    borderRadius: radius,
                     transform: `translate3d(${origin.x + dragX + outX}px, ${origin.y + dragY + outY}px, 0)`,
                     transition: flying
                       ? (reduced
@@ -417,31 +445,23 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
                     zIndex: piece.isKey ? 3 : 2,
                   }}
                 >
-                  <div
-                    className="w-full h-full flex items-center justify-center relative overflow-hidden"
+                  {/* The key carries no slab: the fish swims in its cells rather than
+                      riding a block, so its piece box is transparent and only the fish is
+                      painted. Everything else wears the slab cut for its shape, drawn
+                      `contain`ed so the sheet's own inset shows the floor between blocks
+                      and no sprite is ever stretched to fit. */}
+                  <img
+                    src={piece.isKey ? SKIN.key : blockSlab(piece)}
+                    alt=""
+                    draggable={false}
+                    className="w-full h-full pointer-events-none"
                     style={{
-                      background: piece.isKey ? SKIN.keyFill : face.fill,
-                      border: `2px solid ${piece.isKey ? SKIN.keyEdge : face.edge}`,
-                      borderRadius: radius,
-                      boxShadow: `inset 0 ${Math.round(metrics.cell * 0.08)}px 0 ${piece.isKey ? 'rgba(255,255,255,.28)' : face.speck}, 0 3px 0 rgba(0,0,0,.25)`,
+                      objectFit: 'contain',
+                      transform: piece.isKey ? keyFacing(board.exit.side) : undefined,
+                      filter: 'drop-shadow(0 3px 2px rgba(0,0,0,.35))',
                     }}
-                  >
-                    {piece.isKey ? (
-                      <>
-                        <span style={{ fontSize: Math.round(metrics.cell * 0.6), lineHeight: 1 }}>{SKIN.keyFace}</span>
-                        <span
-                          className="absolute inset-0 pointer-events-none"
-                          style={{
-                            borderRadius: radius,
-                            background: `repeating-linear-gradient(90deg, transparent 0 ${Math.round(metrics.cell * 0.22)}px, ${SKIN.keyBars} ${Math.round(metrics.cell * 0.22)}px ${Math.round(metrics.cell * 0.26)}px)`,
-                            opacity: 0.75,
-                          }}
-                        />
-                      </>
-                    ) : ornament ? (
-                      <span style={{ fontSize: Math.round(metrics.cell * 0.34), opacity: 0.85, lineHeight: 1 }}>{ornament}</span>
-                    ) : null}
-                  </div>
+                    aria-hidden
+                  />
                 </div>
               );
             })}
@@ -478,7 +498,7 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
               style={{ borderRadius: 28, background: 'rgba(5,32,46,.72)', zIndex: 10 }}
             >
               <div className="ctw-freed panel-surface flex flex-col items-center gap-3 px-8 py-6 text-center">
-                <span style={{ fontSize: 56, lineHeight: 1 }}>{SKIN.freedEmoji}</span>
+                <img src={SKIN.key} alt="" style={{ width: 96 }} aria-hidden />
                 <p className="text-h2">{t('clearTheWay.freed', 'Free!')}</p>
                 <p className="text-body text-caption-text">
                   {t('clearTheWay.movesTaken', 'You did it in {{moves}} moves. Best possible: {{best}}.', {

@@ -20,7 +20,7 @@ export function ClearTheWayStyles({ reduced }: { reduced: boolean }) {
 .ctw-bubble { opacity: 0; animation: ctw-bubble 900ms ease-out forwards; }
 
 @keyframes ctw-exit-glow {
-  0%, 100% { opacity: .55; filter: drop-shadow(0 0 6px ${SKIN.exitGlow}); }
+  0%, 100% { opacity: .8; filter: drop-shadow(0 0 8px ${SKIN.exitGlow}); }
   50% { opacity: 1; filter: drop-shadow(0 0 18px ${SKIN.exitGlow}); }
 }
 @keyframes ctw-hint {
