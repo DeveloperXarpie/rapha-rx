@@ -107,7 +107,20 @@ export const FRAMES = {
   orderBubble: { src: `${DISH_BASE}/ui-panel.png`,   w: 194, h: 180, slice: [28, 28, 28, 28] },
   /** HUD score chip. Interior is repainted clean by the slicer, so it takes live text. */
   capsule:     { src: `${DISH_BASE}/ui-capsule.png`, w: 240, h: 103, slice: [24, 34, 24, 34] },
+  /**
+   * The counter tray. Its interior is flat, because the sheet draws 4x2 cells and the
+   * board deals six in 3x2 - the cells come from geometry.ts instead. Slicing at the
+   * frame's own 34px band means the panel can be any size without the rim distorting.
+   */
+  tray:        { src: `${DISH_BASE}/pt-tray.png`,    w: 787, h: 576, slice: [34, 34, 34, 34] },
 } satisfies Record<string, FrameDef>;
+
+/**
+ * The painted title lockup. Not localised and reads "Tiffen" rather than "Tiffin"; both
+ * are known and accepted. GameShell hides its own banner for this game so they do not
+ * both appear.
+ */
+export const TITLE_SRC = `${DISH_BASE}/pt-title.png`;
 
 /**
  * The order bubble's tail, cut off the panel at its seam and placed against the frame's
@@ -191,7 +204,7 @@ export function frameStyle(frame: FrameDef, scale = 1) {
   };
 }
 
-export const BACKGROUND_SRC = '/bg_cook.jpg';
+export const BACKGROUND_SRC = '/bg_cook_pt.jpg';
 export const FACE_SHEET_SRC = '/characters_cook.png';
 
 /**
@@ -205,6 +218,7 @@ export function spriteUrls(dealtDishIds: string[]): string[] {
   return [
     BACKGROUND_SRC,
     FACE_SHEET_SRC,
+    TITLE_SRC,
     ...dealtDishIds.flatMap((id) => [DISH_BY_ID[id].src, DISH_BY_ID[id].spoiledSrc]),
     ...Object.values(FRAMES).map((f) => f.src),
     ...Object.values(BUTTONS).map((b) => b.src),

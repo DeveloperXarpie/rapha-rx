@@ -15,6 +15,15 @@ export const COLOURS = {
   gold: '#f4c23c',
   goldBorder: '#e0a218',
   wasted: '#c0392b',
+  /**
+   * The counter's cell plates, sampled off the portrait tray art. They are drawn rather
+   * than sliced because the sheet paints 4x2 cells and the board deals six in 3x2, so
+   * only the tray's outer frame comes from the sprite.
+   */
+  cell: '#fffaf0',
+  cellRim: '#eddcb6',
+  /** A burnt dish tints its own plate, so the card reads as spoiled at a glance. */
+  cellBurnt: '#f7e6e0',
 } as const;
 
 /**

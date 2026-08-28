@@ -1,16 +1,19 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LevelResult } from '../../../components/GameShell';
 import type { LevelConfig } from '../../types';
 import { useImagesReady } from '../../../lib/useImagesReady';
 import { useReducedMotion } from '../../../lib/useReducedMotion';
+import { useStageScale } from '../../../hooks/useStageFit';
 
 import {
-  BTN_BOTTOM_Y, BTN_W, BUBBLE_BOTTOM_Y, BUBBLE_ITEM_GAP, BUBBLE_ITEM_H, BUBBLE_ITEM_W,
-  bubbleCentreX, bubbleWidth, CANVAS_H, CANVAS_W, CARD_IMG_H, CARD_IMG_Y, CARD_NAME_H,
-  CARD_NAME_Y, CARD_W, cardX, COOK_BAR_H, COOK_BAR_W, FACE_BOTTOM_Y, FACE_H, FACE_TOP_Y,
+  BTN_W, BUBBLE_BOTTOM_Y, BUBBLE_ITEM_GAP, BUBBLE_ITEM_H, BUBBLE_ITEM_W,
+  bubbleCentreX, bubbleWidth, CANVAS_H, CANVAS_W, CARD_BTN_DY, CARD_BTN_H, CARD_H,
+  CARD_IMG_DY, CARD_IMG_H, CARD_NAME_DY, CARD_NAME_H, CARD_PAD, CARD_W, cardX, cardY,
+  COOK_BAR_H, COOK_BAR_W, FACE_BOTTOM_Y, FACE_H, FACE_TOP_Y,
   faceCentreX, GUEST_CAPSULE_W, GUEST_DIAL, HUD_LEFT_X, HUD_RIGHT_X, HUD_Y, PATIENCE_BAR_H,
   patienceBarWidth, SCORE_CAPSULE_H, SCORE_CAPSULE_W,
+  TITLE_H, TITLE_W, TITLE_X, TITLE_Y, TRAY_H, TRAY_W, TRAY_X, TRAY_Y,
 } from './geometry';
 import {
   cookProgress, createInitialState, guestsHandled, spoilProgress, tapDish, tick, TOTAL_GUESTS,
@@ -18,7 +21,7 @@ import {
 } from './model';
 import {
   BACKGROUND_SRC, BUBBLE_TAIL, BUTTONS, COIN_SRC, DISH_BY_ID, faceCrop, FRAMES, frameStyle,
-  PAINTED_BUTTON_LANG, spriteUrls,
+  PAINTED_BUTTON_LANG, spriteUrls, TITLE_SRC,
 } from './sprites';
 import { Bar, type BarTint } from './Bar';
 import { BUTTON_SKIN, COLOURS } from './palette';
@@ -67,28 +70,9 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
 
   // ── Fit the fixed-size board into whatever space the shell gives us ─────────
 
-  const frameRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.5);
-
-  useLayoutEffect(() => {
-    const measure = () => {
-      const el = frameRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      // Width comes from the layout, but height cannot: GameShell's column is `min-h-full`,
-      // so it sizes to its content, and our content is sized by `scale`. Measuring the
-      // frame's own height would make scale depend on itself and collapse the board.
-      // Measuring against the viewport breaks that circularity, as TrainYard does.
-      const availH = Math.max(360, window.innerHeight - rect.top - 16);
-      if (rect.width > 0) setScale(Math.min(rect.width / CANVAS_W, availH / CANVAS_H));
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (frameRef.current) ro.observe(frameRef.current);
-    window.addEventListener('resize', measure);
-    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
-    // Re-runs when the board mounts, since the frame does not exist during the preload.
-  }, [imagesReady]);
+  // The board is measured against the play box GameShell hands us, not against the
+  // viewport minus a guess at the chrome. See hooks/useStageFit.ts.
+  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H);
 
   // ── Game loop ───────────────────────────────────────────────────────────────
 
@@ -148,15 +132,24 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
   }
 
   return (
-    <div ref={frameRef} style={{ width: '100%', height: CANVAS_H * scale, overflow: 'hidden' }}>
+    /*
+     * Two boxes, and the split matters. The outer one is the stage: `w-full h-full`, so its
+     * size comes from the play box above and never from the board below. That is the element
+     * the observer watches. Observing the scaled board instead would close an
+     * observe-resize-observe loop.
+     */
+    <div
+      ref={stageRef}
+      className="w-full h-full overflow-hidden flex justify-center items-start"
+    >
       <ServeTheGuestsStyles reduced={reduced} />
 
       <div
         style={{
           position: 'relative',
-          width: CANVAS_W * scale,
-          height: CANVAS_H * scale,
-          margin: '0 auto',
+          flex: '0 0 auto',
+          width: CANVAS_W * stage.scale,
+          height: CANVAS_H * stage.scale,
           overflow: 'hidden',
           borderRadius: 24,
         }}
@@ -168,16 +161,37 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
               top: 0,
               width: CANVAS_W,
               height: CANVAS_H,
-              transform: `scale(${scale})`,
+              transform: `scale(${stage.scale})`,
               transformOrigin: 'top left',
               backgroundImage: `url(${BACKGROUND_SRC})`,
               backgroundSize: `${CANVAS_W}px ${CANVAS_H}px`,
               fontFamily: "'Baloo 2', Inter, system-ui, sans-serif",
             }}
           >
+            {/* The painted title. Not localised, and the art reads "Tiffen"; both are
+                known and accepted, and GameShell drops its own banner for this game. */}
+            <img
+              src={TITLE_SRC}
+              alt=""
+              style={{
+                position: 'absolute', left: TITLE_X, top: TITLE_Y,
+                width: TITLE_W, height: TITLE_H,
+              }}
+            />
+
             {state.seats.map((guest, seat) => (
               <SeatView key={seat} seat={seat} guest={guest} t={t} />
             ))}
+
+            {/* The counter tray, drawn over the guests so they read as standing behind it.
+                9-sliced, so its size is free geometry rather than a property of the art. */}
+            <div
+              style={{
+                position: 'absolute', left: TRAY_X, top: TRAY_Y,
+                width: TRAY_W, height: TRAY_H,
+                ...frameStyle(FRAMES.tray, TRAY_W / FRAMES.tray.w),
+              }}
+            />
 
             {state.dishes.map((dish, i) => (
               <DishCard
@@ -540,11 +554,15 @@ function DishCard({
       style={{
         position: 'absolute',
         left: cardX(index),
-        top: CARD_IMG_Y,
+        top: cardY(index),
         width: CARD_W,
-        height: BTN_BOTTOM_Y - CARD_IMG_Y,
-        background: 'none',
-        border: 'none',
+        height: CARD_H,
+        // The cell plate. The tray art draws 4x2 cells and the board deals six in 3x2, so
+        // the frame comes from the sprite and the cells are drawn here.
+        background: dish.state === 'burnt' ? COLOURS.cellBurnt : COLOURS.cell,
+        border: `2px solid ${COLOURS.cellRim}`,
+        borderRadius: 18,
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,.85)',
         padding: 0,
         cursor: dish.state === 'cooking' ? 'default' : 'pointer',
         userSelect: 'none',
@@ -554,7 +572,7 @@ function DishCard({
       {/* Dish */}
       <span
         style={{
-          position: 'absolute', left: 0, top: 0, width: CARD_W, height: CARD_IMG_H,
+          position: 'absolute', left: 0, top: CARD_IMG_DY, width: CARD_W, height: CARD_IMG_H,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
@@ -576,7 +594,7 @@ function DishCard({
       {/* Name, or the WASTED marker once it has burned */}
       <span
         style={{
-          position: 'absolute', left: 0, top: CARD_NAME_Y - CARD_IMG_Y,
+          position: 'absolute', left: 0, top: CARD_NAME_DY,
           width: CARD_W, height: CARD_NAME_H,
           display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
           fontSize: 24, fontWeight: 800, lineHeight: 1.05, textAlign: 'center',
@@ -594,7 +612,7 @@ function DishCard({
           alt=""
           className={dish.state === 'ready' ? 'sg-glow' : undefined}
           style={{
-            position: 'absolute', left: '50%', top: BTN_BOTTOM_Y - buttonH - CARD_IMG_Y,
+            position: 'absolute', left: '50%', top: CARD_BTN_DY + CARD_BTN_H - buttonH,
             transform: 'translateX(-50%)', width: BTN_W, height: buttonH,
           }}
         />
@@ -602,8 +620,9 @@ function DishCard({
         <span
           className={dish.state === 'ready' ? 'sg-glow' : undefined}
           style={{
-            // The card's own box ends at BTN_BOTTOM_Y, which is the baseline both share.
-            position: 'absolute', left: '50%', bottom: 0,
+            // Both variants hang from the same baseline, one card-padding up from the
+            // card's bottom edge, so the pill sits identically whichever the language gets.
+            position: 'absolute', left: '50%', bottom: CARD_PAD,
             transform: 'translateX(-50%)', minWidth: BTN_W, padding: '9px 14px',
             borderRadius: 999, background: skin[0],
             border: '3px solid rgba(255,255,255,.75)', boxShadow: `0 4px 0 ${skin[1]}`,

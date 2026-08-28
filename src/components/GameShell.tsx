@@ -140,10 +140,14 @@ export default function GameShell({
         padding it spends comes straight out of the board.
       */}
       <div className="panel-surface flex-none px-4 py-2 flex items-center gap-3">
+        {/* Serve the Guests paints its own title into the board, so showing this banner
+            too would put the game's name on screen twice. */}
         <div className="flex-1">
-          <h2 className="text-h2">
-            <span className="game-title-banner game-title-banner-compact">{gameName}</span>
-          </h2>
+          {gameId !== 'serve-guests' && (
+            <h2 className="text-h2">
+              <span className="game-title-banner game-title-banner-compact">{gameName}</span>
+            </h2>
+          )}
         </div>
         {/* Dropped on narrow screens: the game's own title already says what this is. */}
         <span className="shell-tag shell-tag-category hidden sm:inline-flex">

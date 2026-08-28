@@ -23,14 +23,13 @@ const VIEWPORTS = [
   { name: 'tablet-768', width: 768, height: 1024 },
 ];
 
-// Serve the Guests is absent deliberately: its portrait build is a separate plan, blocked
-// on the missing DISPOSE button in the new sprite sheet.
 const GAMES = [
   { id: 'train-yard', category: 'memory' },
   { id: 'market-memory', category: 'memory' },
   { id: 'garden-keeper', category: 'attention' },
   { id: 'spot-focus', category: 'attention' },
   { id: 'clear-the-way', category: 'executive' },
+  { id: 'serve-guests', category: 'executive' },
 ];
 
 const today = new Date().toISOString().slice(0, 10);

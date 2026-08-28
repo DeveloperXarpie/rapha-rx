@@ -100,7 +100,7 @@ export interface GameState {
  * rather than fixing the menu is what stops every round looking the same; it is the view's
  * `DISH_COUNT` and the two must agree, so the board is laid out for what the model deals.
  */
-export const COUNTER_SIZE = 8;
+export const COUNTER_SIZE = 6;
 
 /**
  * Deal the round's counter: `COUNTER_SIZE` distinct dishes drawn from the menu.
