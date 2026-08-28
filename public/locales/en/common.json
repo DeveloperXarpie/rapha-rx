@@ -509,5 +509,7 @@
   "clearTheWay.movesTaken": "You did it in {{moves}} moves. Fewest possible: {{best}}.",
   "clearTheWay.next": "Next puzzle",
   "clearTheWay.aria.key": "The trapped fish",
-  "clearTheWay.aria.block": "A blocking stone"
+  "clearTheWay.aria.block": "A blocking stone",
+  "rotate.title": "Please turn your device upright",
+  "rotate.body": "This app works best standing tall. Your progress is safe."
 }

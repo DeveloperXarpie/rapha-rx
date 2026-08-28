@@ -15,6 +15,10 @@ export default defineConfig({
         theme_color: '#2A66B8',
         background_color: '#F4F5F7',
         display: 'standalone',
+        // Authoritative on Android once installed to the home screen, which is the
+        // intended care-home deployment. iPadOS ignores it, so RotateDevice is the
+        // only defence there - see src/components/RotateDevice.tsx.
+        orientation: 'portrait-primary',
         start_url: '/',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },

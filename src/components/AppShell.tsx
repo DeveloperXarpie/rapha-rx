@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import RotateDevice from './RotateDevice';
 
 type Lang = 'en' | 'hi' | 'kn';
 const LANGS: { code: Lang; label: string }[] = [
@@ -110,6 +111,10 @@ export default function AppShell() {
       >
         <Outlet />
       </main>
+
+      {/* A cover, not a replacement: the app above stays mounted and keeps its state, so
+          tilting a tablet mid-round does not cost the resident the round. */}
+      <RotateDevice />
     </div>
   );
 }

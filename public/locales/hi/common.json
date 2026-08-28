@@ -509,5 +509,7 @@
   "clearTheWay.movesTaken": "आपने {{moves}} चालों में किया। कम से कम: {{best}}।",
   "clearTheWay.next": "अगली पहेली",
   "clearTheWay.aria.key": "फँसी हुई मछली",
-  "clearTheWay.aria.block": "रास्ता रोकता पत्थर"
+  "clearTheWay.aria.block": "रास्ता रोकता पत्थर",
+  "rotate.title": "कृपया अपना डिवाइस सीधा करें",
+  "rotate.body": "यह ऐप सीधी स्थिति में सबसे अच्छा चलता है। आपकी प्रगति सुरक्षित है।"
 }

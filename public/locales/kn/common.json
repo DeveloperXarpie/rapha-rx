@@ -509,5 +509,7 @@
   "clearTheWay.movesTaken": "ನೀವು {{moves}} ನಡೆಗಳಲ್ಲಿ ಮಾಡಿದಿರಿ. ಕನಿಷ್ಠ: {{best}}.",
   "clearTheWay.next": "ಮುಂದಿನ ಒಗಟು",
   "clearTheWay.aria.key": "ಸಿಕ್ಕಿಬಿದ್ದ ಮೀನು",
-  "clearTheWay.aria.block": "ದಾರಿ ತಡೆಯುವ ಕಲ್ಲು"
+  "clearTheWay.aria.block": "ದಾರಿ ತಡೆಯುವ ಕಲ್ಲು",
+  "rotate.title": "ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸಾಧನವನ್ನು ನೇರವಾಗಿ ಇರಿಸಿ",
+  "rotate.body": "ಈ ಅಪ್ಲಿಕೇಶನ್ ನೇರವಾಗಿದ್ದಾಗ ಉತ್ತಮವಾಗಿ ಕೆಲಸ ಮಾಡುತ್ತದೆ. ನಿಮ್ಮ ಪ್ರಗತಿ ಸುರಕ್ಷಿತವಾಗಿದೆ."
 }

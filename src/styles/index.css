@@ -50,6 +50,35 @@
     padding-right: env(safe-area-inset-right);
   }
 
+  /*
+   * The landscape gate.
+   *
+   * Driven by a media query rather than a JS resize listener, so it cannot flicker or
+   * miss an event, and so it costs nothing while the device is upright.
+   *
+   * `pointer: coarse` is the guard that keeps this off desktop browsers, whose windows
+   * are almost always wider than tall - without it `npm run dev` on a laptop would show
+   * nothing but this card. It is a touch-device gate, which is exactly the audience the
+   * portrait lock is for.
+   */
+  .rotate-gate { display: none; }
+
+  @media (orientation: landscape) and (pointer: coarse) {
+    .rotate-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 2rem;
+      text-align: center;
+      background: #F4F5F7;
+    }
+  }
+
   .btn-primary {
     @apply text-white font-semibold rounded-2xl px-8 py-4 min-h-[80px] text-btn
            active:scale-95 transition-all duration-150 cursor-pointer
