@@ -1,14 +1,15 @@
 {
   "name": "brain-training-app",
   "private": true,
-  "version": "1.16.0",
+  "version": "1.16.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "smoke:portrait": "node scripts/portrait-smoke.mjs"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.36.2",

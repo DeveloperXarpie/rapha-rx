@@ -556,11 +556,19 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
     // loop. (It replaces a container-query version that scaled to 100cqw with a top-left
     // origin, which let the board fill whatever width it was handed and sit hard against
     // the left edge.)
-    <div ref={stageRef} className="w-full h-full overflow-hidden">
+    <div
+      ref={stageRef}
+      className="w-full h-full overflow-hidden flex justify-center items-start"
+    >
       <GardenKeeperStyles />
       <div
         style={{
-          width: CANVAS_W, height: CANVAS_H, margin: '0 auto',
+          width: CANVAS_W, height: CANVAS_H,
+          // Flex centring on the stage, not `margin: 0 auto` here: the canvas is 800
+          // design px and the play box is routinely narrower, and auto margins collapse
+          // to zero once the child overflows. The board then scales about a centre that
+          // is not the box's centre and hangs off to the right, mostly clipped.
+          flex: '0 0 auto',
           transform: `scale(${stage.scale})`, transformOrigin: 'top center',
           position: 'relative',
           fontFamily: "'Baloo 2', sans-serif",

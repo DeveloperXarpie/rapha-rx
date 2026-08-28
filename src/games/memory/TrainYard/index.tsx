@@ -359,13 +359,20 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
      * element the observer watches. The inner one carries the scale. Observing the scaled
      * element instead would close an observe-resize-observe loop.
      */
-    <div ref={stageRef} className="w-full h-full overflow-hidden">
+    <div
+      ref={stageRef}
+      className="w-full h-full overflow-hidden flex justify-center items-start"
+    >
       <TrainYardStyles />
       <div
         style={{
           width: CANVAS_W,
           height: CANVAS_H,
-          margin: '0 auto',
+          // Flex centring on the stage, not `margin: 0 auto` here: the canvas is 800
+          // design px and the play box is routinely narrower, and auto margins collapse
+          // to zero once the child overflows. The board then scales about a centre that
+          // is not the box's centre and hangs off to the right, mostly clipped.
+          flex: '0 0 auto',
           transform: `scale(${stage.scale})`,
           transformOrigin: 'top center',
           position: 'relative',
