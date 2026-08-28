@@ -13,7 +13,8 @@
 ## Execution status
 
 **Paused after Task 5**, on branch `feat/portrait-mode`, to deal with a pre-existing
-accessibility bug found during Task 5's verification (see below). Resume at Task 7.
+accessibility bug found during Task 5's verification (see below). **Resume at Task 6**
+(Orientation), which has not been started - tasks 1 to 5 are the only ones complete.
 
 | Task | Commit | Version | Outcome |
 |---|---|---|---|
