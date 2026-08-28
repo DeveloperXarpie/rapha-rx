@@ -106,19 +106,27 @@ export const SEAT_W = CANVAS_W / SEAT_COUNT;
  * and scaled to this height, so every guest stands the same height above the counter no
  * matter how the artist drew them. Width follows from each bust's own aspect ratio.
  *
- * 240 rather than the landscape board's 224, but against a 235px seat rather than a 480px
- * one: the widest bust is about 248x266 native, so this lands it at roughly 224px wide and
- * it just clears its neighbours.
+ * Sized against how much guest the mock shows: it puts the busts' crowns at y630 with the
+ * tray top at y913, so 283px of guest stands above the counter. At 240 tall with a 72px
+ * overlap only 168px showed and the guests read as sinking behind the panel.
+ *
+ * The ceiling is the seat, not the canvas: at 275 the widest bust (248x284 native) lands
+ * at about 252px against a 235px seat, so neighbours' shoulders touch and the outer two
+ * crop by about 8px at the canvas edge. Both match how the mock arranges them; going much
+ * taller starts hiding one guest behind the next.
  */
-export const FACE_H = 240;
+export const FACE_H = 275;
 
 /**
  * Faces are anchored below the tray's top edge so the guests read as standing behind the
- * counter, with the tray overlapping their chests. The landscape board sat them exactly on
+ * counter, with the tray crossing their chests. The landscape board sat them exactly on
  * the counter line; the overlap is what sells the depth here, where the tray is a panel in
  * front rather than a painted surface.
+ *
+ * 28px is enough to read as "behind" without eating the bust: it leaves 247 of the 275
+ * showing, against the mock's 283.
  */
-export const FACE_BOTTOM_Y = TRAY_Y + 72;
+export const FACE_BOTTOM_Y = TRAY_Y + 28;
 
 export function faceCentreX(seat: number): number {
   return seat * SEAT_W + SEAT_W / 2;
