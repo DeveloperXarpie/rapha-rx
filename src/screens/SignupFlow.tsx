@@ -112,7 +112,7 @@ export default function SignupFlow() {
   }
 
   return (
-    <div className="min-h-screen bg-app-bg flex flex-col items-center justify-center p-8">
+    <div className="h-full overflow-y-auto bg-app-bg flex flex-col items-center justify-center p-8">
       <div className="w-full max-w-lg">
         {/* Step indicators */}
         <div className="flex gap-3 mb-10 justify-center">

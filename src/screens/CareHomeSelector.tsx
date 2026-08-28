@@ -169,7 +169,7 @@ export default function CareHomeSelector() {
 
   if (step === 'welcome' && currentUser) {
     return (
-      <div className="min-h-screen bg-[#060A18] flex flex-col items-center justify-between p-8 text-white">
+      <div className="h-full overflow-y-auto bg-[#060A18] flex flex-col items-center justify-between p-8 text-white">
         <div className="flex flex-col items-center mt-12 w-full max-w-md">
           <img src="/brain_logo.png" alt="RAPHA-Rx Logo" className="w-[100px] h-[100px] object-contain mb-8 mix-blend-screen" />
           
@@ -203,7 +203,7 @@ export default function CareHomeSelector() {
 
   if (step === 'login') {
     return (
-      <div className="min-h-screen bg-[#060A18] flex flex-col items-center px-6 py-8 text-white">
+      <div className="h-full overflow-y-auto bg-[#060A18] flex flex-col items-center px-6 py-8 text-white">
         <button 
           className="self-start text-white/50 text-2xl font-bold min-h-[80px] min-w-[80px] flex items-center mb-4" 
           onClick={() => setStep('landing')}
@@ -265,7 +265,7 @@ export default function CareHomeSelector() {
 
   if (step === 'signup') {
     return (
-      <div className="min-h-screen bg-[#060A18] flex flex-col items-center px-6 py-6 text-white overflow-y-auto">
+      <div className="h-full bg-[#060A18] flex flex-col items-center px-6 py-6 text-white overflow-y-auto">
         <button 
           className="self-start text-white/50 text-2xl font-bold min-h-[80px] min-w-[80px] flex items-center -ml-2 mb-2" 
           onClick={() => setStep('landing')}
@@ -336,7 +336,7 @@ export default function CareHomeSelector() {
 
   // Landing
   return (
-    <div className="min-h-screen bg-[#060A18] flex flex-col items-center justify-center p-8 text-white">
+    <div className="h-full overflow-y-auto bg-[#060A18] flex flex-col items-center justify-center p-8 text-white">
       <div className="flex flex-col items-center text-center">
         <h1 className="font-serif text-[48px] font-bold tracking-wide mb-8 drop-shadow-md" aria-label="RAPHA-Rx">
           <span className="text-[#4C84E3]">RAPHA-</span>

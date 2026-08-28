@@ -65,7 +65,7 @@ export default function ProfileSelector() {
   });
 
   return (
-    <div className="min-h-screen bg-app-bg flex flex-col p-8">
+    <div className="h-full overflow-y-auto bg-app-bg flex flex-col p-8">
       <button
         onClick={() => navigate('/')}
         className="text-body-md text-primary-blue mb-6 self-start"
