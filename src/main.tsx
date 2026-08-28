@@ -3,21 +3,22 @@ import { createRoot } from 'react-dom/client';
 import './styles/index.css';
 import './lib/i18n';
 import { initAnalytics } from './lib/analytics';
+import { applyTextSizeClass } from './lib/textSize';
 import App from './App';
 
-// Apply stored text size preference before paint
+// Apply stored text size preference before paint. `applyTextSizeClass` tolerates any
+// shape, which matters here: this reads the raw localStorage blob before the store has
+// hydrated or validated anything.
 const stored = localStorage.getItem('brain-training-store');
+let storedTextSize: unknown;
 if (stored) {
   try {
-    const state = JSON.parse(stored);
-    const textSize = state?.state?.settings?.textSize ?? 'normal';
-    document.documentElement.classList.add(`text-size-${textSize}`);
+    storedTextSize = JSON.parse(stored)?.state?.settings?.textSize;
   } catch {
-    document.documentElement.classList.add('text-size-normal');
+    storedTextSize = undefined;
   }
-} else {
-  document.documentElement.classList.add('text-size-normal');
 }
+applyTextSizeClass(storedTextSize);
 
 initAnalytics();
 

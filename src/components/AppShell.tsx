@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { applyTextSizeClass } from '../lib/textSize';
 
 type Lang = 'en' | 'hi' | 'kn';
 const LANGS: { code: Lang; label: string }[] = [
@@ -20,9 +21,7 @@ export default function AppShell() {
   const isOnline = useOnlineStatus();
 
   useEffect(() => {
-    const html = document.documentElement;
-    html.className = html.className.replace(/\btext-size-\w+\b/g, '').trim();
-    html.classList.add(`text-size-${settings.textSize}`);
+    applyTextSizeClass(settings.textSize);
   }, [settings.textSize]);
 
   function changeLang(lang: Lang) {
