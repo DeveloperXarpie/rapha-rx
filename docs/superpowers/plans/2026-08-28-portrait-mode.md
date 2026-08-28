@@ -10,6 +10,44 @@
 
 **Spec:** `docs/superpowers/specs/2026-08-28-portrait-mode-design.md`
 
+## Execution status
+
+**Paused after Task 5**, on branch `feat/portrait-mode`, to deal with a pre-existing
+accessibility bug found during Task 5's verification (see below). Resume at Task 7.
+
+| Task | Commit | Version | Outcome |
+|---|---|---|---|
+| 1. Root box | `fcdf178` | 1.13.1 | `.app-root` measures exactly the viewport height; nothing above `main` scrolls |
+| 2. Fit arithmetic | `92b0698` | 1.13.2 | 6 tests, written first |
+| 3. Stage hooks | `b0d80c2` | 1.13.3 | compiles; no consumer yet |
+| 4. Play-box contract | `65c3c2e` | 1.13.4 | play box has a real height: 442px at 360x640 |
+| 5. Chrome budget | `9bcd6e1` | 1.14.0 | play box 578px, a 31% gain against the 23% predicted |
+
+347 tests pass, `tsc -b` clean, lint unchanged at 38 errors and 1 warning.
+
+**Plan correction applied during execution.** Task 1's fixed-height root left Settings
+unreachable: it measures 1322px inside a 640px box, with `overflow: visible` and no
+scrollbar. `main` now takes scroll ownership in Task 1 Step 4b, and Task 5 Step 2b makes it
+conditional on the route. Task 4 Step 1 and Task 10 Step 3 became confirmation-only as a
+result.
+
+**One verification step could not be completed.** Task 5, Step 5, check 5 (the game bar
+grows at text size Extra Large) is unverifiable: `text-size-large` and `text-size-xlarge`
+are absent from the compiled CSS, so nothing grows. `AppShell.tsx:36` builds the class as
+`` `text-size-${settings.textSize}` ``, so neither literal appears in any source file and
+Tailwind's content scanner drops both rules. Confirmed in `dist/assets/index-BqpugNJZ.css`,
+built from `main` before this branch existed:
+
+```
+text-size-normal   1     <- survives only because main.tsx:16,19 contains the literal
+text-size-large    0
+text-size-xlarge   0
+```
+
+This is pre-existing and is being handled as separate work. It also means spec section 5.2's
+figures (a ~70px bar and a ~110px budget at Extra Large) describe a feature that does not
+currently function; those numbers need rechecking once it does.
+
 ## Global Constraints
 
 - **Portrait only.** Landscape is not a supported layout at any size.
