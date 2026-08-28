@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { LevelResult } from '../../../components/GameShell';
 import type { LevelConfig } from '../../types';
 import { useReducedMotion } from '../../../lib/useReducedMotion';
+import { useStageScale } from '../../../hooks/useStageFit';
 
 import Blind from './Blind';
 import CartStrip from './CartStrip';
@@ -280,25 +281,9 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
 
   // ─── Presentation ───────────────────────────────────────────────────────────
 
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.5);
-
-  useEffect(() => {
-    function measure() {
-      const el = wrapRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      // Width comes from the layout; height cannot, because this sits inside a flex column
-      // that sizes to its content. Measuring against the viewport avoids that circularity.
-      const availH = Math.max(360, window.innerHeight - rect.top - 16);
-      setScale(Math.min(rect.width / CANVAS_W, availH / CANVAS_H));
-    }
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (wrapRef.current) ro.observe(wrapRef.current);
-    window.addEventListener('resize', measure);
-    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
-  }, []);
+  // The board is measured against the play box GameShell hands us, not against the
+  // viewport minus a guess at the chrome. See hooks/useStageFit.ts.
+  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H);
 
   const listItems: Item[] = round.list.map((id) => BY_ID[id]);
   const slots: (Item | null)[] = Array.from({ length: round.list.length }, (_, i) =>
@@ -320,9 +305,9 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
 
   return (
     <div
-      ref={wrapRef}
+      ref={stageRef}
+      className="w-full h-full overflow-hidden"
       style={{
-        width: '100%', height: CANVAS_H * scale, overflow: 'hidden',
         // Flex centring, not `margin: 0 auto`: the canvas is 800 design px and the
         // viewport is routinely narrower, and auto margins collapse to zero once the
         // child overflows, which parks the board off to the right. Flex still centres.
@@ -332,7 +317,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
       <MarketMemoryStyles />
       <div style={{
         width: CANVAS_W, height: CANVAS_H, flex: '0 0 auto',
-        transform: `scale(${scale})`, transformOrigin: 'top center',
+        transform: `scale(${stage.scale})`, transformOrigin: 'top center',
         position: 'relative', fontFamily: "'Baloo 2', sans-serif", userSelect: 'none',
       }}>
         {/* Board */}

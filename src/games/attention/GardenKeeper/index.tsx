@@ -5,6 +5,7 @@ import type { LevelResult } from '../../../components/GameShell';
 import type { LevelConfig } from '../../types';
 import { useReducedMotion } from '../../../lib/useReducedMotion';
 import { useImagesReady } from '../../../lib/useImagesReady';
+import { useStageScale } from '../../../hooks/useStageFit';
 import { getGardenKeeperParams, type GardenKeeperDynamicParams } from '../../../lib/dynamicDifficulty';
 import {
   BOARD_H, CANVAS_H, CANVAS_W, HUD_H, buildBed, recedeFor, ringColour, ringSweepDeg,
@@ -525,25 +526,9 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
 
   // ─── Presentation ───────────────────────────────────────────────────────────
 
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.5);
-
-  useEffect(() => {
-    function measure() {
-      const el = wrapRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      // Width comes from the layout; height cannot, because this sits inside a flex column
-      // that sizes to its content. Measuring against the viewport avoids that circularity.
-      const availH = Math.max(360, window.innerHeight - rect.top - 16);
-      setScale(Math.min(rect.width / CANVAS_W, availH / CANVAS_H));
-    }
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (wrapRef.current) ro.observe(wrapRef.current);
-    window.addEventListener('resize', measure);
-    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
-  }, []);
+  // The board is measured against the play box GameShell hands us, not against the
+  // viewport minus a guess at the chrome. See hooks/useStageFit.ts.
+  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H);
 
   const handleNext = useCallback(() => {
     if (reported.current || !state.outcome) return;
@@ -565,17 +550,18 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
   }
 
   return (
-    // Same scale-to-fit wrapper as Train Yard and Market Memory, rather than the plan's
-    // container-query version. That one scaled to 100cqw with a top-left origin, so the
-    // board filled whatever width it was handed - much larger than the other games on a
-    // wide screen - and sat hard against the left edge. This measures against both the
-    // available width and the remaining viewport height, takes the smaller, and centres.
-    <div ref={wrapRef} style={{ width: '100%', height: CANVAS_H * scale, overflow: 'hidden' }}>
+    // Same stage wrapper as every other board: an unscaled `w-full h-full` div that the
+    // observer watches, and a scaled child inside it. The outer div's size comes from the
+    // play box above, never from the board below, so there is no observe-resize-observe
+    // loop. (It replaces a container-query version that scaled to 100cqw with a top-left
+    // origin, which let the board fill whatever width it was handed and sit hard against
+    // the left edge.)
+    <div ref={stageRef} className="w-full h-full overflow-hidden">
       <GardenKeeperStyles />
       <div
         style={{
           width: CANVAS_W, height: CANVAS_H, margin: '0 auto',
-          transform: `scale(${scale})`, transformOrigin: 'top center',
+          transform: `scale(${stage.scale})`, transformOrigin: 'top center',
           position: 'relative',
           fontFamily: "'Baloo 2', sans-serif",
           userSelect: 'none',
