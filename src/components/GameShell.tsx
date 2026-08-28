@@ -133,7 +133,7 @@ export default function GameShell({
   }
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex flex-col h-full">
       {/* Top bar */}
       <div className="panel-surface px-6 py-4 flex items-center gap-4">
         <div className="flex-1">
@@ -159,7 +159,17 @@ export default function GameShell({
       </div>
 
       {/* Game content */}
-      <div className="flex-1 flex flex-col p-4">
+      {/*
+        The play box. It has a real height, because every level above it does, so a game
+        can measure this box instead of reaching for `window.innerHeight` and subtracting
+        a guess at the chrome. `overflow-hidden` is the contract: a game fits or it scales
+        down, it never scrolls.
+
+        `data-testid` is not decoration - scripts/portrait-smoke.mjs asserts against this
+        exact element, and a structural selector would silently start matching the wrong
+        node the next time anyone adds a div here.
+      */}
+      <div data-testid="play-box" className="flex-1 min-h-0 overflow-hidden flex flex-col p-4">
         {React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
             return React.cloneElement(child as React.ReactElement<{
