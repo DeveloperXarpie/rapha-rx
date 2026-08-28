@@ -179,6 +179,37 @@ In `src/main.tsx` line 27, change `min-h-screen` to `h-full`:
 
 **Do not touch `CareHomeSelector.tsx`, `ProfileSelector.tsx` or `SignupFlow.tsx` in this task.** Those screens need the replacement scroll owner that Task 10 supplies, and `CareHomeSelector.tsx:268` currently pairs `min-h-screen` with `overflow-y-auto`. Removing it here would break them for the duration of the plan.
 
+- [ ] **Step 4b: Give `main` scroll ownership immediately**
+
+`.app-root` is now a fixed-height box, so any screen taller than the viewport paints below
+the fold with no way to reach it. Settings measures 1322px at 360px wide inside a 640px root.
+This must land in the same commit as the fixed-height root, not nine tasks later.
+
+In `src/components/AppShell.tsx`, replace:
+
+```tsx
+      <main className="flex-1 flex flex-col" role="main">
+```
+
+with:
+
+```tsx
+      {/*
+        `min-h-0` is load-bearing. A flex child defaults to `min-height: auto`, which lets
+        its content push it taller than its parent - the same content-sizing bug the play
+        box exists to kill, one level up.
+
+        The scroll lives here rather than on the document, because .app-root is a fixed
+        height box now: without it, a screen taller than the viewport (Settings is 1322px
+        at 360px wide) simply paints below the fold with no way to reach it. Task 5 makes
+        this conditional, so a game route gets `overflow-hidden` instead.
+      */}
+      <main className="flex-1 min-h-0 overflow-y-auto flex flex-col" role="main">
+```
+
+This is safe for games: their boards still measure `window.innerHeight` until Task 7, and
+`GameShell`'s own `h-full` resolves against a `main` that now has a definite height.
+
 - [ ] **Step 5: Verify the build and tests**
 
 Run: `npx tsc -b && npx vitest run`
@@ -451,29 +482,10 @@ Ships together with Task 5. Task 4 alone bounds the play box while the old 192px
 - Consumes: `.app-root` from Task 1.
 - Produces: a `flex-1 min-h-0 overflow-hidden` play box inside `GameShell`. Tasks 7, 8, 9 and 11 attach their stage refs to a `w-full h-full` child of it.
 
-- [ ] **Step 1: Bound `main` in AppShell**
+- [ ] **Step 1: Confirm `main` is already bounded**
 
-In `src/components/AppShell.tsx`, replace lines 80-83:
-
-```tsx
-      <main className="flex-1 flex flex-col" role="main">
-        <Outlet />
-      </main>
-```
-
-with:
-
-```tsx
-      {/*
-        `min-h-0` is load-bearing. A flex child defaults to `min-height: auto`, which lets
-        its content push it taller than its parent - the same content-sizing bug the play
-        box exists to kill, one level up. With it, `main` is exactly the space left over,
-        and nothing above it ever scrolls.
-      */}
-      <main className="flex-1 min-h-0 overflow-hidden flex flex-col" role="main">
-        <Outlet />
-      </main>
-```
+`main` became `flex-1 min-h-0 overflow-y-auto flex flex-col` in Task 1, Step 4b. No change
+here. Task 5 makes the overflow conditional on the route.
 
 - [ ] **Step 2: Bound the play box in GameShell**
 
@@ -616,6 +628,21 @@ with:
 
 ```tsx
       {!isOnline && !inGame && (
+```
+
+- [ ] **Step 2b: Make `main`'s overflow conditional**
+
+Task 1 gave `main` `overflow-y-auto` unconditionally so that tall screens stayed reachable.
+Now that the route is known, a game gets `overflow-hidden` instead: a game never scrolls,
+every other route may.
+
+Replace the `<main>` opening tag with:
+
+```tsx
+      <main
+        className={`flex-1 min-h-0 flex flex-col ${inGame ? 'overflow-hidden' : 'overflow-y-auto'}`}
+        role="main"
+      >
 ```
 
 - [ ] **Step 3: Slim the GameShell bar**
@@ -1200,20 +1227,11 @@ Note this screen is outside `AppShell`, so `h-full` resolves against `#root`. St
 
 Leave `ProfileSelector.tsx:102` alone. It is already `grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5` and needs no change; an earlier draft of the spec wrongly claimed otherwise.
 
-- [ ] **Step 3: Give the in-shell screens a scroll owner**
+- [ ] **Step 3: Confirm the in-shell screens already have a scroll owner**
 
-`HomeScreen`, `SettingsScreen`, `RotationScreen`, `SessionSummary` and `DailyQuestionnaire` render inside `AppShell`'s now-`overflow-hidden` `main`, so they need somewhere to scroll. Rather than edit five screens, add it once in `src/components/AppShell.tsx` by giving the non-game branch of `main` the scroll:
-
-```tsx
-      <main
-        className={`flex-1 min-h-0 flex flex-col ${inGame ? 'overflow-hidden' : 'overflow-y-auto'}`}
-        role="main"
-      >
-        <Outlet />
-      </main>
-```
-
-A game never scrolls; every other route may.
+`HomeScreen`, `SettingsScreen`, `RotationScreen`, `SessionSummary` and `DailyQuestionnaire`
+render inside `AppShell`'s `main`, which took conditional scroll ownership in Task 5, Step 2b.
+No change here; this task only covers the three public routes outside `AppShell`.
 
 - [ ] **Step 4: Confirm `h-full` resolves for the public routes**
 

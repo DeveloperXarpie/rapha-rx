@@ -34,7 +34,7 @@ export default function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-app-bg flex flex-col">
+    <div className="app-root bg-app-bg flex flex-col">
       {/* Top bar */}
       <header className="bg-card-bg shadow-sm px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <h1 className="text-h2 font-bold text-primary-blue">{t('app.name')}</h1>
@@ -78,7 +78,17 @@ export default function AppShell() {
       )}
 
       {/* Main content */}
-      <main className="flex-1 flex flex-col" role="main">
+      {/*
+        `min-h-0` is load-bearing. A flex child defaults to `min-height: auto`, which lets
+        its content push it taller than its parent - the same content-sizing bug the play
+        box exists to kill, one level up.
+
+        The scroll lives here rather than on the document, because .app-root is a fixed
+        height box now: without it, a screen taller than the viewport (Settings is 1322px
+        at 360px wide) simply paints below the fold with no way to reach it. Task 5 makes
+        this conditional, so a game route gets `overflow-hidden` instead.
+      */}
+      <main className="flex-1 min-h-0 overflow-y-auto flex flex-col" role="main">
         <Outlet />
       </main>
     </div>

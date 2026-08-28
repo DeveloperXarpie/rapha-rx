@@ -136,7 +136,7 @@ export default function MorningRoutineQuest({ levelConfig, onLevelComplete, gene
 
   if (currentPhase === 'scenario_intro') {
     return (
-      <div role="main" className="flex-1 flex flex-col items-center justify-center p-8 gap-6 text-center bg-app-bg min-h-screen">
+      <div role="main" className="flex-1 flex flex-col items-center justify-center p-8 gap-6 text-center bg-app-bg">
         <span className="text-7xl" aria-hidden="true">{routineContent.emoji}</span>
         <h2 className="game-title-banner game-title-banner-compact text-center">
           {t(routineContent.title)}
@@ -160,7 +160,7 @@ export default function MorningRoutineQuest({ levelConfig, onLevelComplete, gene
 
   if (currentPhase === 'placement') {
     return (
-      <div role="main" className="flex-1 flex flex-col items-start p-4 gap-4 bg-app-bg min-h-screen">
+      <div role="main" className="flex-1 flex flex-col items-start p-4 gap-4 bg-app-bg">
         <style>{`@keyframes wobble { 0%,100%{transform:rotate(0deg)} 20%{transform:rotate(-8deg)} 40%{transform:rotate(8deg)} 60%{transform:rotate(-5deg)} 80%{transform:rotate(5deg)} }`}</style>
 
         {/* Instruction */}
@@ -301,7 +301,7 @@ export default function MorningRoutineQuest({ levelConfig, onLevelComplete, gene
   // ── completion ─────────────────────────────────────────────────────────────
 
   return (
-    <div role="main" className="flex-1 flex flex-col items-center justify-center p-8 gap-6 text-center bg-app-bg min-h-screen">
+    <div role="main" className="flex-1 flex flex-col items-center justify-center p-8 gap-6 text-center bg-app-bg">
       <span className="text-7xl" aria-hidden="true">{routineContent.emoji}🙏</span>
       <h2 className="text-h2 font-bold text-body-text">
         {t('morning-routine.completion.title', 'Wonderful! All steps are done!')}

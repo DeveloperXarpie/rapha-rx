@@ -24,7 +24,7 @@ initAnalytics();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Suspense fallback={
-      <div className="min-h-screen bg-app-bg flex items-center justify-center">
+      <div className="h-full bg-app-bg flex items-center justify-center">
         <p className="text-h3 text-caption-text">Loading...</p>
       </div>
     }>

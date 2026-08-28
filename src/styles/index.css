@@ -17,9 +17,39 @@
   html.text-size-normal { font-size: 100% !important; }
   html.text-size-large  { font-size: 112.5% !important; }
   html.text-size-xlarge { font-size: 125% !important; }
+
+  /*
+   * A definite height all the way down to #root, so that `h-full` resolves for anything
+   * rendered outside .app-root - the loading state in main.tsx, and the public routes
+   * (care home selector, signup, profile selector), which are not inside AppShell.
+   *
+   * A `h-full` whose ancestors have no definite height collapses to nothing, so this has
+   * to land in the same commit as the first `h-full` that depends on it.
+   */
+  html, body, #root { height: 100%; }
 }
 
 @layer components {
+  /*
+   * The single fixed-height box the whole app lives in.
+   *
+   * `100vh` first, then `100dvh`, so browsers without `dvh` keep the old behaviour and
+   * everything else tracks the real viewport as the mobile toolbar animates in and out.
+   * A plain `100vh` box is sized for a viewport that shrinks the moment the user scrolls,
+   * which puts the bottom of a game board underneath the toolbar.
+   *
+   * The safe-area padding is taken here, once, so nothing further down has to know a
+   * notch or a home indicator exists.
+   */
+  .app-root {
+    height: 100vh;
+    height: 100dvh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
   .btn-primary {
     @apply text-white font-semibold rounded-2xl px-8 py-4 min-h-[80px] text-btn
            active:scale-95 transition-all duration-150 cursor-pointer
