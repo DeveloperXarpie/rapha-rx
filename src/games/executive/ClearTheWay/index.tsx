@@ -1,9 +1,10 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LevelResult } from '../../../components/GameShell';
 import type { LevelConfig } from '../../types';
 import { Button } from '../../../components/ui/Button';
 import { useReducedMotion } from '../../../lib/useReducedMotion';
+import { useStageFit } from '../../../hooks/useStageFit';
 
 import {
   boardMetrics, cornerRect, CORNERS, escapeOffset, exitRect, pieceOrigin, pieceSize, railRect, SIDES,
@@ -35,9 +36,6 @@ const AXIS_LOCK_PX = 8;
  * timer and no fail state, a stuck resident is otherwise stuck for good.
  */
 const HINT_AFTER_RATIO = 2;
-
-/** Space the HUD and instruction take, so the board is sized for what is actually left. */
-const CHROME_H = 190;
 
 /** Beat between the lane opening and the fish leaving, so the player sees what freed it. */
 const CLEAR_BEAT_MS = 300;
@@ -95,28 +93,15 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
 
   // ── Fit the board into whatever space the shell gives us ────────────────────
 
-  const frameRef = useRef<HTMLDivElement>(null);
-  const [avail, setAvail] = useState({ w: 560, h: 460 });
+  // Unlike the scaled boards, this one sizes its own cells from the space available, so
+  // it takes the raw box rather than a scale factor. Either way the box now comes from
+  // the play box itself, not from the viewport minus a guess. See hooks/useStageFit.ts.
+  const [stageRef, avail] = useStageFit();
 
-  useLayoutEffect(() => {
-    const measure = () => {
-      const el = frameRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      // Height cannot come from the layout: GameShell's column is `min-h-full`, so it
-      // sizes to its content and our content is sized by this measurement. Measuring
-      // against the viewport breaks that circularity, as the other boards do.
-      const availH = Math.max(280, window.innerHeight - rect.top - CHROME_H);
-      if (rect.width > 0) setAvail({ w: rect.width, h: availH });
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (frameRef.current) ro.observe(frameRef.current);
-    window.addEventListener('resize', measure);
-    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
-  }, []);
-
-  const metrics = useMemo(() => boardMetrics(start, avail.w, avail.h), [start, avail]);
+  const metrics = useMemo(
+    () => boardMetrics(start, avail.width, avail.height),
+    [start, avail],
+  );
 
   // ── Drag ───────────────────────────────────────────────────────────────────
 
@@ -295,19 +280,27 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
   const swimming = phase === 'swimming';
 
   return (
-    <div className="flex-1 flex flex-col items-center gap-3">
+    <div className="h-full min-h-0 flex flex-col items-center gap-3">
       <ClearTheWayStyles reduced={reduced} />
 
-      <p className="text-body text-caption-text text-center">
+      <p className="flex-none text-body text-caption-text text-center">
         {t('clearTheWay.instruction', 'Slide the blocks out of the way and free the fish.')}
       </p>
 
-      <div ref={frameRef} className="w-full flex justify-center">
+      {/*
+        `flex-1 min-h-0` is what makes this measurable: the frame's height comes from the
+        column above it, never from the board inside it, so observing it cannot feed back
+        into the size it reports.
+      */}
+      <div ref={stageRef} className="flex-1 min-h-0 w-full flex justify-center">
         <div
           className="relative flex items-center justify-center"
           style={{
             // Wide enough to hold the exit beacon, which is drawn outside the wall.
-            padding: metrics.cell * 0.6,
+            // Comes from the metrics rather than a literal, so the fit calculation and
+            // the rendered padding cannot drift apart - they did, and the board overhung
+            // the screen by exactly this much.
+            padding: metrics.pad,
             borderRadius: 28,
             backgroundImage: `url(${SKIN.backdrop})`,
             backgroundSize: 'cover',

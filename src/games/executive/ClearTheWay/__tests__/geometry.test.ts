@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { boardMetrics, escapeOffset, exitRect, pieceOrigin, pieceSize, MAX_CELL, MIN_CELL, WALL_RATIO } from '../geometry';
+import { boardMetrics, escapeOffset, exitRect, pieceOrigin, pieceSize, MAX_CELL, MIN_CELL, PANEL_PAD_RATIO, WALL_RATIO } from '../geometry';
 import { parseLevel, type LevelDef } from '../model';
 
 const DEF: LevelDef = {
@@ -27,7 +27,10 @@ describe('boardMetrics', () => {
     expect(wide.cell).toBeLessThan(MAX_CELL);
     expect(tall.cell).toBeLessThan(MAX_CELL);
     // 5 columns against 4 rows: the same pixel budget is tighter horizontally.
-    expect(boardMetrics(board, 500, 500).cell).toBe(Math.floor(500 / (5 + WALL_RATIO * 2)));
+    // The divisor carries the panel's beacon padding as well as the walls, because the
+    // panel is what has to fit the space, not the board inside it.
+    expect(boardMetrics(board, 500, 500).cell)
+      .toBe(Math.floor(500 / (5 + WALL_RATIO * 2 + PANEL_PAD_RATIO * 2)));
   });
 
   it('clamps between the touch-target floor and the ceiling', () => {
@@ -81,5 +84,37 @@ describe('escapeOffset', () => {
     expect(escapeOffset({ side: 'left', index: 0 }, m).x).toBeLessThan(0);
     expect(escapeOffset({ side: 'top', index: 0 }, m).y).toBeLessThan(0);
     expect(escapeOffset({ side: 'bottom', index: 0 }, m).y).toBeGreaterThan(0);
+  });
+});
+
+describe('the largest board on the narrowest supported screen', () => {
+  // The widest grid any level declares (see levels.ts), on a 360px phone.
+  const WIDEST: LevelDef = {
+    id: 'test-widest',
+    tier: 5,
+    cols: 6,
+    rows: 6,
+    exit: { side: 'right', index: 2 },
+    layout: ['......', '......', 'KK....', '......', '......', '......'],
+    minMoves: 1,
+    dependencyDepth: 0,
+  };
+
+  it('fits the panel, not just the board, inside a 360px viewport', () => {
+    // 360px screen, minus GameShell's p-4 on both sides.
+    const m = boardMetrics(parseLevel(WIDEST), 328, 552);
+    // The panel is what the resident sees overhang the screen, and it is wider than the
+    // board by the beacon padding on both sides. Asserting on boardW alone is what let
+    // this ship at 444px.
+    expect(m.panelW).toBeLessThanOrEqual(328);
+    expect(m.panelW).toBe(m.boardW + m.pad * 2);
+  });
+
+  it('keeps a multi-cell piece above the 80px touch minimum at the floor', () => {
+    // The target is the piece, not the cell: only three of the 64 pieces across the
+    // six-column levels are 1x1, and every other piece spans two cells or more.
+    const m = boardMetrics(parseLevel(WIDEST), 328, 552);
+    expect(m.cell).toBe(MIN_CELL);
+    expect(m.cell * 2).toBeGreaterThanOrEqual(80);
   });
 });

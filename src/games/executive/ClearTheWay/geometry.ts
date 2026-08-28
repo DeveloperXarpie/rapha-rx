@@ -6,11 +6,24 @@
 import type { Board, Exit, ExitSide, Piece } from './model';
 
 /**
- * A 1x1 block at the smallest cell is 56px, under the app's 80px touch-target minimum.
- * That floor is unavoidable on a 7x7 grid on a narrow tablet; the mitigation is to keep
- * 1x1 pieces out of the large boards rather than to shrink the target.
+ * The floor on a cell, set by the widest board on the narrowest supported phone.
+ *
+ * It was 56, which put the widest board (6 columns) at a 444px panel against the 328px a
+ * 360px phone actually gives us. This is a hard floor rather than a preference, so the
+ * board could not shrink its own way out: it simply overhung the screen. 41 is the
+ * largest cell at which a 6x6 panel fits 328px.
+ *
+ * A 1x1 block at 41px is half the app's 80px touch-target minimum, which sounds worse
+ * than it is: the target is the piece, not the cell. Across the six 6-column levels there
+ * are 64 pieces and only three of them are a single cell; every other piece spans 2 or 3,
+ * so its long axis is 82px or 123px, both clear of the minimum. The mitigation is
+ * therefore the same as it has always been - keep 1x1 pieces out of the large boards -
+ * and it now applies to exactly three pieces, in reef-05, reef-07 and reef-08.
+ *
+ * The alternative was capping the grid at 5 columns on narrow screens. 6x6 starts at
+ * tier 3, so that would have taken six of the ten levels off phones entirely.
  */
-export const MIN_CELL = 56;
+export const MIN_CELL = 41;
 export const MAX_CELL = 96;
 
 /**
@@ -19,26 +32,52 @@ export const MAX_CELL = 96;
  */
 export const WALL_RATIO = 0.35;
 
+/**
+ * The panel's padding around the board, as a fraction of one cell. The exit beacon is
+ * drawn outside the wall, so the panel is wider than the board it contains.
+ *
+ * This is the panel's own `padding` in the view, and it must be part of the fit: the
+ * panel is what has to fit the play box, not the board. Leaving it out was worth about
+ * 1.2 cells of width, which is what made the widest board overhang a 360px phone even
+ * after the cell floor came down.
+ */
+export const PANEL_PAD_RATIO = 0.6;
+
 export interface BoardMetrics {
   cell: number;
   wall: number;
   /** Outer size, walls included. */
   boardW: number;
   boardH: number;
+  /** The panel's padding around the board, in px. */
+  pad: number;
+  /** The panel's outer size: what actually has to fit the space available. */
+  panelW: number;
+  panelH: number;
 }
 
 export function boardMetrics(board: Board, availW: number, availH: number): BoardMetrics {
-  // avail = n * cell + 2 * WALL_RATIO * cell, solved for cell.
-  const byWidth = availW / (board.cols + WALL_RATIO * 2);
-  const byHeight = availH / (board.rows + WALL_RATIO * 2);
+  // The panel is what has to fit, not the board: it adds PANEL_PAD_RATIO of a cell on
+  // every side for the exit beacon. So
+  //   avail = n * cell + 2 * WALL_RATIO * cell + 2 * PANEL_PAD_RATIO * cell
+  // solved for cell.
+  const perCell = WALL_RATIO * 2 + PANEL_PAD_RATIO * 2;
+  const byWidth = availW / (board.cols + perCell);
+  const byHeight = availH / (board.rows + perCell);
   const cell = Math.max(MIN_CELL, Math.min(MAX_CELL, Math.floor(Math.min(byWidth, byHeight))));
   const wall = Math.round(cell * WALL_RATIO);
+  const pad = Math.round(cell * PANEL_PAD_RATIO);
+  const boardW = board.cols * cell + wall * 2;
+  const boardH = board.rows * cell + wall * 2;
 
   return {
     cell,
     wall,
-    boardW: board.cols * cell + wall * 2,
-    boardH: board.rows * cell + wall * 2,
+    pad,
+    boardW,
+    boardH,
+    panelW: boardW + pad * 2,
+    panelH: boardH + pad * 2,
   };
 }
 
