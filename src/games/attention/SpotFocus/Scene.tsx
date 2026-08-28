@@ -33,11 +33,8 @@ const PLANK_INSET = 0.16;
  * screws and daisy sprigs, and a middle strip that tiles between them. Rendered at one
  * height they are the same wood at the same scale, and the join does not show.
  *
- * The 12rem in the min-height is GameShell's chrome: its header, its title bar and its
- * padding. `flex-1` alone is not enough, because the shell's column is `min-h-full` and
- * that resolves to nothing without a definite height on its own parent - so on the
- * completion screen, where the content is short, the backdrop stopped halfway down and
- * left grey shell showing beneath it. ClearTheWay carries the same constant as CHROME_H.
+ * The backdrop fills the play box, which now has a definite height of its own, so it no
+ * longer has to guess at the shell's chrome to know how tall to be.
  */
 export function Scene({ heading, instruction, children }: Props) {
   const capWidth = Math.round(PLANK_H * PLANK_CAP_RATIO);
@@ -45,7 +42,7 @@ export function Scene({ heading, instruction, children }: Props) {
   return (
     <div
       role="main"
-      className="flex min-h-[calc(100vh-12rem)] flex-1 flex-col items-center gap-3 bg-cover bg-center bg-no-repeat px-4 py-3"
+      className="flex h-full min-h-0 flex-col items-center gap-3 bg-cover bg-center bg-no-repeat px-4 py-3"
       style={{
         backgroundImage: `url(${BG_SCENE})`,
         backgroundColor: COLOURS.skyMid,

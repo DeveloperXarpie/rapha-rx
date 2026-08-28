@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useStageFit } from '../../../hooks/useStageFit';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../components/ui/Button';
 import { useGamePhase } from '../../../hooks/useGamePhase';
@@ -18,17 +19,13 @@ interface Props {
   generatedContent?: GeneratedScene;
 }
 
-/** Breathing room kept below the board, so it never sits flush to the viewport edge. */
-const BOARD_FOOTER = 24;
 /** Mirrors the gap-2 between cards and the p-2 inside a panel, in Tailwind's scale. */
 const GAP = 8;
 const PANEL_PADDING = 8;
-/** The ribbon label and its gap, which sit inside the measured box above the cards. */
-const RIBBON_H = 56;
 /** The gap between the two panels, matching gap-4. */
 const PANEL_GAP = 16;
-/** Never shrink past this, however short the window; scrolling beats unreadable. */
-const MIN_BOARD_WIDTH = 420;
+/** The ribbon label above each grid, which sits inside the measured box. */
+const RIBBON_H = 56;
 
 type Phase = 'scene_intro' | 'find_differences' | 'completion';
 
@@ -67,40 +64,30 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
   const gridRows = scene.originalRows.length;
   const gridCols = scene.originalRows[0]?.length ?? 1;
 
-  // ── Fit the board into whatever space is left below the chrome ──────────────
+  // ── Fit the two scenes into the play box ────────────────────────────────────
   //
-  // Cards are 3:4 and sized by width, so the board's height is decided by how wide we
-  // let the two panels get. Left to itself the grid overflows the viewport and a
-  // resident has to scroll to see the bottom row of a puzzle they are being asked to
-  // compare at a glance, which defeats the game.
-  const boardRef = useRef<HTMLDivElement>(null);
-  const [maxBoardWidth, setMaxBoardWidth] = useState(896);
+  // The panels stay side by side, which is not what the portrait spec assumed. Stacking
+  // was meant to buy bigger cards, and measured on a 360x640 phone it does the opposite:
+  // height is the scarce dimension here, not width. The play box is 578px and this
+  // game's own chrome - signboard 141, instruction 72, button slot 64 - takes 277 of it,
+  // leaving about 209px for the panels. Split that in two and a 3-row grid gets 19px
+  // cards; side by side, sharing the width instead, the same budget gives about 34px.
+  //
+  // Cards are 3:4 and sized by width, so the height left over is what caps how wide the
+  // board may be. The box comes from the play box now rather than from the viewport
+  // minus a guess at the chrome.
+  const [stageRef, box] = useStageFit();
 
-  useLayoutEffect(() => {
-    const measure = () => {
-      const el = boardRef.current;
-      if (!el) return;
-      // Height cannot come from the layout: the shell's column sizes to its content and
-      // that content is what we are measuring. Measuring against the viewport breaks the
-      // circularity, as the other boards do.
-      const top = el.getBoundingClientRect().top;
-      const available = window.innerHeight - top - BOARD_FOOTER - RIBBON_H;
-      const cardHeight = (available - GAP * (gridRows - 1) - PANEL_PADDING * 2) / gridRows;
-      const cardWidth = (cardHeight * 3) / 4;
-      const panel = cardWidth * gridCols + GAP * (gridCols - 1) + PANEL_PADDING * 2;
-      setMaxBoardWidth(Math.max(MIN_BOARD_WIDTH, Math.round(panel * 2 + PANEL_GAP)));
-    };
-    measure();
-    // Setting the width reflows the board, which can move its own top edge, so watch the
-    // element as well as the window rather than trusting a single pass.
-    const ro = new ResizeObserver(measure);
-    if (boardRef.current) ro.observe(boardRef.current);
-    window.addEventListener('resize', measure);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener('resize', measure);
-    };
-  }, [gridRows, gridCols]);
+  const boardWidth = useMemo(() => {
+    if (box.height <= 0 || box.width <= 0) return undefined;
+    const available = box.height - RIBBON_H;
+    const cardHeight = (available - GAP * (gridRows - 1) - PANEL_PADDING * 2) / gridRows;
+    const cardWidth = (cardHeight * 3) / 4;
+    const panel = cardWidth * gridCols + GAP * (gridCols - 1) + PANEL_PADDING * 2;
+    // Never wider than the box: on a tall screen the height budget alone would let the
+    // panels outgrow the width they actually have.
+    return Math.max(0, Math.round(Math.min(panel * 2 + PANEL_GAP, box.width)));
+  }, [box, gridRows, gridCols]);
 
   function handleTap(row: number, col: number) {
     const key = `${row}-${col}`;
@@ -164,7 +151,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
         The button and the pill share one slot of fixed height, so nothing on the board
         shifts when the round starts under a resident who is already looking at it.
       */}
-      <div className="flex h-16 items-center justify-center">
+      <div className="flex h-16 flex-none items-center justify-center">
         {playing ? (
           <p
             role="status"
@@ -186,10 +173,18 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
         )}
       </div>
 
+      {/*
+        `flex-1 min-h-0` is what makes this measurable: the stage's height comes from the
+        column above, never from the cards inside, so observing it cannot feed back into
+        the size it reports.
+      */}
       <div
-        ref={boardRef}
-        className="flex w-full gap-3 md:gap-4"
-        style={{ maxWidth: maxBoardWidth }}
+        ref={stageRef}
+        className="flex w-full min-h-0 flex-1 flex-col items-center"
+      >
+      <div
+        className="flex w-full min-h-0 flex-1 gap-3 md:gap-4"
+        style={{ maxWidth: boardWidth }}
       >
         <Grid
           rows={scene.originalRows}
@@ -206,6 +201,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
           found={found}
           onTap={handleTap}
         />
+      </div>
       </div>
     </Scene>
   );
