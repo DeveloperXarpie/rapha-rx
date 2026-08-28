@@ -12,9 +12,9 @@
 
 ## Execution status
 
-**Paused after Task 5**, on branch `feat/portrait-mode`, to deal with a pre-existing
-accessibility bug found during Task 5's verification (see below). **Resume at Task 6**
-(Orientation), which has not been started - tasks 1 to 5 are the only ones complete.
+**Complete**, on branch `feat/portrait-mode`. 349 tests pass, `npm run build` is clean,
+lint is unchanged at its 38-error baseline, and `npm run smoke:portrait` passes all 17
+checks. Three things did not go as this plan described; each is recorded below.
 
 | Task | Commit | Version | Outcome |
 |---|---|---|---|
@@ -23,8 +23,36 @@ accessibility bug found during Task 5's verification (see below). **Resume at Ta
 | 3. Stage hooks | `b0d80c2` | 1.13.3 | compiles; no consumer yet |
 | 4. Play-box contract | `65c3c2e` | 1.13.4 | play box has a real height: 442px at 360x640 |
 | 5. Chrome budget | `9bcd6e1` | 1.14.0 | play box 578px, a 31% gain against the 23% predicted |
+| 6. Orientation | `a718fc7` | 1.15.0 | gate fires on touch landscape, stays off desktop, copy in 3 languages |
+| 7. Train Yard | `3b5d8ca` | 1.15.1 | board 328px wide at 360x640, no observer loop |
+| 8. Garden Keeper, Market Memory | `889ee4d` | 1.15.2 | 48 lines of duplicated measurement deleted |
+| 9. Clear the Way | `ca94fdc` | 1.15.3 | `MIN_CELL` 56 to 41; panel padding folded into the fit |
+| 10. Non-game screens | `e9d3a76` | 1.15.4 | no `min-h-screen` remains anywhere in `src/` |
+| 11. Spot Focus | `f6f29c9` | 1.16.0 | measurement fixed; **stacking reverted**, see below |
+| - | `b93a63c` | 1.16.1 | board centring bug found by the smoke test |
+| 12. Smoke script | `fdb3f5c` | 1.16.2 | 17 checks, verified to fail when it should |
 
-347 tests pass, `tsc -b` clean, lint unchanged at 38 errors and 1 warning.
+### What the plan got wrong
+
+**Spot Focus should not be stacked (Task 11).** The spec reasoned that side-by-side gave
+41px cards and stacking would improve them. Measured on a 360x640 phone, stacking gives
+**19px** and side-by-side gives **31px**: height is the scarce dimension in this game, not
+width. The play box is 578px and the game's own chrome takes 277 of it - signboard 141,
+instruction 72, button slot 64 - leaving 209px for both panels. The stacking was reverted
+and only the measurement fix kept. The real constraint is that chrome, which is untouched
+and is the open follow-up.
+
+**Clear the Way's overflow was measured wrong (Task 9).** The spec's "376px against 360px"
+counted `boardW` and omitted the panel's beacon padding, worth about 1.2 cells. The real
+figure was **444px**, and the spec's recommended `MIN_CELL 52` overflows by 50px. Worse,
+the fit calculation and the rendered padding were two separate literals that had drifted:
+`geometry.ts` computed one thing and `index.tsx` hardcoded `metrics.cell * 0.6`. The
+padding is now a named ratio, part of the fit, and read by the view from the metrics.
+`MIN_CELL` went to 41, chosen against renders of all three options.
+
+**Predicted board widths were about 9% optimistic** throughout the plan and spec, because
+they used the play box's full width and forgot its own `p-4`. Usable width at 360px is
+**328px**, not 360.
 
 **Plan correction applied during execution.** Task 1's fixed-height root left Settings
 unreachable: it measures 1322px inside a 640px box, with `overflow: visible` and no
