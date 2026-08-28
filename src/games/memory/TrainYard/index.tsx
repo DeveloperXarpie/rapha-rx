@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { LevelResult } from '../../../components/GameShell';
 import type { LevelConfig } from '../../types';
 import { useImagesReady } from '../../../lib/useImagesReady';
+import { useStageScale } from '../../../hooks/useStageFit';
 
 import Blind from './Blind';
 import Station from './Station';
@@ -320,25 +321,9 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
 
   // ─── Presentation ───────────────────────────────────────────────────────────
 
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.5);
-
-  useEffect(() => {
-    function measure() {
-      const el = wrapRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      // Width comes from the layout; height cannot, because this sits inside a flex column
-      // that sizes to its content. Measuring against the viewport avoids that circularity.
-      const availH = Math.max(360, window.innerHeight - rect.top - 16);
-      setScale(Math.min(rect.width / CANVAS_W, availH / CANVAS_H));
-    }
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (wrapRef.current) ro.observe(wrapRef.current);
-    window.addEventListener('resize', measure);
-    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
-  }, []);
+  // The board is measured against the play box GameShell hands us, not against the
+  // viewport minus a guess at the chrome. See hooks/useStageFit.ts.
+  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H);
 
   const selectedColour = selected !== null ? palette[trains[selected].c] : null;
   const caption = (() => {
@@ -368,14 +353,20 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
   }
 
   return (
-    <div ref={wrapRef} style={{ width: '100%', height: CANVAS_H * scale, overflow: 'hidden' }}>
+    /*
+     * Two divs, and the split matters. The outer one is the stage: `w-full h-full`, so its
+     * size comes from the play box above and never from the board below. That is the
+     * element the observer watches. The inner one carries the scale. Observing the scaled
+     * element instead would close an observe-resize-observe loop.
+     */
+    <div ref={stageRef} className="w-full h-full overflow-hidden">
       <TrainYardStyles />
       <div
         style={{
           width: CANVAS_W,
           height: CANVAS_H,
           margin: '0 auto',
-          transform: `scale(${scale})`,
+          transform: `scale(${stage.scale})`,
           transformOrigin: 'top center',
           position: 'relative',
           fontFamily: "'Baloo 2', sans-serif",
