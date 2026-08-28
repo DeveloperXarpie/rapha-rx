@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useMatch } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
@@ -19,6 +19,17 @@ export default function AppShell() {
   const updateSetting = useAppStore((s) => s.updateSetting);
   const isOnline = useOnlineStatus();
 
+  /*
+   * Chrome is the largest single lever on board size at 360px wide, and none of what the
+   * app header offers is something a resident does mid-round: they are not switching
+   * language or opening settings while guests walk out. Both remain one tap away from
+   * Home, Rotation and Settings. Hiding the header returns 80px, and the offline banner
+   * another 48px - and offline is the normal case on care-home wifi, not an edge case.
+   *
+   * The component stays mounted either way, so the text-size effect below keeps running.
+   */
+  const inGame = useMatch('/app/game/:gameId') !== null;
+
   useEffect(() => {
     const html = document.documentElement;
     html.className = html.className.replace(/\btext-size-\w+\b/g, '').trim();
@@ -35,8 +46,11 @@ export default function AppShell() {
 
   return (
     <div className="app-root bg-app-bg flex flex-col">
-      {/* Top bar */}
-      <header className="bg-card-bg shadow-sm px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+      {/* Top bar. Absent on a game route, where the board needs the 80px more than the
+          resident needs a language switcher mid-round. `sticky` is gone with it: main
+          owns the scroll now, so the header never had anything to stick against. */}
+      {!inGame && (
+      <header className="bg-card-bg shadow-sm flex-none px-6 py-4 flex items-center justify-between">
         <h1 className="text-h2 font-bold text-primary-blue">{t('app.name')}</h1>
 
         <div className="flex items-center gap-3">
@@ -69,10 +83,12 @@ export default function AppShell() {
           </button>
         </div>
       </header>
+      )}
 
-      {/* Offline banner */}
-      {!isOnline && (
-        <div className="bg-accent-amber/20 border-b border-accent-amber px-6 py-3 text-center" role="status">
+      {/* Offline banner. Also hidden in a game: it carries no action, and it is visible
+          on Home before the round starts. */}
+      {!isOnline && !inGame && (
+        <div className="bg-accent-amber/20 border-b border-accent-amber flex-none px-6 py-3 text-center" role="status">
           <p className="text-body-md text-amber-800 font-medium">{t('offline.banner')}</p>
         </div>
       )}
@@ -88,7 +104,10 @@ export default function AppShell() {
         at 360px wide) simply paints below the fold with no way to reach it. Task 5 makes
         this conditional, so a game route gets `overflow-hidden` instead.
       */}
-      <main className="flex-1 min-h-0 overflow-y-auto flex flex-col" role="main">
+      <main
+        className={`flex-1 min-h-0 flex flex-col ${inGame ? 'overflow-hidden' : 'overflow-y-auto'}`}
+        role="main"
+      >
         <Outlet />
       </main>
     </div>

@@ -135,13 +135,18 @@ export default function GameShell({
   return (
     <div className="flex flex-col h-full">
       {/* Top bar */}
-      <div className="panel-surface px-6 py-4 flex items-center gap-4">
+      {/*
+        Target 56px rather than 80px. This is the only chrome on a game route now, so the
+        padding it spends comes straight out of the board.
+      */}
+      <div className="panel-surface flex-none px-4 py-2 flex items-center gap-3">
         <div className="flex-1">
           <h2 className="text-h2">
             <span className="game-title-banner game-title-banner-compact">{gameName}</span>
           </h2>
         </div>
-        <span className="shell-tag shell-tag-category">
+        {/* Dropped on narrow screens: the game's own title already says what this is. */}
+        <span className="shell-tag shell-tag-category hidden sm:inline-flex">
           {t(CATEGORY_LABEL_KEYS[gameCategory] ?? '')}
         </span>
         {/* Picture Postcard renders its own 1-100 ladder level; showing the 0-1
@@ -151,7 +156,12 @@ export default function GameShell({
         )}
         <button
           onClick={handleExit}
-          className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-hover-state transition-colors text-xl text-caption-text border border-gray-200 bg-white/70"
+          /*
+           * 44x44 rather than 48x48. Above the WCAG 2.5.5 minimum but deliberately below
+           * this app's own 80px touch-min token: exit ends a round, and it should not be
+           * easy to hit by accident. This exception applies to exit and nothing else.
+           */
+          className="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center hover:bg-hover-state transition-colors text-xl text-caption-text border border-gray-200 bg-white/70"
           aria-label={t('btn.exit')}
         >
           ✕
