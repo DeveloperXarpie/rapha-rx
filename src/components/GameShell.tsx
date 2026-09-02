@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSessionContext } from '../session/SessionManager';
 import { track } from '../lib/analytics';
-import { adjustDifficulty, scoreLevelLabel } from '../lib/dynamicDifficulty';
+import { adjustDifficulty, scoreLevelLabel, scoreToLevel } from '../lib/dynamicDifficulty';
+import { recordLastLevel } from '../lib/lastLevel';
 import { useAppStore } from '../store';
 import { Button } from './ui/Button';
 import type { LevelConfig } from '../games/types';
@@ -95,6 +96,19 @@ export default function GameShell({
         performanceRatio,
       });
       newDifficultyScore = updated.score;
+
+      /*
+       * Keep Home's "Last time: level n" in step with the difficulty system
+       * without reading through getTodayDifficulty, which writes on a cache
+       * miss and on a fresh day returns a warm-up-decayed score rather than
+       * the level actually reached.
+       *
+       * Fire and forget, like the analytics and Firestore writes around it: a
+       * failed write costs a level label, not a round. Picture Postcard is
+       * outside this branch for the same reason it is exempt above - its ladder
+       * runs 1-100 and scoreToLevel's 1-10 would be a different number.
+       */
+      void recordLastLevel(userId, gameId, scoreToLevel(updated.score));
     }
 
     const eventName = result.completed ? 'level_completed' : 'level_not_completed';
