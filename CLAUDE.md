@@ -13,7 +13,13 @@ npm run lint      # ESLint
 npm run preview   # preview the production build locally
 ```
 
-No test suite exists yet.
+`npm test` runs the vitest suite (`vitest run`). It uses the **node** environment
+with no DOM library, and only collects `src/**/__tests__/**/*.test.ts` - so pure
+modules are unit-tested and React components are not. Verify components by hand,
+or on the DEV-only chrome gallery at `/dev/chrome`.
+
+Tests live in their own TypeScript project (`tsconfig.test.json`) so they can use
+node built-ins; the app project keeps browser-only types.
 
 ## Architecture
 
@@ -90,13 +96,16 @@ Every commit — including bug fixes — must include a version bump in `package
 - **major** (x.0.0) — breaking changes, major architecture changes
 
 ### Pre-commit checklist
-1. **Lint** — `npm run lint` must pass with no errors.
-2. **Build** — `npm run build` must complete without TypeScript or Vite errors.
-3. **Manual smoke test on localhost** — run `npm run dev` and verify:
+1. **Lint** — `npm run lint` must not add errors. There is a standing backlog of
+   pre-existing errors, so the gate is "no new ones", not zero. Check the count
+   before and after your change.
+2. **Test** — `npm test` must pass.
+3. **Build** — `npm run build` must complete without TypeScript or Vite errors.
+4. **Manual smoke test on localhost** — run `npm run dev` and verify:
    - The affected game(s) or screen(s) work end-to-end.
    - Session resume still works (start a session, refresh the page, confirm the Resume button appears).
    - No console errors during normal gameplay.
-4. **Version bump** — update `"version"` in `package.json` before committing.
+5. **Version bump** — update `"version"` in `package.json` before committing.
 
 ### Deploying
 ```bash
