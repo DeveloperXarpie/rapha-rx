@@ -49,6 +49,38 @@
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+
+    /*
+     * The upright column the whole app lives in - chrome and game boards alike,
+     * so the frame never changes width when a round starts.
+     *
+     * The cap is an aspect, not a pixel count, because the app is built for
+     * phones and tablets held upright and has to scale across both. On any
+     * portrait viewport `100%` wins and this does nothing; it only binds on a
+     * desktop window, and on a 4:3 tablet, where an unconstrained 360x780
+     * design would stretch into a shape it was never drawn for.
+     *
+     * 64dvh is not arbitrary. Every board is height-bound through fitScale, and
+     * the widest board canvas is Train Yard's 800x1276 - a ratio of 0.627. The
+     * cap clears that, so a board still renders at `playBoxHeight * ratio` and
+     * the column never binds first. Widen it and the design stretches; narrow it
+     * and boards start shrinking. lib/__tests__/portraitColumn.test.ts holds the
+     * invariant, and must be changed with this number.
+     */
+    width: 100%;
+    max-width: min(100%, 64dvh);
+    margin-inline: auto;
+  }
+
+  /*
+   * Painted behind the column on any viewport too wide for it. Deep navy rather
+   * than the app background, so the column reads as the device surface.
+   */
+  .app-frame {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    background: #061031;
   }
 
   /*

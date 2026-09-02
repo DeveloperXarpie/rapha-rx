@@ -31,7 +31,8 @@ export default function AppShell() {
 
 
   return (
-    <div className="app-root bg-app-bg flex flex-col">
+    <div className="app-frame">
+      <div className="app-root bg-app-bg flex flex-col">
       {/* Offline banner. Also hidden in a game: it carries no action, and it is visible
           on Home before the round starts. */}
       {!isOnline && !fullBleed && (
@@ -61,6 +62,7 @@ export default function AppShell() {
       {/* A cover, not a replacement: the app above stays mounted and keeps its state, so
           tilting a tablet mid-round does not cost the resident the round. */}
       <RotateDevice />
+      </div>
     </div>
   );
 }

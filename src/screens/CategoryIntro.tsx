@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
-import PortraitFrame from '../components/chrome/PortraitFrame';
 import CategoryBadge from '../components/chrome/CategoryBadge';
 import ProgressBar from '../components/chrome/ProgressBar';
 import { CATEGORY_BRAND } from '../styles/tokens';
@@ -84,7 +83,10 @@ export default function CategoryIntro() {
   const brand = CATEGORY_BRAND[cat];
 
   return (
-    <PortraitFrame style={{ background: brand.gradient, alignItems: 'center' }}>
+    <div
+      className="flex-1 min-h-0 flex flex-col items-center"
+      style={{ background: brand.gradient, position: 'relative', overflowX: 'hidden' }}
+    >
       <img
         src="/brand/logo-navy.png"
         alt=""
@@ -150,6 +152,6 @@ export default function CategoryIntro() {
           {t('intro.starting', 'STARTING...')}
         </p>
       </div>
-    </PortraitFrame>
+    </div>
   );
 }
