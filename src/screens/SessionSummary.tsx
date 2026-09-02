@@ -3,39 +3,49 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
-import { getTodayDifficulty, scoreToLevel } from '../lib/dynamicDifficulty';
+import { getLastLevels } from '../lib/lastLevel';
+import { getGame } from '../lib/gameCatalog';
+import { CATEGORY_ORDER } from '../lib/sessionPlan';
+import ScreenBlue from '../components/chrome/ScreenBlue';
+import CategoryBadge from '../components/chrome/CategoryBadge';
+import { staggerDelay } from '../components/chrome/transitions';
+import { useReducedMotion } from '../lib/useReducedMotion';
 import { Button } from '../components/ui/Button';
+import { BRAND } from '../styles/tokens';
+import type { GameCategory } from '../styles/tokens';
 
-const CATEGORY_INFO: Record<string, { icon: string; labelKey: string; gameId: string }> = {
-  memory:    { icon: '🧠', labelKey: 'game.category.memory',    gameId: 'remember-match' },
-  attention: { icon: '🎯', labelKey: 'game.category.attention',  gameId: 'spot-focus' },
-  executive: { icon: '🗂️', labelKey: 'game.category.executive', gameId: 'morning-routine-quest' },
+const CATEGORY_LABEL_KEY: Record<GameCategory, string> = {
+  memory:    'category.memory',
+  attention: 'category.attention',
+  executive: 'category.planning',
+};
+const CATEGORY_FALLBACK: Record<GameCategory, string> = {
+  memory: 'Memory', attention: 'Attention', executive: 'Planning',
 };
 
 export default function SessionSummary() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const reduced = useReducedMotion();
   const profile  = useAppStore((s) => s.activeProfile);
   const session  = useAppStore((s) => s.currentSession);
   const firedRef = useRef(false);
 
   const firstName = profile?.nickname ?? profile?.firstName ?? '';
+  const planned = session.plannedGames ?? [];
 
-  // Fetch difficulty levels for each category
-  const [difficultyLevels, setDifficultyLevels] = useState<Record<string, number>>({});
+  /*
+   * Levels for the games actually played. This screen used to hold a hardcoded
+   * representative gameId per category - remember-match, spot-focus,
+   * morning-routine-quest - and so reported levels for games the resident had
+   * not touched.
+   */
+  const [levels, setLevels] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    if (!profile) return;
-    async function fetchLevels() {
-      const levels: Record<string, number> = {};
-      for (const [cat, info] of Object.entries(CATEGORY_INFO)) {
-        const state = await getTodayDifficulty(profile!.userId, info.gameId);
-        levels[cat] = scoreToLevel(state.peakScore || state.score);
-      }
-      setDifficultyLevels(levels);
-    }
-    fetchLevels();
-  }, [profile]);
+    if (!profile || planned.length === 0) return;
+    getLastLevels(profile.userId, planned).then(setLevels);
+  }, [profile, planned.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (firedRef.current) return;
@@ -50,49 +60,88 @@ export default function SessionSummary() {
   }, [session]);
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-xl mx-auto w-full text-center">
-      <div className="text-8xl mb-6">🎉</div>
-      <h2 className="text-h1 font-bold text-body-text mb-3">
-        {t('summary.title', { name: firstName })}
-      </h2>
-      <p className="text-h3 text-caption-text mb-10">{t('summary.completed')}</p>
+    <ScreenBlue>
+      <div
+        style={{
+          position: 'relative', flex: 1, minHeight: 0, display: 'flex',
+          flexDirection: 'column', alignItems: 'center', padding: '24px 20px 0',
+          textAlign: 'center',
+        }}
+      >
+        <img src="/brand/logo-navy.png" alt="" aria-hidden="true" style={{ width: 140 }} />
 
-      {/* Categories completed with difficulty levels */}
-      <div className="w-full mb-10">
-        <p className="text-body-md font-semibold text-caption-text mb-5">{t('summary.categories.title')}</p>
-        <div className="flex flex-col gap-4">
-          {['memory', 'attention', 'executive'].map((cat) => {
-            const info = CATEGORY_INFO[cat];
-            const done = session.categoriesCompleted.includes(cat);
-            const level = difficultyLevels[cat];
+        <h1
+          className="font-baloo"
+          style={{ marginTop: 16, fontSize: 28, fontWeight: 700, color: '#FFFFFF' }}
+        >
+          {t('summary.title', 'Well done, {{name}}', { name: firstName })}
+        </h1>
+        <p
+          className="font-baloo"
+          style={{ marginTop: 6, fontSize: 18, fontWeight: 600, color: BRAND.cyan }}
+        >
+          {t('summary.subtitle', "You finished today's three games.")}
+        </p>
+
+        <div
+          style={{
+            width: '100%', display: 'flex', flexDirection: 'column',
+            gap: 12, marginTop: 24,
+          }}
+        >
+          {planned.map((gameId, i) => {
+            const game = getGame(gameId);
+            const category = game?.category ?? CATEGORY_ORDER[i];
+            const level = levels[gameId];
             return (
               <div
-                key={cat}
-                className={`flex items-center gap-5 rounded-2xl px-6 py-5 ${
-                  done ? 'bg-green-50 border-2 border-emerald-green' : 'bg-gray-50 border-2 border-gray-200'
-                }`}
+                key={gameId}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  background: BRAND.surfaceStrong, borderRadius: 18, padding: '12px 16px',
+                  textAlign: 'left',
+                  // Rows rise and fade in 60 ms apart, per the handoff.
+                  animation: reduced
+                    ? undefined
+                    : `summary-row-in 320ms ease ${staggerDelay(i)}ms both`,
+                }}
               >
-                <span className="text-4xl">{info.icon}</span>
-                <div className="flex-1 text-left">
-                  <p className="text-h3 font-semibold text-body-text">{t(info.labelKey)}</p>
-                  {level !== undefined && done && (
-                    <p className="text-body-md text-accent-purple font-semibold mt-1">
-                      🌟 {t('summary.levelReached', `You reached Level ${level}!`, { level })}
+                <CategoryBadge category={category} size={52} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    className="font-baloo"
+                    style={{ fontSize: 18, fontWeight: 700, color: BRAND.cyanBright }}
+                  >
+                    {t(CATEGORY_LABEL_KEY[category], CATEGORY_FALLBACK[category])}
+                  </p>
+                  {level !== undefined && (
+                    <p
+                      className="font-baloo"
+                      style={{ fontSize: 15, fontWeight: 600, color: BRAND.lime }}
+                    >
+                      {t('summary.levelReached', 'Level {{level}} reached', { level })}
                     </p>
                   )}
                 </div>
-                {done && <span className="text-emerald-green text-3xl">✓</span>}
+                <span aria-hidden="true" style={{ fontSize: 22, color: BRAND.lime }}>&#10003;</span>
               </div>
             );
           })}
         </div>
+
+        <p
+          className="font-baloo"
+          style={{ marginTop: 26, fontSize: 20, fontWeight: 700, color: '#FFFFFF' }}
+        >
+          {t('summary.seeYouTomorrow', 'See you tomorrow!')}
+        </p>
       </div>
 
-      <p className="text-h2 font-semibold text-accent-purple mb-10">{t('summary.seeYou')}</p>
-
-      <Button fullWidth onClick={() => navigate('/app/home')}>
-        {t('btn.backHome')}
-      </Button>
-    </div>
+      <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', margin: 'auto 0 40px' }}>
+        <Button variant="green" onClick={() => navigate('/app/home')} style={{ minWidth: 262 }}>
+          {t('btn.backHome', 'Back to Home')}
+        </Button>
+      </div>
+    </ScreenBlue>
   );
 }

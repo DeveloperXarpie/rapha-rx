@@ -34,7 +34,12 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
   executive: 'game.category.executive',
 };
 
-const ROTATION_THRESHOLD_SECONDS = 2 * 60; // 2 min per category
+/**
+ * How long a category runs before rotating. A level completed before this
+ * starts another round of the same game; Home derives its session-length copy
+ * from it, so the two can never drift.
+ */
+export const ROTATION_THRESHOLD_SECONDS = 2 * 60; // 2 min per category
 
 export default function GameShell({
   gameId,
@@ -47,7 +52,7 @@ export default function GameShell({
 }: GameShellProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { secondsInCurrentCategory, triggerRotation } = useSessionContext();
+  const { secondsInCurrentCategory, triggerRotation, sessionComplete } = useSessionContext();
   const profile = useAppStore((s) => s.activeProfile);
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -143,7 +148,9 @@ export default function GameShell({
       levelId: levelConfig.id,
       timeInSessionSeconds: secondsInCurrentCategory,
     });
-    navigate('/app/home');
+    // A round played after the day's session is free play, so leaving it goes
+    // back to the library rather than Home.
+    navigate(sessionComplete ? '/app/free-play' : '/app/home');
   }
 
   return (

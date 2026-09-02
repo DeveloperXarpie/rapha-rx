@@ -9,6 +9,7 @@ import GameRouter from './screens/GameRouter';
 import CategoryIntro from './screens/CategoryIntro';
 import GameTitleScreen from './screens/GameTitleScreen';
 import SessionSummary from './screens/SessionSummary';
+import FreePlayScreen from './screens/FreePlayScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import RequireProfile from './components/RequireProfile';
 import SessionManager from './session/SessionManager';
@@ -34,6 +35,7 @@ export default function App() {
               <Route path="/app/intro/:category"     element={<CategoryIntro />} />
               <Route path="/app/game/:gameId/title"  element={<GameTitleScreen />} />
               <Route path="/app/game/:gameId"        element={<GameRouter />} />
+              <Route path="/app/free-play"           element={<FreePlayScreen />} />
               <Route path="/app/summary"             element={<SessionSummary />} />
               <Route path="/app/settings"            element={<SettingsScreen />} />
 

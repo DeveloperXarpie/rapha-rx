@@ -2,103 +2,66 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
-import { getLastCompletedSession } from '../lib/db';
 import { checkForResumableSession } from '../lib/resumeSession';
-import { track } from '../lib/analytics';
+import { getLastLevels } from '../lib/lastLevel';
+import { getGame, marqueeGames, tileArt } from '../lib/gameCatalog';
+import { ROTATION_THRESHOLD_SECONDS } from '../components/GameShell';
+import ScreenBlue from '../components/chrome/ScreenBlue';
+import GameRow from '../components/chrome/GameRow';
+import ScreenTransition from '../components/chrome/ScreenTransition';
 import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import type { SessionState } from '../lib/db';
-import type { GameCategory } from '../styles/tokens';
+import { BRAND } from '../styles/tokens';
 import { version } from '../../package.json';
-
-const CATEGORY_ICONS: Record<string, string> = {
-  memory:    '🧠',
-  attention: '🎯',
-  executive: '🗂️',
-};
-
-const CATEGORY_LABEL_KEYS: Record<string, string> = {
-  memory:    'game.category.memory',
-  attention: 'game.category.attention',
-  executive: 'game.category.executive',
-};
-
-const GAME_BY_CATEGORY: Record<GameCategory, { id: string; nameKey: string; icon: string; imageSrc: string }[]> = {
-  memory: [
-    { id: 'remember-match',       nameKey: 'game.rememberMatch',      icon: '🃏', imageSrc: '/placeholders/games/remember-match.svg' },
-    { id: 'shopping-list-recall', nameKey: 'game.shoppingListRecall', icon: '🛒', imageSrc: '/placeholders/games/shopping-list-recall.svg' },
-    { id: 'sequence-repeat',      nameKey: 'game.sequenceRepeat',     icon: '🎨', imageSrc: '/placeholders/games/sequence-repeat.svg' },
-    { id: 'picture-postcard',     nameKey: 'game.picturePostcard',    icon: '📮', imageSrc: '/placeholders/games/picture-postcard.svg' },
-    { id: 'train-yard',           nameKey: 'game.trainYard',          icon: '🚂', imageSrc: '/placeholders/games/train-yard.svg' },
-    { id: 'market-memory',        nameKey: 'game.marketMemory',       icon: '🧺', imageSrc: '/placeholders/games/market-memory.svg' },
-  ],
-  attention: [
-    { id: 'spot-focus',    nameKey: 'game.spotFocus',    icon: '👁️', imageSrc: '/placeholders/games/spot-focus.svg' },
-    { id: 'word-search',   nameKey: 'game.wordSearch',   icon: '🔤', imageSrc: '/placeholders/games/word-search.svg' },
-    { id: 'focus-filter',  nameKey: 'game.focusFilter',  icon: '🔎', imageSrc: '/placeholders/games/focus-filter.svg' },
-    { id: 'garden-keeper', nameKey: 'game.gardenKeeper', icon: '🌻', imageSrc: '/placeholders/games/garden-keeper.svg' },
-  ],
-  executive: [
-    { id: 'morning-routine-quest', nameKey: 'game.morningRoutine', icon: '☀️', imageSrc: '/placeholders/games/morning-routine-quest.svg' },
-    { id: 'recipe-builder',        nameKey: 'game.recipeBuilder',  icon: '🍲', imageSrc: '/placeholders/games/recipe-builder.svg' },
-    { id: 'garden-sequencer',      nameKey: 'game.gardenSequencer', icon: '🌱', imageSrc: '/placeholders/games/garden-sequencer.svg' },
-    { id: 'serve-guests',          nameKey: 'game.serveGuests',    icon: '🍽️', imageSrc: '/placeholders/games/serve-guests.svg' },
-    { id: 'clear-the-way',         nameKey: 'game.clearTheWay',    icon: '🐠', imageSrc: '/placeholders/games/clear-the-way.svg' },
-  ],
-};
 
 // Taps on the version label needed to reveal the session shortcuts in a
 // production build. Deliberately more than a resident would ever land on.
 const DEV_UNLOCK_TAPS = 5;
 
-function formatSessionDate(dateStr: string): string {
-  const sessionDate = new Date(dateStr + 'T00:00:00');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  if (sessionDate.getTime() === yesterday.getTime()) {
-    return 'Yesterday';
-  }
-  return sessionDate.toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
-}
-
-function formatDuration(startedAt: number | null): string {
-  if (!startedAt) return '';
-  // Estimate ~30 min sessions since we don't store end time
-  return '~30 min';
-}
+const CATEGORY_COUNT = 3;
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const profile    = useAppStore((s) => s.activeProfile);
-  const session    = useAppStore((s) => s.currentSession);
-  const startSession = useAppStore((s) => s.startSession);
+  const profile          = useAppStore((s) => s.activeProfile);
+  const session          = useAppStore((s) => s.currentSession);
+  const startSession     = useAppStore((s) => s.startSession);
   const devCompleteToday = useAppStore((s) => s.devCompleteToday);
-  const devResetToday = useAppStore((s) => s.devResetToday);
+  const devResetToday    = useAppStore((s) => s.devResetToday);
 
-  const [previousSession, setPreviousSession] = useState<SessionState | null>(null);
   const [isResumable, setIsResumable] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [lastLevels, setLastLevels] = useState<Record<string, number>>({});
   const [refreshKey, setRefreshKey] = useState(0);
   const [versionTaps, setVersionTaps] = useState(0);
 
   const firstName = profile?.nickname ?? profile?.firstName ?? '';
 
-  // Check for previous completed sessions and any resumable in-progress session
+  const todayISO = new Date().toISOString().split('T')[0];
+  const allDone = ['memory', 'attention', 'executive']
+    .every((c) => session.categoriesCompleted.includes(c));
+  const todayDone = session.date === todayISO && allDone;
+
+  /*
+   * Home has to show the three games before the session starts, so it starts
+   * the session on arrival rather than previewing a trio it might contradict.
+   * startSession is idempotent for today - it returns early once sessionStarted
+   * is set - so this neither re-rolls the trio nor wipes progress on a revisit.
+   */
   useEffect(() => {
-    if (!profile) { setLoading(false); return; }
-    Promise.all([
-      getLastCompletedSession(profile.userId),
-      checkForResumableSession(profile.userId),
-    ]).then(([last, resumable]) => {
-      setPreviousSession(last ?? null);
-      setIsResumable(!!resumable);
-      setLoading(false);
-    });
+    if (!profile) return;
+    if (session.date !== todayISO || !session.sessionStarted) startSession();
+  }, [profile, session.date, session.sessionStarted, todayISO, startSession]);
+
+  useEffect(() => {
+    if (!profile) return;
+    checkForResumableSession(profile.userId).then((r) => setIsResumable(!!r));
   }, [profile, refreshKey]);
+
+  const planned = session.plannedGames ?? [];
+
+  useEffect(() => {
+    if (!profile || planned.length === 0) return;
+    getLastLevels(profile.userId, planned).then(setLastLevels);
+  }, [profile, planned.join(','), refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleStartSession() {
     startSession();
@@ -108,25 +71,15 @@ export default function HomeScreen() {
   function handleResumeSession() {
     // Back into the intro for whichever category was in play. The old rotation
     // screen this used to target is gone.
-    const cat = useAppStore.getState().currentSession.currentCategory ?? 'memory';
-    navigate(`/app/intro/${cat}`);
+    navigate(`/app/intro/${session.currentCategory ?? 'memory'}`);
   }
 
-  // Re-runs the previous/resumable lookup once the Dexie write lands, so the
-  // screen reflects the new session state without a manual refresh.
+  // Re-runs the lookups once the Dexie write lands, so the screen reflects the
+  // new session state without a manual refresh.
   async function handleDevAction(action: () => Promise<void>) {
     await action();
     setRefreshKey((k) => k + 1);
   }
-
-  function handlePracticeGame(gameId: string) {
-    track('practice_game_started', { gameId });
-    navigate(`/app/game/${gameId}`);
-  }
-
-  const allCategories = ['memory', 'attention', 'executive'];
-  const allDone = allCategories.every((c) => session.categoriesCompleted.includes(c));
-  const todayDone = session.date === new Date().toISOString().split('T')[0] && allDone;
 
   function getGreeting(): string {
     const hour = new Date().getHours();
@@ -135,179 +88,155 @@ export default function HomeScreen() {
     return t('greeting.evening', 'Good Evening');
   }
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <p className="text-h3 text-caption-text">Loading...</p>
-      </div>
-    );
-  }
+  /*
+   * Derived, not the handoff's hardcoded "30 minutes". A category rotates after
+   * ROTATION_THRESHOLD_SECONDS, so three of them is the real session length -
+   * currently six minutes. If the therapeutic dose changes, this follows it.
+   */
+  const minutes = Math.round((ROTATION_THRESHOLD_SECONDS * CATEGORY_COUNT) / 60);
+
+  // The marquee games not chosen for today. Not locked - just not today's -
+  // which is why the strip says ANOTHER DAY rather than the handoff's
+  // UNLOCKS LATER.
+  const anotherDay = marqueeGames().filter((g) => !planned.includes(g.id));
 
   return (
-    <div className="flex-1 flex flex-col p-8 max-w-2xl mx-auto w-full">
-      {/* Greeting */}
-      <div className="mb-8">
-        <h2 className="text-h1 font-bold text-body-text mb-2">
-          {getGreeting()}, {firstName}!
-        </h2>
-        <p className="text-h3 text-caption-text">{t('home.subtitle', "Let's train your brain today!")}</p>
-      </div>
+    <ScreenBlue>
+      <ScreenTransition name="homeToIntro">
+        {/* Header */}
+        <div
+          style={{
+            position: 'relative', display: 'flex', alignItems: 'flex-start',
+            justifyContent: 'space-between', padding: '16px 20px 0',
+          }}
+        >
+          <img src="/brand/logo-navy.png" alt={t('app.name')} style={{ width: 118 }} />
+          <button
+            onClick={() => navigate('/app/settings')}
+            aria-label={t('nav.settings')}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              color: '#FFFFFF', minHeight: 44, minWidth: 44,
+            }}
+          >
+            <span style={{ fontSize: 26, lineHeight: 1 }} aria-hidden="true">&#9881;</span>
+            <span
+              className="font-baloo"
+              style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em' }}
+            >
+              {t('nav.settings', 'SETTINGS').toUpperCase()}
+            </span>
+          </button>
+        </div>
 
-      {/* Previous Session Summary — only for returning users */}
-      {previousSession && !todayDone && (
-        <Card className="mb-8 bg-gradient-to-br from-blue-50 to-purple-50 border border-primary-blue/20">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-3xl">📊</span>
-            <div>
-              <p className="text-h3 font-bold text-body-text">
-                {t('home.previousSession.title', 'Your Last Session')}
-              </p>
-              <p className="text-body-md text-caption-text">
-                {formatSessionDate(previousSession.date)} • {formatDuration(previousSession.sessionStartedAt)}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-3 flex-wrap mb-4">
-            {allCategories.map((cat) => {
-              const done = previousSession.categoriesCompleted.includes(cat);
-              return (
-                <div
-                  key={cat}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-3 ${
-                    done ? 'bg-green-50 border border-emerald-green/30' : 'bg-gray-50 border border-gray-200'
-                  }`}
-                >
-                  <span className="text-xl">{CATEGORY_ICONS[cat]}</span>
-                  <span className={`text-body-md font-semibold ${done ? 'text-emerald-green' : 'text-caption-text'}`}>
-                    {t(CATEGORY_LABEL_KEYS[cat])}
-                  </span>
-                  {done && <span className="text-emerald-green">✓</span>}
-                </div>
-              );
-            })}
-          </div>
-          {previousSession.categoriesCompleted.length >= 3 && (
-            <p className="text-body-md text-accent-purple font-semibold">
-              🌟 {t('home.previousSession.allDone', 'Great work! You trained all 3 areas.')}
+        {/* Greeting */}
+        <div style={{ position: 'relative', padding: '12px 20px 0' }}>
+          <p className="font-baloo" style={{ fontSize: 22, fontWeight: 700, color: '#FFFFFF' }}>
+            {getGreeting()}{firstName ? `, ${firstName}` : ''}
+          </p>
+          <p className="font-baloo" style={{ fontSize: 17, fontWeight: 600, color: BRAND.cyan }}>
+            {todayDone
+              ? t('home.sessionComplete', "Today's workout is complete.")
+              : t('home.duration', "Today's Workout takes {{minutes}} minutes.", { minutes })}
+          </p>
+        </div>
+
+        {/* Today's three games */}
+        <div
+          style={{
+            position: 'relative', display: 'flex', flexDirection: 'column',
+            gap: 14, padding: '0 20px', marginTop: 22,
+          }}
+        >
+          {planned.map((id) => {
+            const game = getGame(id);
+            if (!game) return null;
+            return <GameRow key={id} game={game} lastLevel={lastLevels[id] ?? null} />;
+          })}
+        </div>
+
+        {/* The other three marquee games */}
+        {anotherDay.length > 0 && (
+          <div
+            style={{
+              position: 'relative', margin: '14px 20px 0', paddingTop: 14,
+              borderTop: '1px solid rgba(255,255,255,0.16)',
+            }}
+          >
+            <p
+              className="font-baloo"
+              style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: BRAND.muted }}
+            >
+              {t('home.anotherDay', 'ANOTHER DAY')}
             </p>
-          )}
-        </Card>
-      )}
-
-      {/* Today's progress (if session in progress but not finished) */}
-      {session.date === new Date().toISOString().split('T')[0] && session.categoriesCompleted.length > 0 && !todayDone && (
-        <Card className="mb-8">
-          <p className="text-h3 font-semibold text-body-text mb-4">
-            {t('home.progress', "Today's progress:")}
-          </p>
-          <div className="flex gap-4 flex-wrap">
-            {session.categoriesCompleted.map((cat) => (
-              <div key={cat} className="flex items-center gap-2 bg-green-50 rounded-xl px-4 py-3">
-                <span className="text-2xl">{CATEGORY_ICONS[cat]}</span>
-                <span className="text-body-md font-semibold text-emerald-green">
-                  {t(CATEGORY_LABEL_KEYS[cat])}
-                </span>
-                <span className="text-emerald-green">✓</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Main CTA */}
-      {todayDone ? (
-        <Card className="text-center py-12 mb-8">
-          <p className="text-5xl mb-4">🎉</p>
-          <p className="text-h2 font-bold text-body-text mb-2">{t('home.sessionComplete', "Today's session is complete!")}</p>
-          <p className="text-h3 text-caption-text">{t('home.practiceBelow', 'You can practise any game below.')}</p>
-        </Card>
-      ) : isResumable ? (
-        <Button fullWidth size="lg" onClick={handleResumeSession} className="text-h2 mb-8">
-          {t('btn.resumeSession', 'Resume Session')}
-        </Button>
-      ) : (
-        <Button fullWidth size="lg" onClick={handleStartSession} className="text-h2 mb-8">
-          {t('btn.startSession', 'Start Session')}
-        </Button>
-      )}
-
-      {/* Practice Mode — only visible after completing today's session */}
-      {todayDone && (
-        <div className="mb-8">
-          <h3 className="text-h2 font-bold text-body-text mb-6">
-            {t('home.practiceMode', '🎮 Practice Mode')}
-          </h3>
-          <p className="text-body-md text-caption-text mb-6">
-            {t('home.practiceDesc', 'Choose any game to practise and sharpen your skills.')}
-          </p>
-          {(Object.entries(GAME_BY_CATEGORY) as [GameCategory, typeof GAME_BY_CATEGORY[GameCategory]][]).map(([category, games]) => (
-            <div key={category} className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">{CATEGORY_ICONS[category]}</span>
-                <p className="text-h3 font-semibold text-body-text">{t(CATEGORY_LABEL_KEYS[category])}</p>
-              </div>
-              <div className="grid grid-cols-1 gap-3">
-                {games.map((game) => (
-                  <button
-                    key={game.id}
-                    onClick={() => handlePracticeGame(game.id)}
-                    className="w-full min-h-[80px] bg-card-bg rounded-2xl px-6 py-4 flex items-center gap-4
-                               border-2 border-transparent hover:border-primary-blue hover:bg-hover-state
-                               active:scale-[0.98] transition-all duration-150 shadow-sm text-left"
-                  >
-                    <div className="w-14 h-14 rounded-xl bg-hover-state border border-black/10 shrink-0 flex items-center justify-center">
-                      <span className="text-3xl">{game.icon}</span>
-                    </div>
-                    <span className="text-h3 font-semibold text-body-text">
-                      {t(game.nameKey, game.id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '))}
-                    </span>
-                    <span className="ml-auto text-2xl text-caption-text">›</span>
-                  </button>
-                ))}
-              </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+              {anotherDay.map((g) => (
+                <img
+                  key={g.id}
+                  src={tileArt(g)}
+                  alt=""
+                  aria-hidden="true"
+                  width={40}
+                  height={40}
+                  style={{
+                    width: 40, height: 40, borderRadius: 10,
+                    filter: 'grayscale(0.9)', opacity: 0.5,
+                  }}
+                />
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* Settings link + version */}
-      <div className="mt-auto pt-4 flex items-center justify-center gap-4">
-        <button
-          onClick={() => navigate('/app/settings')}
-          className="text-body-md text-caption-text underline"
-        >
-          {t('nav.settings', 'Settings')}
-        </button>
-        <button
-          onClick={() => setVersionTaps((n) => n + 1)}
-          aria-label={`Version ${version}`}
-          className="text-small text-caption-text opacity-50"
-        >
-          v{version}
-        </button>
-      </div>
+        {/* Primary action */}
+        <div style={{ position: 'relative', margin: 'auto 20px 30px' }}>
+          {todayDone ? (
+            <Button variant="green" fullWidth onClick={() => navigate('/app/free-play')}>
+              {t('home.freePlay', 'Free Play')}
+            </Button>
+          ) : isResumable ? (
+            <Button variant="green" fullWidth onClick={handleResumeSession}>
+              {t('btn.continue', 'Continue')}
+            </Button>
+          ) : (
+            <Button variant="green" fullWidth onClick={handleStartSession}>
+              {t('btn.startSession', 'Start Session')}
+            </Button>
+          )}
 
-      {/* Session shortcuts. In production they stay hidden until the version
-          label is tapped DEV_UNLOCK_TAPS times, so a resident cannot reach them
-          by accident; the unlock lasts only as long as the screen is mounted. */}
-      {(import.meta.env.DEV || versionTaps >= DEV_UNLOCK_TAPS) && (
-        <div className="pt-3 flex items-center justify-center gap-3">
           <button
-            onClick={() => handleDevAction(devCompleteToday)}
-            className="font-mono text-small text-amber-700 border border-dashed border-amber-400
-                       rounded px-3 py-1 hover:bg-amber-50"
+            onClick={() => setVersionTaps((n) => n + 1)}
+            style={{
+              display: 'block', margin: '10px auto 0', fontSize: 10,
+              color: 'rgba(255,255,255,0.45)',
+            }}
           >
-            dev: complete today
+            v{version}
           </button>
-          <button
-            onClick={() => handleDevAction(devResetToday)}
-            className="font-mono text-small text-amber-700 border border-dashed border-amber-400
-                       rounded px-3 py-1 hover:bg-amber-50"
-          >
-            dev: reset today
-          </button>
+
+          {/* Session shortcuts. Shown outright in dev; in production they stay
+              hidden until the version label is tapped DEV_UNLOCK_TAPS times, so
+              a resident cannot reach them by accident. */}
+          {(import.meta.env.DEV || versionTaps >= DEV_UNLOCK_TAPS) && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 12, paddingTop: 10 }}>
+              <button
+                onClick={() => handleDevAction(devCompleteToday)}
+                className="font-mono"
+                style={{ fontSize: 12, color: '#FFE9A8', border: '1px dashed #FFE9A8', borderRadius: 4, padding: '4px 10px' }}
+              >
+                dev: complete today
+              </button>
+              <button
+                onClick={() => handleDevAction(devResetToday)}
+                className="font-mono"
+                style={{ fontSize: 12, color: '#FFE9A8', border: '1px dashed #FFE9A8', borderRadius: 4, padding: '4px 10px' }}
+              >
+                dev: reset today
+              </button>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </ScreenTransition>
+    </ScreenBlue>
   );
 }
