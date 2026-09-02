@@ -1,24 +1,36 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
-import { track } from '../lib/analytics';
+import { track, setUserProperties } from '../lib/analytics';
+import { upsertUserProfile } from '../lib/db';
+import { prescriberName } from '../lib/prescribers';
+import ScreenBlue from '../components/chrome/ScreenBlue';
+import PrescriberPicker from '../components/chrome/PrescriberPicker';
 import { Toggle } from '../components/ui/Toggle';
+import { Button } from '../components/ui/Button';
+import { BRAND } from '../styles/tokens';
 import pkg from '../../package.json';
 import type { Language, TextSize } from '../styles/tokens';
 
-const CARE_HOME_NAMES: Record<string, string> = {
-  'asha-indiranagar':     'Asha Care Home, Indiranagar',
-  'vatsalya-koramangala': 'Vatsalya Senior Living, Koramangala',
-  'prayag-jayanagar':     'Prayag Care Centre, Jayanagar',
+const CARD: React.CSSProperties = {
+  position: 'relative',
+  background: BRAND.surface,
+  borderRadius: 20,
+  padding: 16,
+  marginBottom: 14,
 };
 
 export default function SettingsScreen() {
-  const { t, i18n } = useTranslation();
-  const navigate    = useNavigate();
-  const profile     = useAppStore((s) => s.activeProfile);
-  const settings    = useAppStore((s) => s.settings);
+  const { t, i18n }   = useTranslation();
+  const navigate      = useNavigate();
+  const profile       = useAppStore((s) => s.activeProfile);
+  const settings      = useAppStore((s) => s.settings);
   const updateSetting = useAppStore((s) => s.updateSetting);
   const clearProfile  = useAppStore((s) => s.clearProfile);
+  const setActiveProfile = useAppStore((s) => s.setActiveProfile);
+
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   function changeSetting<K extends keyof typeof settings>(key: K, value: (typeof settings)[K]) {
     updateSetting(key, value);
@@ -34,6 +46,22 @@ export default function SettingsScreen() {
     }
   }
 
+  /*
+   * Changing the prescriber changes the stored careHomeId, which re-buckets the
+   * resident's Amplitude cohort and moves them between getProfilesByCareHome
+   * result sets. That is accepted, but it must not be silent - hence the
+   * explicit event carrying both ends of the move.
+   */
+  async function changePrescriber(id: string) {
+    if (!profile || id === profile.careHomeId) return;
+    const from = profile.careHomeId;
+    const updated = { ...profile, careHomeId: id };
+    await upsertUserProfile(updated);
+    setActiveProfile(updated);
+    setUserProperties(updated.userId, id, updated.language);
+    track('prescriber_changed', { from, to: id });
+  }
+
   const LANGS: { code: Language; label: string }[] = [
     { code: 'en', label: 'English' },
     { code: 'hi', label: 'हिंदी' },
@@ -44,117 +72,138 @@ export default function SettingsScreen() {
     { code: 'large',  key: 'settings.textSize.large'  },
     { code: 'xlarge', key: 'settings.textSize.xlarge' },
   ];
+
   function handleSwitchProfile() {
     clearProfile();
     navigate('/');
   }
 
+  function pill(active: boolean): React.CSSProperties {
+    return {
+      minHeight: 56, padding: '0 18px', borderRadius: 16,
+      fontSize: 17, fontWeight: 700,
+      border: `2px solid ${active ? '#FFFFFF' : 'rgba(255,255,255,0.28)'}`,
+      background: active ? 'rgba(255,255,255,0.18)' : 'transparent',
+      color: '#FFFFFF',
+    };
+  }
+
+  const heading: React.CSSProperties = {
+    fontSize: 11, fontWeight: 700, letterSpacing: '0.12em',
+    color: BRAND.cyanBright, marginBottom: 10,
+  };
+
   return (
-    <div className="flex-1 flex flex-col p-6 max-w-2xl mx-auto w-full gap-8">
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="min-h-[48px] min-w-[48px] flex items-center justify-center rounded-2xl border-2 border-gray-200 text-body-text hover:border-primary-blue hover:text-primary-blue transition-colors"
-          aria-label={t('btn.back', 'Back')}
-        >
-          ←
-        </button>
-        <h2 className="text-h1 font-bold text-body-text">{t('settings.title')}</h2>
-      </div>
+    <ScreenBlue>
+      <div style={{ position: 'relative', overflowY: 'auto', padding: '16px 20px 40px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+          <button
+            onClick={() => navigate(-1)}
+            aria-label={t('btn.back', 'Back')}
+            style={{
+              width: 44, height: 44, borderRadius: '50%',
+              border: '1px solid rgba(255,255,255,0.5)',
+              background: 'rgba(10,20,40,0.35)', color: '#FFFFFF', fontSize: 20,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            &#8592;
+          </button>
+          <h1 className="font-baloo" style={{ fontSize: 24, fontWeight: 700, color: '#FFFFFF' }}>
+            {t('settings.title')}
+          </h1>
+        </div>
 
-      {/* ── My Preferences ──────────────────────────────────── */}
-      <section className="bg-card-bg rounded-3xl p-6 shadow-sm space-y-6">
-        <h3 className="text-h2 font-semibold text-body-text">{t('settings.preferences')}</h3>
-
-        {/* Language */}
-        <div>
-          <p className="text-body-md font-semibold mb-4">{t('settings.language')}</p>
-          <div className="flex gap-3 flex-wrap">
+        <section style={CARD}>
+          <p className="font-baloo" style={heading}>{t('settings.language')}</p>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {LANGS.map(({ code, label }) => (
               <button
                 key={code}
                 onClick={() => changeSetting('language', code)}
-                className={`min-h-[80px] px-6 py-3 rounded-2xl text-h3 font-semibold border-2 transition-colors
-                  ${settings.language === code
-                    ? 'bg-primary-blue text-white border-primary-blue'
-                    : 'bg-card-bg text-body-text border-gray-200 hover:border-primary-blue'
-                  }`}
                 aria-pressed={settings.language === code}
+                className="font-baloo"
+                style={pill(settings.language === code)}
               >
                 {label}
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Text Size */}
-        <div>
-          <p className="text-body-md font-semibold mb-4">{t('settings.textSize')}</p>
-          <div className="flex gap-3 flex-wrap">
+        <section style={CARD}>
+          <p className="font-baloo" style={heading}>{t('settings.textSize')}</p>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {TEXT_SIZES.map(({ code, key }) => (
               <button
                 key={code}
                 onClick={() => changeSetting('textSize', code)}
-                className={`min-h-[80px] px-6 py-3 rounded-2xl text-h3 font-semibold border-2 transition-colors
-                  ${settings.textSize === code
-                    ? 'bg-primary-blue text-white border-primary-blue'
-                    : 'bg-card-bg text-body-text border-gray-200 hover:border-primary-blue'
-                  }`}
                 aria-pressed={settings.textSize === code}
+                className="font-baloo"
+                style={pill(settings.textSize === code)}
               >
                 {t(key)}
               </button>
             ))}
           </div>
+        </section>
+
+        <section style={CARD}>
+          <Toggle
+            label={t('settings.sound')}
+            checked={settings.soundEnabled}
+            onChange={(v) => changeSetting('soundEnabled', v)}
+            ariaLabel={t('settings.sound')}
+          />
+        </section>
+
+        {profile && (
+          <section style={CARD}>
+            <p className="font-baloo" style={heading}>{t('settings.profile')}</p>
+            <p className="font-baloo" style={{ fontSize: 21, fontWeight: 700, color: '#FFFFFF' }}>
+              {profile.nickname || profile.firstName}
+            </p>
+
+            <button
+              onClick={() => setPickerOpen(true)}
+              className="font-baloo"
+              style={{
+                width: '100%', minHeight: 62, marginTop: 12, textAlign: 'left',
+                borderRadius: 16, border: '2px solid rgba(255,255,255,0.28)',
+                background: 'transparent', color: '#FFFFFF', padding: '10px 16px',
+              }}
+            >
+              <span style={{ display: 'block', fontSize: 13, color: BRAND.cyan }}>
+                {t('settings.prescriber', 'Prescribed by')}
+              </span>
+              <span style={{ fontSize: 19, fontWeight: 700 }}>
+                {prescriberName(profile.careHomeId)}
+              </span>
+            </button>
+          </section>
+        )}
+
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', marginTop: 22 }}>
+          <Button variant="blue" size="md" onClick={handleSwitchProfile} style={{ minWidth: 234 }}>
+            {t('btn.switchProfile')}
+          </Button>
         </div>
 
-        {/* Sound */}
-        <Toggle
-          label={t('settings.sound')}
-          checked={settings.soundEnabled}
-          onChange={(v) => changeSetting('soundEnabled', v)}
-          ariaLabel={t('settings.sound')}
-        />
-      </section>
-
-      {/* ── My Profile ──────────────────────────────────── */}
-      <section className="bg-card-bg rounded-3xl p-6 shadow-sm space-y-4">
-        <h3 className="text-h2 font-semibold text-body-text">{t('settings.profile')}</h3>
-        {profile && (
-          <>
-            <div>
-              <p className="text-h3 font-semibold text-body-text">
-                {profile.firstName} {profile.lastName}
-              </p>
-              {profile.nickname && (
-                <p className="text-body-md text-caption-text">"{profile.nickname}"</p>
-              )}
-            </div>
-            <div>
-              <p className="text-caption font-semibold text-caption-text uppercase tracking-wide mb-1">
-                {t('settings.profile.careHome')}
-              </p>
-              <p className="text-body-md text-body-text">
-                {CARE_HOME_NAMES[profile.careHomeId] ?? profile.careHomeId}
-              </p>
-            </div>
-          </>
-        )}
-        <button
-          onClick={handleSwitchProfile}
-          className="min-h-[80px] w-full rounded-2xl border-2 border-gray-200 text-h3 font-semibold text-body-text
-                     hover:border-primary-blue hover:text-primary-blue transition-colors px-6 py-4 text-left"
+        <p
+          className="font-baloo"
+          style={{ textAlign: 'center', marginTop: 18, fontSize: 15, color: BRAND.muted }}
         >
-          {t('btn.switchProfile')}
-        </button>
-      </section>
+          {t('app.name')} v{pkg.version}
+        </p>
+      </div>
 
-      {/* ── About ──────────────────────────────────── */}
-      <section className="bg-card-bg rounded-3xl p-6 shadow-sm space-y-3">
-        <h3 className="text-h2 font-semibold text-body-text">{t('settings.about')}</h3>
-        <p className="text-body-md text-body-text">{t('app.name')} v{pkg.version}</p>
-        <p className="text-body-md text-caption-text">{t('settings.about.contact')}</p>
-      </section>
-    </div>
+      {pickerOpen && profile && (
+        <PrescriberPicker
+          selectedId={profile.careHomeId}
+          onSelect={changePrescriber}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
+    </ScreenBlue>
   );
 }

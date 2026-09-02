@@ -28,23 +28,42 @@ React 18 + TypeScript, Vite, Tailwind CSS, Zustand, Dexie (IndexedDB), i18next, 
 
 ### Route structure (`src/App.tsx`)
 ```
-/                        → CareHomeSelector
-/signup                  → SignupFlow
-/login/:careHomeId       → ProfileSelector
+/                        → SplashScreen
+/signup                  → SignupScreen        (name + prescriber, then confirmation)
+/signin                  → SignInScreen
 /app/home                → HomeScreen          ─┐
-/app/questionnaire       → DailyQuestionnaire   │ wrapped in RequireProfile
-/app/game/:gameId        → GameRouter           │ → AppShell
-/app/rotation            → RotationScreen       │   → SessionManager
+/app/education           → EducationScreen      │ wrapped in RequireProfile
+/app/intro/:category     → CategoryIntro        │ → AppShell
+/app/game/:gameId/title  → GameTitleScreen      │   → SessionManager
+/app/game/:gameId        → GameRouter           │
+/app/free-play           → FreePlayScreen       │
 /app/summary             → SessionSummary       │
 /app/settings            → SettingsScreen      ─┘
 ```
 
+`AppBootGate` (in `main.tsx`) holds `LaunchScreen` above the router until i18n and
+Dexie are ready, with a 1200 ms minimum. `/login/:careHomeId`, `/app/questionnaire`
+and `/app/rotation` survive only as redirects for cached URLs.
+
 `RequireProfile` redirects unauthenticated users to `/`. `SessionManager` is a layout route that provides `SessionContext` (category timer, rotation logic) to all `/app/*` routes via `useSessionContext()`.
 
 ### Session flow
-1. User selects care home → profile → answers daily questionnaire → `startSession()` fires.
-2. `SessionManager` ticks `secondsInCurrentCategory` every second. When the threshold is reached and a game completes, `triggerRotation()` is called — it marks the current category complete and navigates to `/app/rotation` (or `/app/summary` when all 3 done).
-3. A partially complete session for today is resumable: `checkForResumableSession()` in `src/lib/resumeSession.ts` detects it; `HomeScreen` surfaces a "Resume Session" button instead of starting fresh.
+1. `startSession()` is the single session-start point. It sets `sessionStarted`, and picks
+   `plannedGames` via `pickTrio()` — one marquee game per category, never repeating the
+   previous session's game for that category. `HomeScreen` calls it on arrival, so the three
+   rows it shows are the three games the session will actually play.
+2. Home → Education → `/app/intro/memory`. Each `CategoryIntro` holds 2 s and advances itself
+   to the game's title screen, then the board.
+3. `SessionManager` ticks `secondsInCurrentCategory` every second. A level completed under
+   `ROTATION_THRESHOLD_SECONDS` (120) starts **another round of the same game**; past it,
+   `triggerRotation()` delegates to `nextStep()` in `src/lib/sessionPlan.ts`, which returns
+   the next category intro, the summary, or `stay`. `stay` is the free-play case: the ticker
+   keeps running after a session completes, and without it a long free-play round would
+   bounce the resident into the summary.
+4. A partially complete session is resumable via `checkForResumableSession()`; Home offers
+   Continue, returning to `/app/intro/:currentCategory`.
+5. Once all three categories are done, Home offers Free Play (`/app/free-play`) — the
+   library that replaced the old inline Practice Mode.
 
 ### State (`src/store/index.ts`)
 Single Zustand store with `persist` middleware (localStorage key `brain-training-store`). Three slices:
@@ -75,6 +94,19 @@ Each game lives in `src/games/<category>/<GameName>/index.tsx` with a `levels.co
 
 ### i18n
 `src/lib/i18n.ts` — i18next with `i18next-http-backend` loading JSON files from `public/locales/<lang>/translation.json`. Supported languages: `en`, `hi`, `kn`. Use the `t()` hook with a fallback string: `t('key', 'Fallback text')`.
+
+### Game catalog (`src/lib/gameCatalog.ts`)
+The one map from `gameId` to display key, category and art. Six games are `marquee` —
+they have commissioned tile and splash art and are the only ones the daily session draws
+from; the other nine are reachable from Free Play and fall back to their category icon.
+Adding a game means an entry here **and** in `GameRouter`'s registry.
+
+### Layout
+The whole app sits in an upright column: `.app-root` in `src/styles/index.css`, capped at
+`64dvh` so it fills any portrait viewport and only binds on desktop or a 4:3 tablet. The
+number clears the widest board canvas, so `fitScale` still binds every board by height and
+none of them shrink — `src/lib/__tests__/portraitColumn.test.ts` holds that invariant.
+`AppFrame` applies it, and both `AppShell` and the public routes use it.
 
 ### Assets (`src/lib/assets/catalog.ts`)
 Assets (emoji tokens or image srcs) are registered via `registerAsset()` and resolved at render time via `resolveAsset()`. Games call `registerAsset` at module load time. First registration wins on collision.

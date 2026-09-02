@@ -556,5 +556,19 @@
   "game.word-search.name": "शब्द खोज",
   "game.focus-filter.name": "ध्यान छाँटें",
   "game.recipe-builder.name": "पकवान बनाएँ",
-  "game.garden-sequencer.name": "बगीचे का क्रम"
+  "game.garden-sequencer.name": "बगीचे का क्रम",
+  "splash.tagline": "संज्ञानात्मक स्वास्थ्य के लिए डिजिटल चिकित्सा मंच",
+  "splash.alreadyMember": "पहले से सदस्य हैं?",
+  "btn.getStarted": "शुरू करें",
+  "btn.signIn": "साइन इन करें",
+  "signup.name": "आपका नाम",
+  "signup.prescribedBy": "किसने बताया",
+  "signup.tapToChoose": "चुनने के लिए दबाएँ",
+  "signup.confirmTitle": "स्वागत है",
+  "signup.nameError": "कृपया अपना नाम लिखें।",
+  "signup.failed": "कुछ गड़बड़ हो गई। कृपया फिर से कोशिश करें।",
+  "signin.title": "साइन इन करें",
+  "signin.help": "हम आपका नाम आपकी मौजूदा प्रोफ़ाइल से मिलाएँगे।",
+  "signin.noMatch": "इस नाम की कोई प्रोफ़ाइल नहीं मिली।",
+  "settings.prescriber": "किसने बताया"
 }

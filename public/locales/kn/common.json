@@ -556,5 +556,19 @@
   "game.word-search.name": "ಪದ ಹುಡುಕಾಟ",
   "game.focus-filter.name": "ಗಮನ ಶೋಧನೆ",
   "game.recipe-builder.name": "ಅಡುಗೆ ಜೋಡಣೆ",
-  "game.garden-sequencer.name": "ತೋಟದ ಕ್ರಮ"
+  "game.garden-sequencer.name": "ತೋಟದ ಕ್ರಮ",
+  "splash.tagline": "ಅರಿವಿನ ಆರೋಗ್ಯಕ್ಕಾಗಿ ಡಿಜಿಟಲ್ ಚಿಕಿತ್ಸಾ ವೇದಿಕೆ",
+  "splash.alreadyMember": "ಈಗಾಗಲೇ ಸದಸ್ಯರೇ?",
+  "btn.getStarted": "ಪ್ರಾರಂಭಿಸಿ",
+  "btn.signIn": "ಸೈನ್ ಇನ್ ಮಾಡಿ",
+  "signup.name": "ನಿಮ್ಮ ಹೆಸರು",
+  "signup.prescribedBy": "ಯಾರು ಸೂಚಿಸಿದರು",
+  "signup.tapToChoose": "ಆಯ್ಕೆ ಮಾಡಲು ಒತ್ತಿ",
+  "signup.confirmTitle": "ಸ್ವಾಗತ",
+  "signup.nameError": "ದಯವಿಟ್ಟು ನಿಮ್ಮ ಹೆಸರನ್ನು ಬರೆಯಿರಿ.",
+  "signup.failed": "ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+  "signin.title": "ಸೈನ್ ಇನ್ ಮಾಡಿ",
+  "signin.help": "ನಿಮ್ಮ ಹೆಸರನ್ನು ನಿಮ್ಮ ಈಗಿನ ಪ್ರೊಫೈಲ್‌ಗೆ ಹೊಂದಿಸುತ್ತೇವೆ.",
+  "signin.noMatch": "ಆ ಹೆಸರಿನ ಯಾವುದೇ ಪ್ರೊಫೈಲ್ ಸಿಗಲಿಲ್ಲ.",
+  "settings.prescriber": "ಯಾರು ಸೂಚಿಸಿದರು"
 }

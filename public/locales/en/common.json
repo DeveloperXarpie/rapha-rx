@@ -556,5 +556,19 @@
   "game.word-search.name": "Word Search",
   "game.focus-filter.name": "Focus Filter",
   "game.recipe-builder.name": "Recipe Builder",
-  "game.garden-sequencer.name": "Garden Sequencer"
+  "game.garden-sequencer.name": "Garden Sequencer",
+  "splash.tagline": "Digital Therapeutic Platform for Cognitive Health",
+  "splash.alreadyMember": "Already a Member?",
+  "btn.getStarted": "Get Started",
+  "btn.signIn": "Sign in",
+  "signup.name": "Your Name",
+  "signup.prescribedBy": "Prescribed by",
+  "signup.tapToChoose": "Tap to choose",
+  "signup.confirmTitle": "Welcome",
+  "signup.nameError": "Please type your name.",
+  "signup.failed": "Something went wrong. Please try again.",
+  "signin.title": "Sign in",
+  "signin.help": "We'll match your Name to your existing study profile.",
+  "signin.noMatch": "No profile found with that name.",
+  "settings.prescriber": "Prescribed by"
 }

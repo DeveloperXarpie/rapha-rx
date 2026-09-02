@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import CareHomeSelector from './screens/CareHomeSelector';
-import SignupFlow from './screens/SignupFlow';
-import ProfileSelector from './screens/ProfileSelector';
+import SplashScreen from './screens/SplashScreen';
+import SignupScreen from './screens/SignupScreen';
+import SignInScreen from './screens/SignInScreen';
 import AppShell from './components/AppShell';
 import HomeScreen from './screens/HomeScreen';
 import EducationScreen from './screens/EducationScreen';
@@ -20,9 +20,11 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<CareHomeSelector />} />
-        <Route path="/signup" element={<SignupFlow />} />
-        <Route path="/login/:careHomeId" element={<ProfileSelector />} />
+        <Route path="/"       element={<SplashScreen />} />
+        <Route path="/signup" element={<SignupScreen />} />
+        <Route path="/signin" element={<SignInScreen />} />
+        {/* Retired with the redesign; it was never reachable in any case. */}
+        <Route path="/login/:careHomeId" element={<Navigate to="/signin" replace />} />
 
         {/* Protected routes — require active profile */}
         <Route element={<RequireProfile />}>
