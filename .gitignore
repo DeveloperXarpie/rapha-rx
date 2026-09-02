@@ -38,3 +38,6 @@ __MACOSX/
 
 # Design handoff scratch (source PSDs/exports, not shipped)
 design_handoff_*/
+
+# Raw art drops. The shipped copies live in assets-src/ and public/.
+App flow redesign clarification/

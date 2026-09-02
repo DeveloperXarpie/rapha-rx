@@ -1,13 +1,14 @@
 {
   "name": "brain-training-app",
   "private": true,
-  "version": "1.17.1",
+  "version": "1.17.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "assets:brand": "node scripts/prepare-brand-assets.mjs",
     "test": "vitest run",
     "smoke:portrait": "node scripts/portrait-smoke.mjs"
   },
@@ -39,6 +40,7 @@
     "fake-indexeddb": "^6.2.5",
     "globals": "^16.5.0",
     "postcss": "^8.5.8",
+    "sharp": "^0.35.4",
     "tailwindcss": "^3.4.19",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
