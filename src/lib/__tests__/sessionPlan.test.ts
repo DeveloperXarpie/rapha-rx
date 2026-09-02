@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pickTrio, CATEGORY_ORDER } from '../sessionPlan';
+import { pickTrio, nextStep, CATEGORY_ORDER } from '../sessionPlan';
 import { getGame } from '../gameCatalog';
 
 describe('pickTrio', () => {
@@ -37,5 +37,54 @@ describe('pickTrio', () => {
   it('tolerates a short or empty previous trio', () => {
     expect(pickTrio([])).toHaveLength(3);
     expect(pickTrio(['market-memory'])).toHaveLength(3);
+  });
+});
+
+const TRIO = ['market-memory', 'spot-focus', 'serve-guests'];
+
+describe('nextStep', () => {
+  it('advances memory to attention', () => {
+    expect(nextStep({ currentCategory: 'memory', categoriesCompleted: [], plannedGames: TRIO }))
+      .toEqual({ kind: 'intro', category: 'attention', gameId: 'spot-focus' });
+  });
+
+  it('advances attention to executive', () => {
+    expect(nextStep({ currentCategory: 'attention', categoriesCompleted: ['memory'], plannedGames: TRIO }))
+      .toEqual({ kind: 'intro', category: 'executive', gameId: 'serve-guests' });
+  });
+
+  it('goes to the summary after the third category', () => {
+    expect(nextStep({ currentCategory: 'executive', categoriesCompleted: ['memory', 'attention'], plannedGames: TRIO }))
+      .toEqual({ kind: 'summary' });
+  });
+
+  it('stays put when the session is already complete, so free play is not hijacked', () => {
+    expect(nextStep({
+      currentCategory: null,
+      categoriesCompleted: ['memory', 'attention', 'executive'],
+      plannedGames: TRIO,
+    })).toEqual({ kind: 'stay' });
+  });
+
+  it('stays put during a free-play round after a completed session', () => {
+    expect(nextStep({
+      currentCategory: 'memory',
+      categoriesCompleted: ['memory', 'attention', 'executive'],
+      plannedGames: TRIO,
+    })).toEqual({ kind: 'stay' });
+  });
+
+  it('plans a trio on the fly when a pre-migration session has none', () => {
+    const step = nextStep({ currentCategory: 'memory', categoriesCompleted: [], plannedGames: [] });
+    expect(step.kind).toBe('intro');
+    if (step.kind === 'intro') {
+      expect(step.category).toBe('attention');
+      expect(getGame(step.gameId)!.marquee).toBe(true);
+    }
+  });
+
+  it('does not double-count a category already in categoriesCompleted', () => {
+    expect(nextStep({ currentCategory: 'memory', categoriesCompleted: ['memory'], plannedGames: TRIO }))
+      .toEqual({ kind: 'intro', category: 'attention', gameId: 'spot-focus' });
   });
 });

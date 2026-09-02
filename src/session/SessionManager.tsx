@@ -1,20 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import { useAppStore } from '../store';
-import type { GameCategory } from '../styles/tokens';
-
-const ALL_CATEGORIES: GameCategory[] = ['memory', 'attention', 'executive'];
-
-const GAME_BY_CATEGORY: Record<GameCategory, string[]> = {
-  memory:    ['remember-match', 'shopping-list-recall', 'sequence-repeat', 'picture-postcard', 'train-yard', 'market-memory'],
-  attention: ['spot-focus', 'focus-filter', 'word-search', 'garden-keeper'],
-  executive: ['morning-routine-quest', 'recipe-builder', 'garden-sequencer'],
-};
-
-function pickGame(category: GameCategory, excludeGameId?: string): string {
-  const games = GAME_BY_CATEGORY[category].filter((g) => g !== excludeGameId);
-  return games[Math.floor(Math.random() * games.length)] ?? GAME_BY_CATEGORY[category][0];
-}
+import { nextStep } from '../lib/sessionPlan';
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
@@ -24,6 +11,10 @@ interface SessionContextValue {
   currentGameId: string | null;
   secondsInCurrentCategory: number;
   categoriesCompletedToday: string[];
+  /** The three gameIds this session plays, in CATEGORY_ORDER. */
+  plannedGames: string[];
+  /** True once all three categories are done - i.e. any round now is free play. */
+  sessionComplete: boolean;
   triggerRotation: () => void;
 }
 
@@ -60,37 +51,31 @@ export default function SessionManager() {
 
   const triggerRotation = useCallback(() => {
     if (!profile) return;
-    const current = session.currentCategory as GameCategory | null;
 
-    // Mark current category as complete
-    if (current) {
-      markCategoryComplete(current);
-    }
+    const step = nextStep({
+      currentCategory: session.currentCategory,
+      categoriesCompleted: session.categoriesCompleted,
+      plannedGames: session.plannedGames,
+    });
 
-    const nowCompleted = current
-      ? [...session.categoriesCompleted, current]
-      : session.categoriesCompleted;
+    /*
+     * Free play after a completed session. There is nothing to rotate into, and
+     * navigating would drop the resident into the summary they have already
+     * seen - the per-category ticker keeps running once a session ends, so a
+     * free-play round crossing two minutes lands here.
+     */
+    if (step.kind === 'stay') return;
 
-    // All 3 done? → summary
-    const allDone = ALL_CATEGORIES.every((c) => nowCompleted.includes(c));
-    if (allDone) {
+    if (session.currentCategory) markCategoryComplete(session.currentCategory);
+
+    if (step.kind === 'summary') {
       navigate('/app/summary');
       return;
     }
 
-    // Pick next category
-    const next = ALL_CATEGORIES.find((c) => !nowCompleted.includes(c)) ?? null;
-    if (!next) {
-      navigate('/app/summary');
-      return;
-    }
-
-    // Navigate to rotation screen (next category stored in session before navigating)
-    setCurrentCategory(next);
-    const nextGame = pickGame(next, session.currentGameId ?? undefined);
-    setCurrentGame(nextGame);
-
-    navigate('/app/rotation');
+    setCurrentCategory(step.category);
+    setCurrentGame(step.gameId);
+    navigate(`/app/intro/${step.category}`);
   }, [
     profile, session, markCategoryComplete, setCurrentCategory,
     setCurrentGame, navigate,
@@ -102,6 +87,9 @@ export default function SessionManager() {
     currentGameId: session.currentGameId,
     secondsInCurrentCategory: session.secondsInCurrentCategory,
     categoriesCompletedToday: session.categoriesCompleted,
+    plannedGames: session.plannedGames,
+    sessionComplete: ['memory', 'attention', 'executive']
+      .every((c) => session.categoriesCompleted.includes(c)),
     triggerRotation,
   };
 

@@ -26,3 +26,43 @@ export function pickTrio(
     return pool[Math.floor(rng() * pool.length)].id;
   });
 }
+
+export type NextStep =
+  | { kind: 'intro'; category: GameCategory; gameId: string }
+  | { kind: 'summary' }
+  /** The session is already done. The caller must not navigate. */
+  | { kind: 'stay' };
+
+/**
+ * Decides what happens when a category finishes. The only place that decision
+ * lives - it used to be split across DailyQuestionnaire, GameShell and
+ * SessionManager, with two of them holding stale copies of the game list.
+ *
+ * `stay` exists for free play. The per-category ticker keeps running once a
+ * session is complete, so a free-play round crossing the two-minute threshold
+ * would otherwise fire rotation, find every category done and throw the
+ * resident into the session summary.
+ */
+export function nextStep(args: {
+  currentCategory: string | null;
+  categoriesCompleted: string[];
+  plannedGames: string[];
+}): NextStep {
+  const { currentCategory, categoriesCompleted, plannedGames } = args;
+
+  const alreadyDone = CATEGORY_ORDER.every((c) => categoriesCompleted.includes(c));
+  if (alreadyDone) return { kind: 'stay' };
+
+  const completed = currentCategory && !categoriesCompleted.includes(currentCategory)
+    ? [...categoriesCompleted, currentCategory]
+    : categoriesCompleted;
+
+  const next = CATEGORY_ORDER.find((c) => !completed.includes(c));
+  if (!next) return { kind: 'summary' };
+
+  // A session started before plannedGames existed has none. Plan the whole trio
+  // once rather than picking a single game lazily, so the rest of the session
+  // behaves like a fresh one.
+  const trio = plannedGames.length === 3 ? plannedGames : pickTrio(null);
+  return { kind: 'intro', category: next, gameId: trio[CATEGORY_ORDER.indexOf(next)] };
+}
