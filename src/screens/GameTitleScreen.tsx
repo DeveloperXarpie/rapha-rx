@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { track } from '../lib/analytics';
 import { getGame } from '../lib/gameCatalog';
+import PortraitFrame from '../components/chrome/PortraitFrame';
 
 /*
  * Where the painted PLAY button sits inside the supplied art, as a fraction of
@@ -58,10 +59,7 @@ export default function GameTitleScreen() {
   }
 
   return (
-    <div
-      className="flex-1 min-h-0"
-      style={{ position: 'relative', overflow: 'hidden', background: '#0E2AA8' }}
-    >
+    <PortraitFrame style={{ background: '#0E2AA8' }}>
       <img
         src={splash}
         alt=""
@@ -97,6 +95,6 @@ export default function GameTitleScreen() {
       >
         &#10005;
       </button>
-    </div>
+    </PortraitFrame>
   );
 }

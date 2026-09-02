@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import PortraitFrame from './PortraitFrame';
 import WaveOverlay from './WaveOverlay';
 
 interface Props {
@@ -9,20 +10,19 @@ interface Props {
 }
 
 /**
- * The standard blue page frame: radial wash, bottom wave, horizontal overflow
- * clipped so the wave's -10% inset cannot produce sideways scroll.
+ * The standard blue page frame: radial wash, bottom wave, and the portrait
+ * column every redesigned screen lives in.
  *
- * It is a flex column filling its parent, because AppShell renders every screen
- * inside `flex-1 min-h-0 flex flex-col` and a screen that does not fill it
- * leaves AppShell's own bg-app-bg showing at the edges.
+ * Horizontal overflow is clipped by PortraitFrame so the wave's -10% inset
+ * cannot produce sideways scroll.
  */
 export default function ScreenBlue({ variant = 'default', className = '', children }: Props) {
   return (
-    <div
-      className={`screen-blue${variant === 'splash' ? ' screen-blue--splash' : ''} flex-1 min-h-0 flex flex-col ${className}`}
+    <PortraitFrame
+      className={`screen-blue${variant === 'splash' ? ' screen-blue--splash' : ''} ${className}`}
     >
       {children}
       <WaveOverlay tall={variant === 'splash'} />
-    </div>
+    </PortraitFrame>
   );
 }
