@@ -4,6 +4,7 @@ import './styles/index.css';
 import './lib/i18n';
 import { initAnalytics } from './lib/analytics';
 import App from './App';
+import AppBootGate from './components/AppBootGate';
 
 // Apply stored text size preference before paint
 const stored = localStorage.getItem('brain-training-store');
@@ -28,7 +29,9 @@ createRoot(document.getElementById('root')!).render(
         <p className="text-h3 text-caption-text">Loading...</p>
       </div>
     }>
-      <App />
+      <AppBootGate>
+        <App />
+      </AppBootGate>
     </Suspense>
   </StrictMode>,
 );

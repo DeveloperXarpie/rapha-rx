@@ -138,3 +138,10 @@
     transform: none;
   }
 }
+
+/* The launch screen handing over to the app. Declared here rather than inline
+   because a keyframes rule cannot live in a style attribute. */
+@keyframes boot-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
