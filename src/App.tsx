@@ -11,6 +11,7 @@ import SessionSummary from './screens/SessionSummary';
 import SettingsScreen from './screens/SettingsScreen';
 import RequireProfile from './components/RequireProfile';
 import SessionManager from './session/SessionManager';
+import ChromeGallery from './screens/dev/ChromeGallery';
 
 export default function App() {
   return (
@@ -37,6 +38,11 @@ export default function App() {
             </Route>
           </Route>
         </Route>
+
+        {/* DEV-only chrome harness. Tree-shaken out of production by the env guard. */}
+        {import.meta.env.DEV && (
+          <Route path="/dev/chrome" element={<ChromeGallery />} />
+        )}
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,0 +1,140 @@
+/*
+ * App flow redesign chrome. These are multi-layer gradients, bevel border-box
+ * fills and stacked inset shadows; as Tailwind arbitrary values they are
+ * unreadable and unmaintainable, so they live here and are used by class name.
+ * Values are verbatim from the design handoff README.
+ *
+ * Deliberately NOT inside `@layer components`. Tailwind purges layered classes
+ * it cannot find a literal match for in the source, and the components below
+ * build their class names dynamically (`btn-${variant}`), which the scanner
+ * cannot see - so layering these silently dropped them from the bundle. Plain
+ * CSS is never purged. Nothing here collides with a utility name, and this file
+ * is imported before the @tailwind directives, so a utility still wins on equal
+ * specificity.
+ */
+.font-baloo {
+  font-family: 'Baloo 2', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
+}
+
+/* ─── Screen background ─────────────────────────────────────────────────── */
+
+.screen-blue {
+  position: relative;
+  overflow-x: hidden;
+  background: radial-gradient(
+    120% 60% at 50% -6%,
+    #45CFEE 0%, #2A86DE 34%, #1B5AD0 62%, #0E2AA8 100%
+  );
+}
+
+/* The splash screen alone uses a taller, differently-stopped wash. */
+.screen-blue--splash {
+  background: radial-gradient(
+    120% 68% at 50% -8%,
+    #45CFEE 0%, #2A86DE 30%, #1B5AD0 58%, #0E2AA8 100%
+  );
+}
+
+/*
+ * The decorative bottom wave. `pointer-events: none` is not cosmetic: the
+ * handoff's own prototype had this element swallowing every button click
+ * beneath it, and the README names this as the preferred fix over sprinkling
+ * `position: relative` on each button.
+ */
+.wave-overlay {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 0;
+  height: 120px;
+  border-radius: 50% 50% 0 0 / 75px 75px 0 0;
+  background: rgba(6, 18, 140, 0.4);
+  pointer-events: none;
+}
+
+.wave-overlay--tall {
+  height: 140px;
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────────────── */
+
+.btn-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 34px;
+  border: 5px solid transparent;
+  font-family: 'Baloo 2', 'Noto Sans Devanagari', 'Noto Sans Kannada', sans-serif;
+  letter-spacing: 0.01em;
+  transition: transform 80ms ease, box-shadow 80ms ease;
+  /*
+   * The handoff sizes each button in px so the label never wraps. That does
+   * not survive Hindi or Kannada, so the px figure becomes a floor and the
+   * button grows. See the i18n note in the spec.
+   */
+  padding-inline: 22px;
+}
+
+.btn-brand:focus-visible {
+  outline: 3px solid #FFFFFF;
+  outline-offset: 2px;
+}
+
+.btn-brand:disabled {
+  filter: grayscale(0.7);
+  opacity: 0.5;
+}
+
+.btn-green {
+  background:
+    linear-gradient(180deg, #8FC93F 0%, #6EB22B 44%, #4C8916 100%) padding-box,
+    linear-gradient(180deg, #F6E183 0%, #D8AE3E 38%, #9A6A1E 100%) border-box;
+  color: #F7F2E0;
+  font-weight: 800;
+  text-shadow:
+    0 3px 0 #2E5C10,
+    0 -2px 0 rgba(46, 92, 16, 0.5),
+    2px 0 0 rgba(46, 92, 16, 0.5),
+    -2px 0 0 rgba(46, 92, 16, 0.5);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.22),
+    inset 0 4px 8px rgba(255, 255, 255, 0.28),
+    inset 0 -8px 12px rgba(30, 62, 8, 0.35),
+    0 10px 18px rgba(0, 0, 0, 0.42);
+}
+
+.btn-blue {
+  background:
+    linear-gradient(180deg, #6FB4F5 0%, #3B84E8 52%, #2258CE 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, #F2F6FC 55%, #C9D8EE 100%) border-box;
+  color: #FFFFFF;
+  font-weight: 700;
+  text-shadow: 0 3px 3px rgba(8, 32, 105, 0.55);
+  box-shadow:
+    inset 0 4px 10px rgba(255, 255, 255, 0.3),
+    inset 0 -8px 12px rgba(10, 40, 120, 0.3),
+    0 10px 18px rgba(0, 0, 0, 0.38);
+}
+
+.btn-green:not(:disabled):active {
+  transform: translateY(3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.42);
+}
+
+.btn-blue:not(:disabled):active {
+  transform: translateY(3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.38);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-brand {
+    transition: none;
+  }
+
+  .btn-green:not(:disabled):active,
+  .btn-blue:not(:disabled):active {
+    transform: none;
+  }
+}
