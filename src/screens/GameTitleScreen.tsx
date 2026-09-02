@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { track } from '../lib/analytics';
@@ -29,17 +29,16 @@ export default function GameTitleScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { gameId } = useParams<{ gameId: string }>();
-  const redirectedRef = useRef(false);
 
   const game = gameId ? getGame(gameId) : undefined;
   const splash = game?.splash ?? null;
 
+  // The nine games with no commissioned art have no title screen. Rather than
+  // render an empty one, go straight to the board. No fire-once ref: a replacing
+  // navigate is idempotent, and a ref here would only be one more thing to get
+  // wrong under StrictMode's double mount.
   useEffect(() => {
-    if (redirectedRef.current) return;
-    // The nine games with no commissioned art have no title screen. Rather than
-    // render an empty one, go straight to the board.
     if (!game || !splash) {
-      redirectedRef.current = true;
       navigate(gameId ? `/app/game/${gameId}` : '/app/home', { replace: true });
     }
   }, [game, splash, gameId, navigate]);

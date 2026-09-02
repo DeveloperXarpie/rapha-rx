@@ -45,38 +45,49 @@ export default function CategoryIntro() {
   const navigate = useNavigate();
   const { category } = useParams<{ category: string }>();
   const session = useAppStore((s) => s.currentSession);
-  const firedRef = useRef(false);
+  const trackedRef = useRef(false);
 
   const cat = CATEGORIES.includes(category as GameCategory)
     ? (category as GameCategory)
     : null;
   const gameId = session.currentGameId;
 
+  /*
+   * The auto-advance. Deliberately NOT behind a fire-once ref.
+   *
+   * StrictMode double-invokes effects in development: React mounts, runs the
+   * effect, unmounts, and mounts again. A fire-once guard combined with a
+   * clearTimeout cleanup means the first run arms the timer and claims the
+   * guard, the throwaway unmount clears it, and the real run returns early
+   * without re-arming - so the screen sits on "Train Your Memory" forever.
+   *
+   * Arming per mount and clearing per unmount is the shape that survives it,
+   * and it is also what stops a backgrounded intro firing a stale navigation.
+   */
   useEffect(() => {
-    // The guard stops a re-render restarting the timer; the cleanup stops an
-    // unmounted screen firing a stale navigation after the resident has moved
-    // on. Both are needed, and the old RotationScreen only had the first.
-    if (firedRef.current) return;
-
     if (!cat || !gameId) {
       navigate('/app/home', { replace: true });
       return;
     }
-    firedRef.current = true;
+    const id = setTimeout(() => navigate(`/app/game/${gameId}/title`), INTRO_MS);
+    return () => clearTimeout(id);
+  }, [cat, gameId, navigate]);
 
-    // The event the old rotation screen fired. Kept, and kept in shape, so the
-    // existing metric stays continuous across the redesign.
+  /*
+   * Analytics, which genuinely must fire once. This is the half that wants a
+   * ref - and the half the old RotationScreen's firedRef was actually for.
+   */
+  useEffect(() => {
+    if (trackedRef.current || !cat || !gameId) return;
+    trackedRef.current = true;
     const completed = session.categoriesCompleted;
     track('category_rotated', {
       fromCategory: completed[completed.length - 1] ?? 'unknown',
       toCategory: cat,
       secondsPlayed: session.secondsInCurrentCategory,
     });
-
-    const id = setTimeout(() => navigate(`/app/game/${gameId}/title`), INTRO_MS);
-    return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cat, gameId, navigate]);
+  }, [cat, gameId]);
 
   if (!cat) return null;
 
