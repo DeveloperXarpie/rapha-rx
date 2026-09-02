@@ -102,11 +102,14 @@ export default function HomeScreen() {
 
   function handleStartSession() {
     startSession();
-    navigate('/app/questionnaire');
+    navigate('/app/education');
   }
 
   function handleResumeSession() {
-    navigate('/app/rotation');
+    // Back into the intro for whichever category was in play. The old rotation
+    // screen this used to target is gone.
+    const cat = useAppStore.getState().currentSession.currentCategory ?? 'memory';
+    navigate(`/app/intro/${cat}`);
   }
 
   // Re-runs the previous/resumable lookup once the Dexie write lands, so the

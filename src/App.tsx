@@ -4,9 +4,10 @@ import SignupFlow from './screens/SignupFlow';
 import ProfileSelector from './screens/ProfileSelector';
 import AppShell from './components/AppShell';
 import HomeScreen from './screens/HomeScreen';
-import DailyQuestionnaire from './screens/DailyQuestionnaire';
+import EducationScreen from './screens/EducationScreen';
 import GameRouter from './screens/GameRouter';
-import RotationScreen from './screens/RotationScreen';
+import CategoryIntro from './screens/CategoryIntro';
+import GameTitleScreen from './screens/GameTitleScreen';
 import SessionSummary from './screens/SessionSummary';
 import SettingsScreen from './screens/SettingsScreen';
 import RequireProfile from './components/RequireProfile';
@@ -28,13 +29,18 @@ export default function App() {
           <Route element={<AppShell />}>
             {/* Session manager provides session context + ticker */}
             <Route element={<SessionManager />}>
-              <Route path="/app/home"           element={<HomeScreen />} />
-              <Route path="/app/questionnaire"  element={<DailyQuestionnaire />} />
-              <Route path="/app/game/:gameId"   element={<GameRouter />} />
-              <Route path="/app/rotation"       element={<RotationScreen />} />
-              <Route path="/app/summary"        element={<SessionSummary />} />
-              <Route path="/app/settings"       element={<SettingsScreen />} />
-              <Route path="/app"                element={<Navigate to="/app/home" replace />} />
+              <Route path="/app/home"                element={<HomeScreen />} />
+              <Route path="/app/education"           element={<EducationScreen />} />
+              <Route path="/app/intro/:category"     element={<CategoryIntro />} />
+              <Route path="/app/game/:gameId/title"  element={<GameTitleScreen />} />
+              <Route path="/app/game/:gameId"        element={<GameRouter />} />
+              <Route path="/app/summary"             element={<SessionSummary />} />
+              <Route path="/app/settings"            element={<SettingsScreen />} />
+
+              {/* Bookmarks, and URLs the service worker cached before the redesign. */}
+              <Route path="/app/questionnaire"       element={<Navigate to="/app/education" replace />} />
+              <Route path="/app/rotation"            element={<Navigate to="/app/home" replace />} />
+              <Route path="/app"                     element={<Navigate to="/app/home" replace />} />
             </Route>
           </Route>
         </Route>
