@@ -9,6 +9,9 @@
 import { useState, type ReactNode } from 'react';
 import CategoryBadge from '../../components/chrome/CategoryBadge';
 import ProgressBar from '../../components/chrome/ProgressBar';
+import GameRow from '../../components/chrome/GameRow';
+import GameTile from '../../components/chrome/GameTile';
+import { marqueeGames, GAME_CATALOG } from '../../lib/gameCatalog';
 import { Button } from '../../components/ui/Button';
 import { BRAND, CATEGORY_BRAND } from '../../styles/tokens';
 import type { GameCategory } from '../../styles/tokens';
@@ -104,7 +107,24 @@ export default function ChromeGallery() {
         <ProgressDemo />
       </Section>
 
-      {/* Tasks 6-7 append their sections here. */}
+      <Section title="Game rows">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <GameRow game={GAME_CATALOG['market-memory']} lastLevel={12} />
+          <GameRow game={GAME_CATALOG['spot-focus']} lastLevel={3} />
+          <GameRow game={GAME_CATALOG['serve-guests']} />
+        </div>
+      </Section>
+
+      <Section title="Game tiles">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+          {marqueeGames().slice(0, 3).map((g) => <GameTile key={g.id} game={g} onClick={() => {}} />)}
+          {['remember-match', 'word-search', 'recipe-builder'].map((id) => (
+            <GameTile key={id} game={GAME_CATALOG[id]} onClick={() => {}} />
+          ))}
+        </div>
+      </Section>
+
+      {/* Task 7 appends its section here. */}
 
       <div className="wave-overlay" aria-hidden="true" />
     </div>
