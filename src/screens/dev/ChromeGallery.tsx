@@ -11,6 +11,8 @@ import CategoryBadge from '../../components/chrome/CategoryBadge';
 import ProgressBar from '../../components/chrome/ProgressBar';
 import GameRow from '../../components/chrome/GameRow';
 import GameTile from '../../components/chrome/GameTile';
+import ScreenTransition from '../../components/chrome/ScreenTransition';
+import { staggerDelay, type TransitionName } from '../../components/chrome/transitions';
 import { marqueeGames, GAME_CATALOG } from '../../lib/gameCatalog';
 import { Button } from '../../components/ui/Button';
 import { BRAND, CATEGORY_BRAND } from '../../styles/tokens';
@@ -26,6 +28,44 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       </h2>
       {children}
     </section>
+  );
+}
+
+const TRANSITION_NAMES: TransitionName[] = [
+  'launchToSplash', 'onboardingStep', 'homeToIntro',
+  'introToTitle', 'titleToBoard', 'boardToIntro', 'boardToSummary',
+];
+
+function TransitionDemo() {
+  const [name, setName] = useState<TransitionName>('homeToIntro');
+  const [run, setRun] = useState(0);
+  return (
+    <div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+        {TRANSITION_NAMES.map((n) => (
+          <button
+            key={n}
+            onClick={() => { setName(n); setRun((r) => r + 1); }}
+            style={{
+              color: '#fff', fontSize: 11, padding: '6px 10px', borderRadius: 8,
+              background: n === name ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.12)',
+            }}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+      <ScreenTransition key={`${name}-${run}`} name={name}>
+        <div style={{ background: 'rgba(9,26,140,0.5)', borderRadius: 18, padding: 20 }}>
+          <p className="font-baloo" style={{ color: '#fff', fontSize: 19, fontWeight: 700 }}>{name}</p>
+          {[0, 1, 2].map((i) => (
+            <p key={i} style={{ color: '#C6F87A', fontSize: 15, marginTop: 6 }}>
+              row {i}, stagger {staggerDelay(i)}ms
+            </p>
+          ))}
+        </div>
+      </ScreenTransition>
+    </div>
   );
 }
 
@@ -124,7 +164,9 @@ export default function ChromeGallery() {
         </div>
       </Section>
 
-      {/* Task 7 appends its section here. */}
+      <Section title="Transitions">
+        <TransitionDemo />
+      </Section>
 
       <div className="wave-overlay" aria-hidden="true" />
     </div>
