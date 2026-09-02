@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { UserProfile, SessionState } from '../lib/db';
 import { upsertSessionState, upsertUserProfile, getSessionState } from '../lib/db';
 import type { Language, TextSize } from '../styles/tokens';
+import { pickTrio, CATEGORY_ORDER } from '../lib/sessionPlan';
 
 function todayISO(): string {
   return new Date().toISOString().split('T')[0];
@@ -18,7 +19,10 @@ export interface UserSettings {
 
 export interface CurrentSession {
   date: string;
-  questionnaireCompleted: boolean;
+  /** Was `questionnaireCompleted`. Set by startSession; gates resume. */
+  sessionStarted: boolean;
+  /** The three gameIds this session plays, in CATEGORY_ORDER. */
+  plannedGames: string[];
   focusCategory: 'memory' | 'attention' | 'executive' | null;
   categoriesCompleted: string[];
   currentCategory: string | null;
@@ -40,7 +44,7 @@ interface AppState {
   markCategoryComplete: (cat: string) => void;
   setCurrentGame: (gameId: string) => void;
   setCurrentCategory: (category: string) => void;
-  markQuestionnaireComplete: () => void;
+  markSessionStarted: () => void;
   restoreSession: (state: CurrentSession) => void;
   tickCategory: () => void;
 
@@ -57,7 +61,8 @@ interface AppState {
 
 const defaultSession: CurrentSession = {
   date: todayISO(),
-  questionnaireCompleted: false,
+  sessionStarted: false,
+  plannedGames: [],
   focusCategory: null,
   categoriesCompleted: [],
   currentCategory: null,
@@ -80,7 +85,11 @@ function persistSession(userId: string | undefined, state: CurrentSession): Prom
   const dbState: SessionState = {
     userId,
     date: state.date,
-    questionnaireCompleted: state.questionnaireCompleted,
+    sessionStarted: state.sessionStarted,
+    // This literal hand-copies every field. Anything missing from it is
+    // silently dropped on every write, which for plannedGames would mean a
+    // resumed session quietly playing a different trio.
+    plannedGames: state.plannedGames,
     focusCategory: state.focusCategory,
     categoriesCompleted: state.categoriesCompleted,
     currentCategory: state.currentCategory,
@@ -113,7 +122,10 @@ export const useAppStore = create<AppState>()(
         const existingSession = await getSessionState(profile.userId, today);
         if (existingSession) {
           const { id, userId, ...sessionData } = existingSession as any;
-          set({ currentSession: sessionData });
+          // A row written before plannedGames existed has none. Spreading over
+          // defaultSession keeps every field defined.
+          set({ currentSession: { ...defaultSession, ...sessionData,
+                                  plannedGames: sessionData.plannedGames ?? [] } });
         } else {
           set({ currentSession: { ...defaultSession, date: today } });
         }
@@ -126,17 +138,28 @@ export const useAppStore = create<AppState>()(
       // Session slice
       currentSession: { ...defaultSession },
 
+      /*
+       * The single session-start point. It used to be split: HomeScreen called
+       * this, then DailyQuestionnaire separately picked the category and game
+       * and set the completed flag. Education plays before every session now and
+       * so cannot own a once-per-day flag, so all of it lands here.
+       */
       startSession: () => {
         const today = todayISO();
         const existing = get().currentSession;
 
-        // Don't wipe an in-progress session for today
-        if (existing.date === today && existing.questionnaireCompleted) return;
+        // Don't wipe an in-progress session for today, and never re-roll its trio.
+        if (existing.date === today && existing.sessionStarted) return;
 
+        const plannedGames = pickTrio(existing.plannedGames);
         const updated: CurrentSession = {
           ...defaultSession,
           date: today,
+          sessionStarted: true,
           sessionStartedAt: Date.now(),
+          plannedGames,
+          currentCategory: CATEGORY_ORDER[0],
+          currentGameId: plannedGames[0],
         };
         set({ currentSession: updated });
         persistSession(get().activeProfile?.userId, updated);
@@ -177,8 +200,8 @@ export const useAppStore = create<AppState>()(
         persistSession(get().activeProfile?.userId, updated);
       },
 
-      markQuestionnaireComplete: () => {
-        const updated = { ...get().currentSession, questionnaireCompleted: true };
+      markSessionStarted: () => {
+        const updated = { ...get().currentSession, sessionStarted: true };
         set({ currentSession: updated });
         persistSession(get().activeProfile?.userId, updated);
       },
@@ -207,7 +230,10 @@ export const useAppStore = create<AppState>()(
         const updated: CurrentSession = {
           ...prev,
           date: todayISO(),
-          questionnaireCompleted: true,
+          sessionStarted: true,
+          // Give the shortcut a trio if it has none, so the rebuilt Home and
+          // summary have something real to render.
+          plannedGames: prev.plannedGames?.length ? prev.plannedGames : pickTrio(null),
           categoriesCompleted: ['memory', 'attention', 'executive'],
           currentCategory: null,
           currentGameId: null,

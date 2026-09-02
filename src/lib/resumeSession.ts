@@ -14,7 +14,7 @@ export async function checkForResumableSession(userId: string): Promise<SessionS
   const allDone = allCategories.every((c) => state.categoriesCompleted.includes(c));
 
   if (allDone) return null; // session fully complete
-  if (!state.questionnaireCompleted) return null; // hasn't really started
+  if (!state.sessionStarted) return null; // hasn't really started
 
   return state;
 }

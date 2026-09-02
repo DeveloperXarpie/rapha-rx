@@ -19,7 +19,18 @@ export interface SessionState {
   id?: number;              // auto-increment
   userId: string;
   date: string;             // ISO date YYYY-MM-DD
-  questionnaireCompleted: boolean;
+  /**
+   * Set by startSession. Was `questionnaireCompleted` until the redesign, when
+   * the questionnaire screen became an information screen shown before every
+   * session and so could no longer own a once-per-day flag.
+   */
+  sessionStarted: boolean;
+  /**
+   * The three gameIds this session will play, memory/attention/executive.
+   * Not indexed, so this needs no Dexie version bump - same as tipCardPhotoShown
+   * below. An older row reads undefined; the store treats that as "not planned".
+   */
+  plannedGames?: string[];
   focusCategory: 'memory' | 'attention' | 'executive' | null;
   categoriesCompleted: string[];
   currentCategory: string | null;
@@ -36,6 +47,19 @@ export interface GameProgress {
   consecutiveCompletions: number;
   consecutiveIncompletes: number;
   hasBeenPromptedForLevel: boolean;
+  /**
+   * The level this game last reached, for Home's "Last time: level n".
+   *
+   * Stored rather than derived. getTodayDifficulty looks like the obvious
+   * source but is not: it is async, it writes on a cache miss (so rendering
+   * Home would create difficulty rows for unplayed games), and on a fresh day
+   * it returns yesterday's peak decayed by the warm-up factor rather than the
+   * level actually reached.
+   *
+   * Not indexed, so no Dexie version bump.
+   */
+  lastLevel?: number;
+  lastPlayedISO?: string;
 }
 
 export interface DifficultyState {

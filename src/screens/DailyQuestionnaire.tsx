@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
@@ -21,28 +21,26 @@ export default function DailyQuestionnaire() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const session                   = useAppStore((s) => s.currentSession);
-  const markQuestionnaireComplete = useAppStore((s) => s.markQuestionnaireComplete);
   const setCurrentGame            = useAppStore((s) => s.setCurrentGame);
   const setCurrentCategory        = useAppStore((s) => s.setCurrentCategory);
   const navigatingRef = useRef(false);
 
-  // Guard: if questionnaire already done for today, redirect to home (only on mount)
-  useEffect(() => {
-    if (session.questionnaireCompleted && !navigatingRef.current) {
-      navigate('/app/home', { replace: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  /*
+   * The mount redirect that used to live here is gone. It keyed on the flag now
+   * called sessionStarted, which startSession sets before this screen is ever
+   * reached - so it bounced every session straight back to Home. This screen is
+   * replaced by EducationScreen shortly; until then it is informational only.
+   */
 
   function handleLetsBegin() {
     navigatingRef.current = true;
-    // Always start with Memory category, pick a random memory game
+    // The trio is chosen by startSession. Falling back to a random pick keeps a
+    // session created before plannedGames existed playable.
     const firstCategory: GameCategory = 'memory';
-    const gameId = pickGame(firstCategory);
+    const gameId = session.plannedGames[0] ?? pickGame(firstCategory);
 
     setCurrentCategory(firstCategory);
     setCurrentGame(gameId);
-    markQuestionnaireComplete();
 
     track('session_workout_started', {
       firstGame: gameId,
