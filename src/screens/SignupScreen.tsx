@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { v4 as uuidv4 } from 'uuid';
 import { doc, setDoc } from 'firebase/firestore';
 import { db as firestoreDb, ensureAnonymousAuth } from '../lib/firebase';
-import { getProfilesByCareHome, upsertUserProfile } from '../lib/db';
-import type { UserProfile } from '../lib/db';
+import { findOrCreateProfile } from '../lib/profiles';
 import { useAppStore } from '../store';
 import { track, setUserProperties } from '../lib/analytics';
 import { prescriberName } from '../lib/prescribers';
@@ -50,10 +48,11 @@ export default function SignupScreen() {
   }
 
   /*
-   * Lifted from the old CareHomeSelector's signup submit, unchanged in
-   * substance: an existing profile with this name under this prescriber is
-   * reused rather than duplicated, the Firestore write is best-effort, and both
-   * analytics events keep their names and payloads.
+   * The duplicate-name rule lives in lib/profiles.ts and is tested there: a
+   * name that already exists under this prescriber signs in to that profile
+   * rather than making a second one. Residents do not remember whether they
+   * have signed up before, and two profiles for one person splits their
+   * progress and their study data in half.
    */
   async function handleCreate() {
     if (!prescriberId) return;
@@ -62,39 +61,22 @@ export default function SignupScreen() {
 
     try {
       await ensureAnonymousAuth();
-      const existing = await getProfilesByCareHome(prescriberId);
-      let profile = existing.find(
-        (p) => p.firstName.toLowerCase() === name.trim().toLowerCase(),
-      );
+      const { profile, created } = await findOrCreateProfile(name, prescriberId);
 
-      if (!profile) {
-        profile = {
-          userId: uuidv4(),
-          firstName: name.trim(),
-          lastName: '',
-          nickname: name.trim(),
-          careHomeId: prescriberId,
-          language: 'en',
-          createdAt: Date.now(),
-          lastSeenAt: Date.now(),
-          soundEnabled: true,
-          textSize: 'normal',
-        } satisfies UserProfile;
-        await upsertUserProfile(profile);
-        try {
-          await setDoc(doc(firestoreDb, 'users', profile.userId), profile);
-        } catch {
-          // Offline is the normal case on care-home wifi. Dexie is the source
-          // of truth; the sync catches up later.
-        }
+      try {
+        await setDoc(doc(firestoreDb, 'users', profile.userId), profile);
+      } catch {
+        // Offline is the normal case on care-home wifi. Dexie is the source
+        // of truth; the sync catches up later.
+      }
+
+      if (created) {
         track('profile_created', { careHomeId: prescriberId, language: profile.language });
       }
 
-      const updated: UserProfile = { ...profile, lastSeenAt: Date.now() };
-      await upsertUserProfile(updated);
-      setActiveProfile(updated);
-      setUserProperties(updated.userId, updated.careHomeId, updated.language);
-      track('session_started', { userId: updated.userId, careHomeId: updated.careHomeId });
+      setActiveProfile(profile);
+      setUserProperties(profile.userId, profile.careHomeId, profile.language);
+      track('session_started', { userId: profile.userId, careHomeId: profile.careHomeId });
 
       navigate('/app/home');
     } catch {
