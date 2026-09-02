@@ -159,7 +159,7 @@ export default function HomeScreen() {
         {anotherDay.length > 0 && (
           <div
             style={{
-              position: 'relative', margin: '14px 20px 0', paddingTop: 14,
+              position: 'relative', margin: '18px 20px 0', paddingTop: 14,
               borderTop: '1px solid rgba(255,255,255,0.16)',
             }}
           >
@@ -189,7 +189,14 @@ export default function HomeScreen() {
         )}
 
         {/* Primary action */}
-        <div style={{ position: 'relative', margin: 'auto 20px 30px' }}>
+        {/*
+         * `marginTop: auto` pins this to the bottom only while there is spare
+         * room. Once the content is taller than the screen it collapses to
+         * zero and the button lands flush against the strip above it, which is
+         * what it did on a 480px-wide window. paddingTop is the floor that
+         * cannot collapse.
+         */}
+        <div style={{ position: 'relative', margin: 'auto 20px 30px', paddingTop: 24 }}>
           {todayDone ? (
             <Button variant="green" fullWidth onClick={() => navigate('/app/free-play')}>
               {t('home.freePlay', 'Free Play')}
