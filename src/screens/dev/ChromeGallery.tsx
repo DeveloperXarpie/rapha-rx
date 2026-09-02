@@ -6,7 +6,9 @@
  * spec, recorded in the plan): phases 2 and 3 need exactly this surface to
  * check the same components under three languages and three text sizes.
  */
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import CategoryBadge from '../../components/chrome/CategoryBadge';
+import ProgressBar from '../../components/chrome/ProgressBar';
 import { Button } from '../../components/ui/Button';
 import { BRAND, CATEGORY_BRAND } from '../../styles/tokens';
 import type { GameCategory } from '../../styles/tokens';
@@ -21,6 +23,27 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       </h2>
       {children}
     </section>
+  );
+}
+
+function ProgressDemo() {
+  const [run, setRun] = useState(0);
+  return (
+    <div>
+      {CATEGORIES.map((c) => (
+        <div key={`${c}-${run}`} style={{ marginBottom: 10 }}>
+          <ProgressBar
+            durationMs={2000}
+            color={CATEGORY_BRAND[c].accent}
+            trackColor="rgba(255,255,255,0.16)"
+            running
+          />
+        </div>
+      ))}
+      <button onClick={() => setRun((r) => r + 1)} style={{ color: '#fff', fontSize: 15, textDecoration: 'underline' }}>
+        replay
+      </button>
+    </div>
   );
 }
 
@@ -73,7 +96,15 @@ export default function ChromeGallery() {
         </div>
       </Section>
 
-      {/* Tasks 5-7 append their sections here. */}
+      <Section title="Category badges and progress">
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
+          {CATEGORIES.map((c) => <CategoryBadge key={c} category={c} size={88} />)}
+          <CategoryBadge category="memory" size={52} />
+        </div>
+        <ProgressDemo />
+      </Section>
+
+      {/* Tasks 6-7 append their sections here. */}
 
       <div className="wave-overlay" aria-hidden="true" />
     </div>
