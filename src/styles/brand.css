@@ -50,6 +50,26 @@
   border-radius: 50% 50% 0 0 / 75px 75px 0 0;
   background: rgba(6, 18, 140, 0.4);
   pointer-events: none;
+  /*
+   * The wave is decoration and must paint UNDER the screen's content. It is
+   * absolutely positioned and last in DOM order, so without this it wins the
+   * paint order against every sibling and washes the primary button in 40%
+   * navy - which is exactly what it did to Start Session and Back to Home.
+   *
+   * The handoff warned that this element swallowed clicks in its own
+   * prototype; pointer-events fixes the clicks, and this fixes the paint.
+   */
+  z-index: 0;
+}
+
+/*
+ * Content sits above the wave. Screens already mark their sections
+ * `position: relative` for this reason, but an auto z-index leaves DOM order to
+ * decide, and the wave is always last.
+ */
+.screen-blue > *:not(.wave-overlay) {
+  position: relative;
+  z-index: 1;
 }
 
 .wave-overlay--tall {

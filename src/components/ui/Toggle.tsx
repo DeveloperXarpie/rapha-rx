@@ -3,12 +3,24 @@ interface ToggleProps {
   onChange: (checked: boolean) => void;
   label?: string;
   ariaLabel?: string;
+  /**
+   * Which ground the toggle sits on. The default dark label is for the white
+   * cards this component was built for; `dark` is for the redesigned blue
+   * chrome, where #222222 on navy is very nearly invisible.
+   */
+  tone?: 'light' | 'dark';
 }
 
-export function Toggle({ checked, onChange, label, ariaLabel }: ToggleProps) {
+export function Toggle({ checked, onChange, label, ariaLabel, tone = 'light' }: ToggleProps) {
   return (
     <label className="flex items-center gap-4 cursor-pointer min-h-[80px]">
-      {label && <span className="text-body-md font-medium text-body-text flex-1">{label}</span>}
+      {label && (
+        <span
+          className={`text-body-md font-medium flex-1 ${tone === 'dark' ? 'text-white' : 'text-body-text'}`}
+        >
+          {label}
+        </span>
+      )}
       <button
         role="switch"
         aria-checked={checked}

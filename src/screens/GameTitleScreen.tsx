@@ -6,10 +6,14 @@ import { getGame } from '../lib/gameCatalog';
 
 /*
  * Where the painted PLAY button sits inside the supplied art, as a fraction of
- * the image box. The real control is placed over it in percentages rather than
- * pixels so it tracks the art at any viewport size.
+ * the image box. Percentages rather than pixels so it tracks the art at any
+ * viewport size.
+ *
+ * Measured off a rendered 360x780 screenshot, not estimated: the painted button
+ * spans 69.1%-79.9% of the height and 19.4%-80.6% of the width once the art is
+ * cover-fitted.
  */
-const PLAY_HOTSPOT = { top: '66%', height: '11%', left: '20%', width: '60%' };
+const PLAY_HOTSPOT = { top: '69%', height: '11%', left: '20%', width: '60%' };
 
 /**
  * The screen between the category intro and the board.

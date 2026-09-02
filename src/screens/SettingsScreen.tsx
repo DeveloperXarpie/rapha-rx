@@ -150,6 +150,7 @@ export default function SettingsScreen() {
 
         <section style={CARD}>
           <Toggle
+            tone="dark"
             label={t('settings.sound')}
             checked={settings.soundEnabled}
             onChange={(v) => changeSetting('soundEnabled', v)}
