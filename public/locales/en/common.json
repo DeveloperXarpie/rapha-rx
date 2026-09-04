@@ -447,7 +447,7 @@
   "ty.caption.sending": "On its way…",
   "game.serveGuests": "Serve the Guests",
   "serveGuests.loading": "Getting the counter ready…",
-  "serveGuests.guestsLeft": "GUESTS LEFT",
+  "serveGuests.guests": "GUESTS",
   "serveGuests.prepare": "MAKE",
   "serveGuests.cooking": "COOKING",
   "serveGuests.ready": "SERVE",

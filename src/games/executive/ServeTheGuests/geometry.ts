@@ -184,34 +184,46 @@ export function bubbleCentreX(seat: number): number {
  * The HUD is drawn in code rather than from the sheet's painted dial and score capsule:
  * both have their values baked into the art ("8", a 7-of-8 pip strip, and "000"), so they
  * cannot carry live state without being masked and overdrawn.
- */
-export const HUD_Y = 30;
-export const HUD_LEFT_X = 34;
-export const HUD_RIGHT_X = 34;
-export const GUEST_DIAL = 92;
-export const GUEST_CAPSULE_W = 240;
-
-/** Score chip. Height matches the guest dial so the two HUD ends sit on one line. */
-export const SCORE_CAPSULE_W = 230;
-export const SCORE_CAPSULE_H = 92;
-
-// ─── Title ────────────────────────────────────────────────────────────────────
-
-/**
- * The painted title lockup, centred between the two HUD ends.
  *
- * Shipped at the user's request, with two known costs: the word is painted, so it stays
- * English on a Hindi or Kannada device, and the art reads "Tiffen" rather than "Tiffin".
- * GameShell hides its own title banner for this game so the two do not both appear.
+ * Two small groups, not one big line: guests hangs under GameShell's level badge in the
+ * top-left, score sits beside its exit in the top-right. Both of those are fixed
+ * screen-size overlays over a board that scales, so their share of the canvas is largest
+ * at the smallest board - the insets here clear them there.
+ *
+ * Sizes run about a third above the handoff's, which was drawn for a board read at arm's
+ * length rather than by a resident holding a phone. The handoff anticipates this in its
+ * legibility note and sanctions a 44px chip with a 22px count; these go a step further.
  */
-export const TITLE_W = 300;
-export const TITLE_H = Math.round(TITLE_W * (238 / 422));
+export const HUD_Y = 22;
 
 /**
- * Below the HUD row rather than beside it. Centred at this width the lockup runs x321..621
- * and the guests-left group ends at x344, so sitting them on one line overlapped by 23px.
- * Narrowing the capsules instead risked wrapping "GUESTS LEFT", and there is a whole empty
- * sky here to hang it in.
+ * Guests chip, below the level badge.
+ *
+ * The handoff's y72 was measured against a mock that draws the badge in board space. The
+ * real badge is a fixed screen-size overlay, so at the smallest board it reaches y84 in
+ * canvas terms and the two overlapped by 4 screen px. Measured at a 360px viewport, which
+ * is the worst case: a larger board shrinks the badge's share of the canvas, never grows it.
  */
-export const TITLE_Y = HUD_Y + SCORE_CAPSULE_H + 24;
-export const TITLE_X = Math.round((CANVAS_W - TITLE_W) / 2);
+export const HUD_LEFT_X = 26;
+export const GUEST_CHIP_Y = 104;
+export const GUEST_CHIP_H = 46;
+export const GUEST_DIAL = 32;
+export const GUEST_FONT = 21;
+
+/**
+ * Score chip, left of the exit.
+ *
+ * The handoff's 92 was derived the same way as the guests y above and overlapped the exit
+ * by 17 screen px at a 360px viewport. 156 clears it by 6px there; on a wider board the
+ * exit's canvas footprint shrinks and the gap only opens further.
+ */
+export const HUD_RIGHT_X = 156;
+export const SCORE_CAPSULE_H = 68;
+export const SCORE_COIN = 40;
+export const SCORE_FONT = 32;
+
+/**
+ * The capsule's 9-slice band, scaled down with the chip. At the frame's native 24/34 the
+ * rim alone is taller than the chip and swallows the number.
+ */
+export const SCORE_FRAME_SCALE = 0.72;

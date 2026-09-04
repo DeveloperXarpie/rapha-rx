@@ -447,7 +447,7 @@
   "ty.caption.sending": "ಹೊರಟಿದೆ…",
   "game.serveGuests": "ಅತಿಥಿಗಳಿಗೆ ಬಡಿಸಿ",
   "serveGuests.loading": "ಅಂಗಡಿ ಸಿದ್ಧವಾಗುತ್ತಿದೆ…",
-  "serveGuests.guestsLeft": "ಉಳಿದ ಅತಿಥಿಗಳು",
+  "serveGuests.guests": "ಅತಿಥಿಗಳು",
   "serveGuests.prepare": "ಮಾಡಿ",
   "serveGuests.cooking": "ಬೇಯುತ್ತಿದೆ",
   "serveGuests.ready": "ಬಡಿಸಿ",

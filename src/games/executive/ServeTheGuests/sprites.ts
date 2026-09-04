@@ -218,7 +218,6 @@ export function spriteUrls(dealtDishIds: string[]): string[] {
   return [
     BACKGROUND_SRC,
     FACE_SHEET_SRC,
-    TITLE_SRC,
     ...dealtDishIds.flatMap((id) => [DISH_BY_ID[id].src, DISH_BY_ID[id].spoiledSrc]),
     ...Object.values(FRAMES).map((f) => f.src),
     ...Object.values(BUTTONS).map((b) => b.src),

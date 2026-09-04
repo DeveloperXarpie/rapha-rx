@@ -11,9 +11,10 @@ import {
   bubbleCentreX, bubbleWidth, CANVAS_H, CANVAS_W, CARD_BTN_DY, CARD_BTN_H, CARD_H,
   CARD_IMG_DY, CARD_IMG_H, CARD_NAME_DY, CARD_NAME_H, CARD_PAD, CARD_W, cardX, cardY,
   COOK_BAR_H, COOK_BAR_W, FACE_BOTTOM_Y, FACE_H, FACE_TOP_Y,
-  faceCentreX, GUEST_CAPSULE_W, GUEST_DIAL, HUD_LEFT_X, HUD_RIGHT_X, HUD_Y, PATIENCE_BAR_H,
-  patienceBarWidth, SCORE_CAPSULE_H, SCORE_CAPSULE_W,
-  TITLE_H, TITLE_W, TITLE_X, TITLE_Y, TRAY_H, TRAY_W, TRAY_X, TRAY_Y,
+  faceCentreX, GUEST_CHIP_H, GUEST_CHIP_Y, GUEST_DIAL, GUEST_FONT,
+  HUD_LEFT_X, HUD_RIGHT_X, HUD_Y, PATIENCE_BAR_H,
+  patienceBarWidth, SCORE_CAPSULE_H, SCORE_COIN, SCORE_FONT, SCORE_FRAME_SCALE,
+  TRAY_H, TRAY_W, TRAY_X, TRAY_Y,
 } from './geometry';
 import {
   cookProgress, createInitialState, guestsHandled, spoilProgress, tapDish, tick, TOTAL_GUESTS,
@@ -21,7 +22,7 @@ import {
 } from './model';
 import {
   BACKGROUND_SRC, BUBBLE_TAIL, BUTTONS, COIN_SRC, DISH_BY_ID, faceCrop, FRAMES, frameStyle,
-  PAINTED_BUTTON_LANG, spriteUrls, TITLE_SRC,
+  PAINTED_BUTTON_LANG, spriteUrls,
 } from './sprites';
 import { Bar, type BarTint } from './Bar';
 import { BUTTON_SKIN, COLOURS } from './palette';
@@ -145,6 +146,7 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
       <ServeTheGuestsStyles reduced={reduced} />
 
       <div
+        data-board
         style={{
           position: 'relative',
           flex: '0 0 auto',
@@ -168,17 +170,6 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
               fontFamily: "'Baloo 2', Inter, system-ui, sans-serif",
             }}
           >
-            {/* The painted title. Not localised, and the art reads "Tiffen"; both are
-                known and accepted, and GameShell drops its own banner for this game. */}
-            <img
-              src={TITLE_SRC}
-              alt=""
-              style={{
-                position: 'absolute', left: TITLE_X, top: TITLE_Y,
-                width: TITLE_W, height: TITLE_H,
-              }}
-            />
-
             {state.seats.map((guest, seat) => (
               <SeatView key={seat} seat={seat} guest={guest} t={t} />
             ))}
@@ -205,83 +196,54 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
               />
             ))}
 
-            {/* HUD: guests remaining on the left, score on the right */}
+            {/* Guests remaining, hanging under GameShell's level badge. */}
             <div
               style={{
-                position: 'absolute', left: HUD_LEFT_X, top: HUD_Y,
-                display: 'flex', alignItems: 'center',
+                position: 'absolute', left: HUD_LEFT_X, top: GUEST_CHIP_Y,
+                height: GUEST_CHIP_H, display: 'flex', alignItems: 'center', gap: 9,
+                padding: '0 16px 0 7px', borderRadius: GUEST_CHIP_H / 2,
+                background: 'rgba(255,247,224,.92)', border: `1px solid ${COLOURS.goldBorder}`,
+                boxSizing: 'border-box', boxShadow: '0 2px 5px rgba(70,45,10,.16)',
               }}
             >
-              <div
+              <span
                 style={{
-                  position: 'relative', zIndex: 2, width: GUEST_DIAL, height: GUEST_DIAL,
-                  borderRadius: '50%',
+                  width: GUEST_DIAL, height: GUEST_DIAL, borderRadius: '50%',
                   background: 'radial-gradient(circle at 35% 30%,#ffe9a8,#f4c23c)',
-                  border: `7px solid ${COLOURS.goldBorder}`,
-                  boxShadow: '0 5px 0 rgba(120,80,10,.35)',
+                  border: `1px solid ${COLOURS.goldBorder}`, boxSizing: 'border-box',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: GUEST_FONT, fontWeight: 800, color: COLOURS.woodDark, lineHeight: 1,
                 }}
               >
-                <div
-                  style={{
-                    width: 74, height: 74, borderRadius: '50%', background: '#fffdf5',
-                    border: '3px solid #c99a2f', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', fontSize: 42, fontWeight: 800,
-                    color: COLOURS.woodDark, lineHeight: 1,
-                  }}
-                >
-                  {guestsLeft}
-                </div>
-              </div>
-              <div
+                {guestsLeft}
+              </span>
+              <span
                 style={{
-                  marginLeft: -22, width: GUEST_CAPSULE_W, height: 74, borderRadius: 37,
-                  background: COLOURS.gold, border: `7px solid ${COLOURS.goldBorder}`,
-                  boxSizing: 'border-box', padding: '8px 22px 8px 34px',
-                  boxShadow: '0 5px 0 rgba(120,80,10,.3)', display: 'flex',
-                  alignItems: 'center', justifyContent: 'space-between', gap: 14,
+                  fontSize: GUEST_FONT, fontWeight: 800, color: COLOURS.woodMid,
+                  letterSpacing: '.09em', whiteSpace: 'nowrap',
                 }}
               >
-                <span
-                  style={{
-                    fontSize: 30, fontWeight: 800, color: COLOURS.woodMid,
-                    letterSpacing: 1, whiteSpace: 'nowrap',
-                  }}
-                >
-                  {t('serveGuests.guestsLeft', 'GUESTS LEFT')}
-                </span>
-                <span style={{ display: 'flex', gap: 9, alignItems: 'center' }}>
-                  {Array.from({ length: TOTAL_GUESTS }, (_, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        width: 26, height: 26, borderRadius: '50%',
-                        border: '3px solid #b07f14', boxSizing: 'border-box',
-                        transition: 'background .3s',
-                        background: i < handled
-                          ? COLOURS.woodMid
-                          : 'linear-gradient(180deg,#fff6dd,#ffe6a6)',
-                      }}
-                    />
-                  ))}
-                </span>
-              </div>
+                {t('serveGuests.guests', 'GUESTS')}
+              </span>
             </div>
 
             <div
               style={{
                 position: 'absolute', right: HUD_RIGHT_X, top: HUD_Y,
-                display: 'flex', alignItems: 'center', gap: 18,
-                minWidth: SCORE_CAPSULE_W, height: SCORE_CAPSULE_H, boxSizing: 'border-box',
-                ...frameStyle(FRAMES.capsule),
+                display: 'flex', alignItems: 'center', gap: 8,
+                height: SCORE_CAPSULE_H, padding: '0 6px', boxSizing: 'border-box',
+                ...frameStyle(FRAMES.capsule, SCORE_FRAME_SCALE),
               }}
             >
-              <img src={COIN_SRC} alt="" style={{ width: 74, height: 74, flex: '0 0 auto' }} />
+              <img
+                src={COIN_SRC}
+                alt=""
+                style={{ width: SCORE_COIN, height: SCORE_COIN, flex: '0 0 auto' }}
+              />
               <span
                 style={{
-                  flex: '1 1 auto', textAlign: 'center',
-                  fontSize: 62, fontWeight: 800, color: COLOURS.woodDark,
-                  lineHeight: 1, letterSpacing: 2,
+                  fontSize: SCORE_FONT, fontWeight: 800, color: COLOURS.woodDark,
+                  lineHeight: 1, letterSpacing: 1,
                 }}
               >
                 {String(Math.min(999, state.score)).padStart(3, '0')}

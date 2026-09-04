@@ -447,7 +447,7 @@
   "ty.caption.sending": "रवाना हो रही है…",
   "game.serveGuests": "मेहमानों को परोसें",
   "serveGuests.loading": "काउंटर तैयार हो रहा है…",
-  "serveGuests.guestsLeft": "बचे मेहमान",
+  "serveGuests.guests": "मेहमान",
   "serveGuests.prepare": "बनाएँ",
   "serveGuests.cooking": "पक रहा है",
   "serveGuests.ready": "परोसें",
