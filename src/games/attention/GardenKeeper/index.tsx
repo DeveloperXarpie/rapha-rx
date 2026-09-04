@@ -115,7 +115,14 @@ function Hud({ state, params, t }: { state: RoundState; params: GardenKeeperDyna
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 22, padding: '0 26px',
+      display: 'flex', alignItems: 'center', gap: 22,
+      /*
+       * Percentages, not the old flat 26px: GameShell floats the level badge over the
+       * board's top-left corner and the exit over its top-right, both at a fixed screen
+       * size. Their share of the board only shrinks as the board grows, so a percentage
+       * clears them at every scale where a canvas-px padding would clear them at one.
+       */
+      padding: '0 12% 0 20%',
       width: CANVAS_W, height: HUD_H, boxSizing: 'border-box',
       background: `linear-gradient(180deg, ${COLOURS.hudTop}, ${COLOURS.hudBot})`,
       borderBottom: `4px solid ${COLOURS.hudEdge}`,
@@ -562,6 +569,7 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
     >
       <GardenKeeperStyles />
       <div
+        data-board
         style={{
           width: CANVAS_W, height: CANVAS_H,
           // Flex centring on the stage, not `margin: 0 auto` here: the canvas is 800

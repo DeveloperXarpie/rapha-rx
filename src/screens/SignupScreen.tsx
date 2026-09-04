@@ -15,8 +15,15 @@ import { Button } from '../components/ui/Button';
 import { BRAND } from '../styles/tokens';
 
 /*
- * The age field the old signup carried is gone, along with its 60-78
- * validation. The handoff removes the age gate outright.
+ * Age is collected and never stored - it reaches no UserProfile field, no Dexie
+ * table and no Firestore document, which is exactly what the old CareHomeSelector
+ * signup did with it.
+ *
+ * What did go is the old 60-78 range check. The handoff README reads "Age field
+ * is removed", but the prototype it documents keeps the field and captions it
+ * "Designed for ages 60-80, but open to all ages" - so "remove the age gate"
+ * means the validation, not the input. An earlier pass here read the README
+ * alone and dropped both.
  */
 export default function SignupScreen() {
   const { t } = useTranslation();
@@ -25,6 +32,7 @@ export default function SignupScreen() {
 
   const [step, setStep] = useState<'details' | 'confirm'>('details');
   const [name, setName] = useState('');
+  const [age, setAge] = useState('');
   const [prescriberId, setPrescriberId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [error, setError] = useState('');
@@ -41,6 +49,12 @@ export default function SignupScreen() {
   function handleContinue() {
     if (!name.trim()) {
       setError(t('signup.nameError', 'Please type your name.'));
+      return;
+    }
+    // Required and numeric, but deliberately unbounded: the prototype's caption
+    // states 60-80 as the design target, not an eligibility rule.
+    if (!age.trim() || !/^\d{1,3}$/.test(age.trim())) {
+      setError(t('signup.ageError', 'Please type your age.'));
       return;
     }
     setError('');
@@ -86,6 +100,16 @@ export default function SignupScreen() {
   }
 
   const label = { color: BRAND.cyan, fontSize: 17 } as const;
+  const field = {
+    width: '100%', maxWidth: 320, minHeight: 62, marginTop: 8,
+    borderRadius: 16, border: '2px solid #D3DBEA', background: '#FFFFFF',
+    color: '#1B2438', fontSize: 19, padding: '0 16px', textAlign: 'center',
+  } as const;
+  /** The captions under each field. 17px cyan, per the prototype. */
+  const hint = {
+    maxWidth: 320, margin: '10px 4px 0', fontSize: 17, lineHeight: 1.3,
+    fontWeight: 600, color: BRAND.cyan, textWrap: 'pretty',
+  } as const;
 
   return (
     <AppFrame>
@@ -98,7 +122,7 @@ export default function SignupScreen() {
               padding: '0 24px', textAlign: 'center',
             }}
           >
-            <img src="/brand/logo-onblue.png" alt="" aria-hidden="true" style={{ width: 150, marginBottom: 22 }} />
+            <img src="/brand/logo-white.png" alt="" aria-hidden="true" style={{ width: 174, marginBottom: 22 }} />
 
             {step === 'details' ? (
               <>
@@ -111,12 +135,27 @@ export default function SignupScreen() {
                   onChange={(e) => setName(e.target.value)}
                   autoComplete="given-name"
                   className="font-baloo"
-                  style={{
-                    width: '100%', maxWidth: 320, minHeight: 62, marginTop: 8,
-                    borderRadius: 16, border: '2px solid #D3DBEA', background: '#FFFFFF',
-                    color: '#1B2438', fontSize: 19, padding: '0 16px', textAlign: 'center',
-                  }}
+                  style={field}
                 />
+                <p className="font-baloo" style={hint}>
+                  {t('signup.nameHint', "Your Name helps avoid duplicates and won't be stored for this study.")}
+                </p>
+
+                <label className="font-baloo" style={{ ...label, marginTop: 18 }} htmlFor="signup-age">
+                  {t('signup.age', 'Your Age')}
+                </label>
+                <input
+                  id="signup-age"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  className="font-baloo"
+                  style={field}
+                />
+                <p className="font-baloo" style={hint}>
+                  {t('signup.ageHint', 'Designed for ages 60-80, but open to all ages.')}
+                </p>
 
                 <div style={{ width: '100%', maxWidth: 320, marginTop: 18 }}>
                   <Button
@@ -180,7 +219,7 @@ export default function SignupScreen() {
                     size="md"
                     onClick={handleCreate}
                     disabled={loading}
-                    style={{ minWidth: 200, minHeight: 62 }}
+                    style={{ minWidth: 200 }}
                   >
                     {t('btn.next', 'Next')}
                   </Button>

@@ -112,7 +112,7 @@ export default function ChromeGallery() {
               <div key={c} style={{ background: b.gradient, borderRadius: 16, padding: 12 }}>
                 <p className="font-baloo" style={{ color: b.accent, fontWeight: 700, fontSize: 19 }}>{c}</p>
                 <p style={{ color: b.label, fontSize: 15 }}>label colour on the category wash</p>
-                <div style={{ background: b.band, color: '#fff', fontWeight: 700, fontSize: 16, padding: '10px 14px', borderRadius: 10, marginTop: 8 }}>
+                <div style={{ background: BRAND.introBand, color: '#fff', fontWeight: 700, fontSize: 16, padding: '10px 14px', borderRadius: 10, marginTop: 8 }}>
                   practice band
                 </div>
               </div>

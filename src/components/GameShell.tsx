@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSessionContext } from '../session/SessionManager';
 import { track } from '../lib/analytics';
 import { adjustDifficulty, scoreLevelLabel, scoreToLevel } from '../lib/dynamicDifficulty';
 import { recordLastLevel } from '../lib/lastLevel';
+import { getGame } from '../lib/gameCatalog';
 import { useAppStore } from '../store';
 import { Button } from './ui/Button';
 import type { LevelConfig } from '../games/types';
@@ -28,18 +29,73 @@ interface GameShellProps {
   children: React.ReactNode;
 }
 
-const CATEGORY_LABEL_KEYS: Record<string, string> = {
-  memory: 'game.category.memory',
-  attention: 'game.category.attention',
-  executive: 'game.category.executive',
-};
-
 /**
  * How long a category runs before rotating. A level completed before this
  * starts another round of the same game; Home derives its session-length copy
  * from it, so the two can never drift.
  */
 export const ROTATION_THRESHOLD_SECONDS = 2 * 60; // 2 min per category
+
+interface Anchor { top: number; left: number; right: number }
+
+/**
+ * Where the overlay chrome sits: the corners of the BOARD, not of the play box.
+ *
+ * The six rotation games letterbox a fixed design canvas into the box, so the box
+ * corners are out in the margin beside the artwork - the level badge and the exit
+ * visibly floated off the board's edge. Each of those games marks its rendered board
+ * with `data-board`; everything else has no such element and keeps the box corners,
+ * which is right for a game that fills the box with flow layout.
+ *
+ * Measured rather than computed, because the canvas size and the fit live inside each
+ * game and the shell has no business duplicating either.
+ */
+function useBoardAnchor(enabled: boolean, gameId: string): [(el: HTMLDivElement | null) => void, Anchor | null] {
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const [anchor, setAnchor] = useState<Anchor | null>(null);
+
+  const measure = useCallback(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const board = box.querySelector('[data-board]');
+    if (!board) { setAnchor(null); return; }
+    const b = board.getBoundingClientRect();
+    const p = box.getBoundingClientRect();
+    if (b.width <= 0 || b.height <= 0) return;
+    const next = { top: b.top - p.top, left: b.left - p.left, right: p.right - b.right };
+    // Sub-pixel equality, or the observer and this state trade updates forever.
+    setAnchor((prev) =>
+      prev && Math.abs(prev.top - next.top) < 0.5
+        && Math.abs(prev.left - next.left) < 0.5
+        && Math.abs(prev.right - next.right) < 0.5
+        ? prev
+        : next);
+  }, []);
+
+  const ref = useCallback((el: HTMLDivElement | null) => {
+    boxRef.current = el;
+    if (el && enabled) measure();
+  }, [enabled, measure]);
+
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!enabled || !box) return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(box);
+    // The board mounts after its sprites decode, and its transform changes on every
+    // refit; neither is a resize of the box, so the observer alone would miss both.
+    const mo = new MutationObserver(measure);
+    mo.observe(box, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'data-board'] });
+    /*
+     * Both observers fire on connect for the case that matters (the board is already
+     * laid out), and the ref callback measures on mount for the case where it is not.
+     * Measuring synchronously here as well only added a second render on every mount.
+     */
+    return () => { ro.disconnect(); mo.disconnect(); };
+  }, [enabled, gameId, measure]);
+
+  return [ref, anchor];
+}
 
 export default function GameShell({
   gameId,
@@ -58,10 +114,10 @@ export default function GameShell({
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const startedAt = useRef<number>(Date.now());
 
-  const gameName = gameId
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
+  // Only the six games the daily session draws from carry a `data-board`; the other
+  // nine are left exactly as they were.
+  const isRotationGame = getGame(gameId)?.marquee === true;
+  const [playBoxRef, anchor] = useBoardAnchor(isRotationGame, gameId);
 
   const levelLabel = difficultyScore !== undefined
     ? scoreLevelLabel(difficultyScore)
@@ -130,12 +186,16 @@ export default function GameShell({
   }
 
   function finishLevel(result: LevelResult) {
-    // Check if rotation should happen
-    if (secondsInCurrentCategory >= ROTATION_THRESHOLD_SECONDS) {
-      triggerRotation();
-    } else {
-      onLevelComplete(result);
-    }
+    /*
+     * Past the threshold we ask to rotate, but the ask can decline: `triggerRotation`
+     * returns false for free play after the day's session (nothing left to rotate into)
+     * and when there is no profile. Both used to fall through to nothing at all - no
+     * navigation and no next round - which froze the game on its round-end card with
+     * its own commit guard already spent, so the button was dead. Whenever rotation
+     * does not move us, the next round starts here.
+     */
+    const rotated = secondsInCurrentCategory >= ROTATION_THRESHOLD_SECONDS && triggerRotation();
+    if (!rotated) onLevelComplete(result);
   }
 
   function handleExit() {
@@ -155,56 +215,34 @@ export default function GameShell({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Top bar */}
-      {/*
-        Target 56px rather than 80px. This is the only chrome on a game route now, so the
-        padding it spends comes straight out of the board.
-      */}
-      <div className="panel-surface flex-none px-4 py-2 flex items-center gap-3">
-        {/* Serve the Guests paints its own title into the board, so showing this banner
-            too would put the game's name on screen twice. */}
-        <div className="flex-1">
-          {gameId !== 'serve-guests' && (
-            <h2 className="text-h2">
-              <span className="game-title-banner game-title-banner-compact">{gameName}</span>
-            </h2>
-          )}
-        </div>
-        {/* Dropped on narrow screens: the game's own title already says what this is. */}
-        <span className="shell-tag shell-tag-category hidden sm:inline-flex">
-          {t(CATEGORY_LABEL_KEYS[gameCategory] ?? '')}
-        </span>
-        {/* Picture Postcard renders its own 1-100 ladder level; showing the 0-1
-            score's 1-10 label beside it would be two conflicting level numbers. */}
-        {gameId !== 'picture-postcard' && (
-          <span className="shell-tag shell-tag-level">{levelLabel}</span>
-        )}
-        <button
-          onClick={handleExit}
-          /*
-           * 44x44 rather than 48x48. Above the WCAG 2.5.5 minimum but deliberately below
-           * this app's own 80px touch-min token: exit ends a round, and it should not be
-           * easy to hit by accident. This exception applies to exit and nothing else.
-           */
-          className="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center hover:bg-hover-state transition-colors text-xl text-caption-text border border-gray-200 bg-white/70"
-          aria-label={t('btn.exit')}
-        >
-          ✕
-        </button>
-      </div>
-
       {/* Game content */}
       {/*
-        The play box. It has a real height, because every level above it does, so a game
-        can measure this box instead of reaching for `window.innerHeight` and subtracting
-        a guess at the chrome. `overflow-hidden` is the contract: a game fits or it scales
-        down, it never scrolls.
+        The play box, which is now the whole route. The chrome bar that used to sit above
+        it - game name, category tag, level tag and exit - is gone; the level and the exit
+        survive as overlays inside this box, so they cost the board no height at all and
+        every game grew by the bar's ~56px. The six games on useStageFit take that up on
+        their own, because they measure this box rather than the window.
+
+        It has a real height, because every level above it does, so a game can measure this
+        box instead of reaching for `window.innerHeight` and subtracting a guess at the
+        chrome. `overflow-hidden` is the contract: a game fits or it scales down, it never
+        scrolls.
 
         `data-testid` is not decoration - scripts/portrait-smoke.mjs asserts against this
         exact element, and a structural selector would silently start matching the wrong
         node the next time anyone adds a div here.
       */}
-      <div data-testid="play-box" className="flex-1 min-h-0 overflow-hidden flex flex-col p-4">
+      <div
+        ref={playBoxRef}
+        data-testid="play-box"
+        /*
+         * No padding for a rotation game. Those six letterbox a fixed canvas, so the
+         * padding was 32px of white frame around artwork that was already margined by
+         * its own fit - it bought nothing and cost the board a slice of both axes.
+         * The other nine lay out in flow and still want the gutter.
+         */
+        className={`relative flex-1 min-h-0 overflow-hidden flex flex-col ${isRotationGame ? '' : 'p-4'}`}
+      >
         {React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
             return React.cloneElement(child as React.ReactElement<{
@@ -217,6 +255,40 @@ export default function GameShell({
           }
           return child;
         })}
+
+        {/*
+          Overlay chrome, declared after the board so it paints above it without a z-index
+          race. Picture Postcard renders its own 1-100 ladder level; showing the 0-1
+          score's 1-10 label beside it would be two conflicting level numbers.
+        */}
+        {gameId !== 'picture-postcard' && (
+          <span
+            className="shell-tag shell-tag-level shell-tag-compact absolute z-20"
+            style={{
+              // Inset from the board's own corner when there is one, else the box's.
+              top: (anchor?.top ?? 0) + 8,
+              left: (anchor?.left ?? 0) + 8,
+              // Never eats a tap meant for the board underneath it.
+              pointerEvents: 'none',
+            }}
+          >
+            {levelLabel}
+          </span>
+        )}
+
+        <button
+          onClick={handleExit}
+          /*
+           * 44x44 rather than 48x48. Above the WCAG 2.5.5 minimum but deliberately below
+           * this app's own 80px touch-min token: exit ends a round, and it should not be
+           * easy to hit by accident. This exception applies to exit and nothing else.
+           */
+          className="absolute z-20 w-11 h-11 shrink-0 rounded-xl flex items-center justify-center hover:bg-hover-state transition-colors text-xl text-caption-text border border-gray-200 bg-white/80"
+          style={{ top: (anchor?.top ?? 0) + 8, right: (anchor?.right ?? 0) + 8 }}
+          aria-label={t('btn.exit')}
+        >
+          ✕
+        </button>
       </div>
 
       {/* Exit confirmation dialog */}

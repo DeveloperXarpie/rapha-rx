@@ -325,4 +325,10 @@
     border-color: #b98033;
     background: linear-gradient(180deg, #ffefb9 0%, #f1d98f 52%, #e4bf61 100%);
   }
+
+  /* The level badge floating over a board, rather than sitting in a chrome bar. */
+  .shell-tag-compact {
+    @apply px-3 py-1;
+    font-size: clamp(0.85rem, 0.95vw, 1.05rem);
+  }
 }

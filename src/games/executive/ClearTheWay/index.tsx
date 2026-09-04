@@ -294,6 +294,7 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
       */}
       <div ref={stageRef} className="flex-1 min-h-0 w-full flex justify-center">
         <div
+          data-board
           className="relative flex items-center justify-center"
           style={{
             // Wide enough to hold the exit beacon, which is drawn outside the wall.

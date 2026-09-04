@@ -36,6 +36,7 @@ export function Button({
   leading,
   trailing,
   children,
+  style,
   ...rest
 }: ButtonProps) {
   const isBrand = variant === 'green' || variant === 'blue';
@@ -45,6 +46,13 @@ export function Button({
      * The handoff gives each brand button a fixed px width so the label never
      * wraps. Hindi and Kannada do not fit those widths, so min-height is honoured
      * and width is left to grow. See the i18n divergence in the spec.
+     *
+     * 28/23 rather than the 21/19 this shipped with, in panels 8px and 6px
+     * taller than the handoff's 66/58. The prototype sets a label size per
+     * button - 26 on Start Session and the confirmation Next, 27 on Get Started,
+     * 23-24 on the rest - and 21/19 sat under every one of them, which read as
+     * small on a screen built for residents. 28 is a deliberate step past the
+     * prototype's own 26, asked for on top of it.
      */
     const lead = leading === undefined && variant === 'green' ? <Leaf /> : leading;
     const trail = trailing === undefined && variant === 'green' ? <Leaf mirrored /> : trailing;
@@ -52,7 +60,27 @@ export function Button({
     return (
       <button
         className={`btn-brand btn-${variant} ${fullWidth ? 'w-full' : ''} ${className}`}
-        style={{ minHeight: size === 'lg' ? 66 : 58, fontSize: size === 'lg' ? 21 : 19 }}
+        /*
+         * The caller's style is MERGED, not spread over the top. `{...rest}`
+         * used to carry it and, being a later prop, replaced this object whole -
+         * so every button that passed a width (Start Session, Let's Begin, Back
+         * to Home, Continue, Next, Get Started) lost both. Measured before the
+         * fix, Start Session rendered at the inherited 16px in a 40px box, not
+         * the 21px/66px this file has always claimed to set.
+         */
+        style={{
+          minHeight: size === 'lg' ? 74 : 64,
+          /*
+           * The label shrinks rather than wraps. At the full 28px "Start Session"
+           * needs more than a 320px screen leaves, and Kannada's "ಸೆಷನ್ ಪ್ರಾರಂಭಿಸಿ"
+           * more than a 360px one, so both broke onto two lines with the leaves
+           * stranded beside them. vw tracks the column on a phone, where the
+           * column IS the viewport; on desktop .app-root caps the width and the
+           * clamp simply saturates at its maximum.
+           */
+          fontSize: size === 'lg' ? 'clamp(21px, 7.2vw, 28px)' : 'clamp(18px, 6vw, 23px)',
+          ...style,
+        }}
         {...rest}
       >
         {lead}
@@ -76,6 +104,7 @@ export function Button({
   return (
     <button
       className={`${base} ${sizeClass} ${widthClass} ${variantClass} ${className}`}
+      style={style}
       {...rest}
     >
       {children}

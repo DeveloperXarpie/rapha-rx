@@ -5,7 +5,7 @@ import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
 import CategoryBadge from '../components/chrome/CategoryBadge';
 import ProgressBar from '../components/chrome/ProgressBar';
-import { CATEGORY_BRAND } from '../styles/tokens';
+import { BRAND, CATEGORY_BRAND } from '../styles/tokens';
 import type { GameCategory } from '../styles/tokens';
 
 /** How long the intro holds before advancing itself. From the handoff. */
@@ -99,10 +99,10 @@ export default function CategoryIntro() {
       style={{ background: brand.gradient, position: 'relative', overflowX: 'hidden' }}
     >
       <img
-        src="/brand/logo-navy.png"
+        src="/brand/logo-blue.png"
         alt=""
         aria-hidden="true"
-        style={{ width: 108, opacity: 0.16, marginTop: 26 }}
+        style={{ width: 124, opacity: 0.16, marginTop: 26 }}
       />
 
       <div style={{ marginTop: 18 }}>
@@ -138,7 +138,7 @@ export default function CategoryIntro() {
       <div
         className="font-baloo"
         style={{
-          marginTop: 'auto', width: '100%', background: brand.band,
+          marginTop: 'auto', width: '100%', background: BRAND.introBand,
           color: '#FFFFFF', fontSize: 16, fontWeight: 700, padding: '16px 22px',
           textAlign: 'center',
         }}

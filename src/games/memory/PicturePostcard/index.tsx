@@ -406,11 +406,20 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
   // ── Header (present on every screen, including the tip card and pause) ─────
 
   const header = (
-    <div className="flex items-center justify-between gap-4 px-2 py-3">
-      <h2 className="text-h2 font-semibold text-body-text">
+    /*
+     * `pr-14` reserves the slot GameShell floats its exit button into. This game
+     * keeps its own header - it is the one game with a 1-100 ladder, so the shell
+     * suppresses its own level badge here - and without the inset the pause
+     * control sat underneath the exit.
+     */
+    <div className="flex items-center justify-between gap-3 pl-2 pr-14 py-3">
+      <h2 className="text-h2 font-semibold text-body-text shrink-0">
         {t('pp.level', 'Level {{n}}', { n: row.currentLevel })}
       </h2>
-      <div className="flex gap-1.5" aria-label={t('pp.trialRail', 'Level progress')}>
+      <div
+        className="flex flex-wrap justify-center gap-1.5 min-w-0"
+        aria-label={t('pp.trialRail', 'Level progress')}
+      >
         {Array.from({ length: COUNTED_TRIAL_DOTS }).map((_, i) => (
           <span
             key={i}
@@ -421,7 +430,7 @@ export default function PicturePostcard({ levelConfig, onLevelComplete }: Props)
       <button
         type="button"
         onClick={togglePause}
-        className="min-w-[96px] min-h-[96px] rounded-2xl bg-white border border-gray-200 flex items-center justify-center text-3xl shadow-sm active:scale-95 transition-transform"
+        className="w-[72px] h-[72px] shrink-0 rounded-2xl bg-white border border-gray-200 flex items-center justify-center text-3xl shadow-sm active:scale-95 transition-transform"
         aria-label={machine.paused ? t('btn.resume', 'Resume') : t('pp.pause', 'Pause')}
       >
         {machine.paused ? '▶' : '⏸'}

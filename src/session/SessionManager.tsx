@@ -15,7 +15,12 @@ interface SessionContextValue {
   plannedGames: string[];
   /** True once all three categories are done - i.e. any round now is free play. */
   sessionComplete: boolean;
-  triggerRotation: () => void;
+  /**
+   * Rotates to the next category, the summary, or nowhere. Returns false when it
+   * rotated nowhere, which is the caller's cue to carry on with the current game -
+   * see the `stay` branch below.
+   */
+  triggerRotation: () => boolean;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -49,8 +54,8 @@ export default function SessionManager() {
     };
   }, [tickCategory]);
 
-  const triggerRotation = useCallback(() => {
-    if (!profile) return;
+  const triggerRotation = useCallback((): boolean => {
+    if (!profile) return false;
 
     const step = nextStep({
       currentCategory: session.currentCategory,
@@ -64,18 +69,19 @@ export default function SessionManager() {
      * seen - the per-category ticker keeps running once a session ends, so a
      * free-play round crossing two minutes lands here.
      */
-    if (step.kind === 'stay') return;
+    if (step.kind === 'stay') return false;
 
     if (session.currentCategory) markCategoryComplete(session.currentCategory);
 
     if (step.kind === 'summary') {
       navigate('/app/summary');
-      return;
+      return true;
     }
 
     setCurrentCategory(step.category);
     setCurrentGame(step.gameId);
     navigate(`/app/intro/${step.category}`);
+    return true;
   }, [
     profile, session, markCategoryComplete, setCurrentCategory,
     setCurrentGame, navigate,

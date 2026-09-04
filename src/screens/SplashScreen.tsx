@@ -21,9 +21,9 @@ export default function SplashScreen() {
           }}
         >
           <img
-            src="/brand/logo-onblue.png"
+            src="/brand/logo-white.png"
             alt={t('app.name')}
-            style={{ width: 215, maxWidth: '70%' }}
+            style={{ width: 248, maxWidth: '78%' }}
           />
           <p
             className="font-baloo"
@@ -45,7 +45,7 @@ export default function SplashScreen() {
           <Button
             variant="blue"
             onClick={() => navigate('/signup')}
-            style={{ minWidth: 258, minHeight: 68 }}
+            style={{ minWidth: 258 }}
             leading={
               <img
                 src="/brand/tree-glyph.png"
@@ -71,7 +71,7 @@ export default function SplashScreen() {
             variant="blue"
             size="md"
             onClick={() => navigate('/signin')}
-            style={{ minWidth: 234, minHeight: 62 }}
+            style={{ minWidth: 234 }}
           >
             {t('btn.signIn', 'Sign in')}
           </Button>

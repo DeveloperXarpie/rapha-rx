@@ -101,12 +101,21 @@ for (const vp of VIEWPORTS) {
       if (!playBox) return { noPlayBox: true };
       const box = playBox.getBoundingClientRect();
 
-      // The deepest painted content inside the play box, whatever the game renders.
+      // The deepest PAINTED content inside the play box, whatever the game renders.
+      //
+      // Fully transparent elements are skipped, and that is the whole reason this
+      // reads computed style at all. Serve the Guests animates a guest out by fading
+      // a canvas-sized layer to `opacity: 0` while translating it 26px down; its rect
+      // hangs below the board for half a second, clipped and invisible, and counting
+      // it made this check fail on roughly one run in three. An element nobody can see
+      // cannot overflow anything.
       let lowest = box.top;
       let widest = box.left;
       for (const el of playBox.querySelectorAll('*')) {
         const r = el.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) continue;
+        const cs = getComputedStyle(el);
+        if (cs.visibility === 'hidden' || Number(cs.opacity) === 0) continue;
         if (r.bottom > lowest) lowest = r.bottom;
         if (r.right > widest) widest = r.right;
       }

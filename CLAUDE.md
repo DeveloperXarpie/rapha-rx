@@ -42,7 +42,7 @@ React 18 + TypeScript, Vite, Tailwind CSS, Zustand, Dexie (IndexedDB), i18next, 
 ```
 
 `AppBootGate` (in `main.tsx`) holds `LaunchScreen` above the router until i18n and
-Dexie are ready, with a 1200 ms minimum. `/login/:careHomeId`, `/app/questionnaire`
+Dexie are ready, with a 2000 ms minimum. `/login/:careHomeId`, `/app/questionnaire`
 and `/app/rotation` survive only as redirects for cached URLs.
 
 `RequireProfile` redirects unauthenticated users to `/`. `SessionManager` is a layout route that provides `SessionContext` (category timer, rotation logic) to all `/app/*` routes via `useSessionContext()`.

@@ -19,6 +19,9 @@ const DEV_UNLOCK_TAPS = 5;
 
 const CATEGORY_COUNT = 3;
 
+/** Matches the session summary's primary green button. */
+const PRIMARY_ACTION = { minWidth: 262, maxWidth: '100%' } as const;
+
 export default function HomeScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -110,19 +113,20 @@ export default function HomeScreen() {
             justifyContent: 'space-between', padding: '16px 20px 0',
           }}
         >
-          <img src="/brand/logo-navy.png" alt={t('app.name')} style={{ width: 118 }} />
+          <img src="/brand/logo-white.png" alt={t('app.name')} style={{ width: 136 }} />
           <button
             onClick={() => navigate('/app/settings')}
             aria-label={t('nav.settings')}
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
-              color: '#FFFFFF', minHeight: 44, minWidth: 44,
+              justifyContent: 'center', gap: 2,
+              color: '#FFFFFF', minHeight: 80, minWidth: 80,
             }}
           >
-            <span style={{ fontSize: 26, lineHeight: 1 }} aria-hidden="true">&#9881;</span>
+            <span style={{ fontSize: 40, lineHeight: 1 }} aria-hidden="true">&#9881;</span>
             <span
               className="font-baloo"
-              style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em' }}
+              style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em' }}
             >
               {t('nav.settings', 'SETTINGS').toUpperCase()}
             </span>
@@ -197,19 +201,27 @@ export default function HomeScreen() {
          * cannot collapse.
          */}
         <div style={{ position: 'relative', margin: 'auto 20px 30px', paddingTop: 24 }}>
-          {todayDone ? (
-            <Button variant="green" fullWidth onClick={() => navigate('/app/free-play')}>
-              {t('home.freePlay', 'Free Play')}
-            </Button>
-          ) : isResumable ? (
-            <Button variant="green" fullWidth onClick={handleResumeSession}>
-              {t('btn.continue', 'Continue')}
-            </Button>
-          ) : (
-            <Button variant="green" fullWidth onClick={handleStartSession}>
-              {t('btn.startSession', 'Start Session')}
-            </Button>
-          )}
+          {/*
+           * Centred at the handoff's fixed width rather than stretched. Home was
+           * the one screen asking a brand button for fullWidth, so on anything
+           * wider than a phone its primary action grew to the whole column while
+           * the summary's and the splash's stayed at ~260px.
+           */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            {todayDone ? (
+              <Button variant="green" style={PRIMARY_ACTION} onClick={() => navigate('/app/free-play')}>
+                {t('home.freePlay', 'Free Play')}
+              </Button>
+            ) : isResumable ? (
+              <Button variant="green" style={PRIMARY_ACTION} onClick={handleResumeSession}>
+                {t('btn.continue', 'Continue')}
+              </Button>
+            ) : (
+              <Button variant="green" style={PRIMARY_ACTION} onClick={handleStartSession}>
+                {t('btn.startSession', 'Start Session')}
+              </Button>
+            )}
+          </div>
 
           <button
             onClick={() => setVersionTaps((n) => n + 1)}

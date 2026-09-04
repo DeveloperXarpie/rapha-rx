@@ -68,7 +68,7 @@ export default function SessionSummary() {
           textAlign: 'center',
         }}
       >
-        <img src="/brand/logo-navy.png" alt="" aria-hidden="true" style={{ width: 140 }} />
+        <img src="/brand/logo-white.png" alt="" aria-hidden="true" style={{ width: 162 }} />
 
         <h1
           className="font-baloo"

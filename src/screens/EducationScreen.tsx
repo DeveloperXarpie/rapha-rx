@@ -26,10 +26,10 @@ export default function EducationScreen() {
         }}
       >
         <img
-          src="/brand/logo-navy.png"
+          src="/brand/logo-white.png"
           alt=""
           aria-hidden="true"
-          style={{ width: 118, opacity: 0.9, marginBottom: 26 }}
+          style={{ width: 136, opacity: 0.9, marginBottom: 26 }}
         />
 
         <h1

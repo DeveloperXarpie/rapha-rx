@@ -315,7 +315,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
       }}
     >
       <MarketMemoryStyles />
-      <div style={{
+      <div data-board style={{
         width: CANVAS_W, height: CANVAS_H, flex: '0 0 auto',
         transform: `scale(${stage.scale})`, transformOrigin: 'top center',
         position: 'relative', fontFamily: "'Baloo 2', sans-serif", userSelect: 'none',
@@ -325,11 +325,15 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
           <Scene inStore={inStore} reduced={reduced} />
 
           {/* HUD, painted over the backdrop rather than in a band above it. */}
+          {/* Centred, not left-aligned: GameShell floats the level badge over the board's
+              top-left corner and the exit over its top-right, and anything parked at
+              either end of this bar sits under one of them. */}
           <div style={{
             position: 'absolute', left: 0, top: 0, width: BOARD_W, height: HUD_H, zIndex: 7,
             background: `linear-gradient(180deg, ${COLOURS.navyHudTop} 0%, ${COLOURS.navyHudBot} 100%)`,
             borderBottom: `4px solid ${COLOURS.navyDeep}`,
-            display: 'flex', alignItems: 'center', gap: 14, padding: '0 18px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
+            padding: '0 18px',
           }}>
             <div style={{ display: 'flex', gap: 10 }}>
               {[0, 1, 2].map((i) => (

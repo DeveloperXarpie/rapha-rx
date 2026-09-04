@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PRESCRIBERS } from '../../lib/prescribers';
+import { BRAND } from '../../styles/tokens';
 
 interface Props {
   /** Highlighted as current, if the resident already has one. */
@@ -12,6 +13,10 @@ interface Props {
 /**
  * The prescriber list, as a modal sheet. Shared by signup and Settings so the
  * two can never drift apart.
+ *
+ * Styled as a piece of the screen that opened it rather than as a plain white
+ * dialog: the blue panel is the signup wash's own two darkest stops, and each
+ * row is the same white field the name and age inputs use.
  */
 export default function PrescriberPicker({ selectedId, onSelect, onClose }: Props) {
   const { t } = useTranslation();
@@ -53,14 +58,16 @@ export default function PrescriberPicker({ selectedId, onSelect, onClose }: Prop
         aria-label={t('signup.prescribedBy', 'Prescribed by')}
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: '100%', maxWidth: 420, background: '#FFFFFF',
-          borderRadius: 16, padding: 16, outline: 'none',
-          maxHeight: '80%', overflowY: 'auto',
+          width: '100%', maxWidth: 420, outline: 'none',
+          background: `linear-gradient(180deg, ${BRAND.screen[2]} 0%, ${BRAND.screen[3]} 100%)`,
+          border: '3px solid #FFFFFF', borderRadius: 20,
+          padding: 20, maxHeight: '80%', overflowY: 'auto',
+          boxShadow: '0 14px 30px rgba(4,14,80,0.45)',
         }}
       >
         <p
           className="font-baloo"
-          style={{ fontSize: 19, fontWeight: 700, color: '#1B2438', marginBottom: 12 }}
+          style={{ fontSize: 21, fontWeight: 700, color: '#FFFFFF', textAlign: 'center', marginBottom: 14 }}
         >
           {t('signup.prescribedBy', 'Prescribed by')}
         </p>
@@ -74,7 +81,10 @@ export default function PrescriberPicker({ selectedId, onSelect, onClose }: Prop
               className="font-baloo"
               style={{
                 width: '100%', minHeight: 62, borderRadius: 16,
-                border: `2px solid ${p.id === selectedId ? '#2A86DE' : '#D3DBEA'}`,
+                // Selected reads as a ring rather than a colour change: on a
+                // blue panel a blue border on a white row is nearly invisible.
+                border: '2px solid #D3DBEA',
+                boxShadow: p.id === selectedId ? `0 0 0 3px ${BRAND.cyanBright}` : 'none',
                 background: '#FFFFFF', color: '#1B2438',
                 fontSize: 19, textAlign: 'left', padding: '10px 16px',
               }}

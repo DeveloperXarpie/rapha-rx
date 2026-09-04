@@ -61,13 +61,17 @@ export const BRAND = {
   muted:         '#8FB8E8',
   /** Level and success figures. */
   lime:          '#C6F87A',
+  /**
+   * The category intro's full-width practice band. One blue for all three
+   * categories, not the category colour the handoff's table asks for - see the
+   * note on CATEGORY_BRAND.
+   */
+  introBand:     '#0E2AA8',
 } as const;
 
 export interface CategoryBrand {
   /** Title word, progress fill, icon accent. */
   accent: string;
-  /** The full-width practice band behind white text. */
-  band: string;
   /** Body copy on the pastel intro background. */
   label: string;
   /** The intro screen's vertical pastel wash. */
@@ -78,25 +82,26 @@ export interface CategoryBrand {
 /*
  * Keyed by the store's category ids. The handoff calls `executive` "Planning";
  * that name lives only in the i18n bundle, never as a key.
+ *
+ * No `band` here on purpose. The handoff's table gives the practice band the
+ * category colour, but all three intros now carry the same blue (BRAND.introBand),
+ * so a per-category field would be three copies of one value.
  */
 export const CATEGORY_BRAND: Record<GameCategory, CategoryBrand> = {
   memory: {
     accent:   '#7E4A9D',
-    band:     '#7E4A9D',
     label:    '#46345F',
     gradient: 'linear-gradient(180deg, #F8E7D6 0%, #EBDCF0 26%, #D5C2EC 52%, #BCA7E6 72%, #A895DE 100%)',
     icon:     '/category/ic-memory.png',
   },
   attention: {
     accent:   '#1668C4',
-    band:     '#1C6BB0',
     label:    '#1B3A5E',
     gradient: 'linear-gradient(180deg, #FAF0DE 0%, #E4EEF9 26%, #C3DBF5 52%, #A2C6EF 72%, #8AB6EA 100%)',
     icon:     '/category/ic-attention.png',
   },
   executive: {
     accent:   '#2E7D4F',
-    band:     '#2E7D4F',
     label:    '#1E4A32',
     gradient: 'linear-gradient(180deg, #FAF2DC 0%, #E8F3DE 26%, #CBE9CB 52%, #A9DCBB 72%, #92D2B2 100%)',
     icon:     '/category/ic-planning.png',

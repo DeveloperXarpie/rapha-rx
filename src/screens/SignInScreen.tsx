@@ -69,7 +69,7 @@ export default function SignInScreen() {
             textAlign: 'center',
           }}
         >
-          <img src="/brand/logo-onblue.png" alt="" aria-hidden="true" style={{ width: 150 }} />
+          <img src="/brand/logo-white.png" alt="" aria-hidden="true" style={{ width: 174 }} />
 
           <h1
             className="font-baloo"
@@ -140,7 +140,7 @@ export default function SignInScreen() {
             variant="blue"
             size="md"
             onClick={() => navigate('/')}
-            style={{ minWidth: 200, minHeight: 62 }}
+            style={{ minWidth: 200 }}
           >
             {t('btn.back', 'Back')}
           </Button>

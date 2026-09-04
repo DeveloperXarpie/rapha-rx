@@ -13,10 +13,10 @@ export default function LaunchScreen() {
       aria-busy="true"
     >
       <img
-        src="/brand/logo-launch.png"
+        src="/brand/logo-blue.png"
         alt=""
         aria-hidden="true"
-        style={{ width: 258, maxWidth: '72%', height: 'auto' }}
+        style={{ width: 292, maxWidth: '80%', height: 'auto' }}
       />
       {/* A screen reader should not meet silence while the app boots. */}
       <span className="sr-only">Loading</span>

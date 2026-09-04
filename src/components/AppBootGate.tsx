@@ -8,14 +8,14 @@ import { TRANSITIONS } from './chrome/transitions';
 /**
  * Holds the launch screen until the app is genuinely usable, then hands over.
  *
- * Boot is "i18n ready and Dexie open". The 1200 ms floor comes from the handoff
- * and exists so a fast boot does not flash the logo; the gate resolves on
- * whichever of the two finishes last.
+ * Boot is "i18n ready and Dexie open". The 2000 ms floor exists so a fast boot
+ * does not flash the logo, and matches the two seconds every other transition
+ * screen holds for; the gate resolves on whichever of the two finishes last.
  *
  * Local state rather than a store field: nothing else in the app needs to know
  * that the app has booted.
  */
-const MIN_DWELL_MS = 1200;
+const MIN_DWELL_MS = 2000;
 
 export default function AppBootGate({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);

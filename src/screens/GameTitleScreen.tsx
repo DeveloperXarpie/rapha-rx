@@ -4,30 +4,59 @@ import { useTranslation } from 'react-i18next';
 import { track } from '../lib/analytics';
 import { getGame } from '../lib/gameCatalog';
 
+/** Every splash-*.webp is drawn at this size, so the art box is locked to it. */
+const ART_W = 540;
+const ART_H = 960;
+
+interface Rect { top: string; height: string; left: string; width: string }
+
 /*
- * Where the painted PLAY button sits inside the supplied art, as a fraction of
- * the image box. Percentages rather than pixels so it tracks the art at any
- * viewport size.
+ * Where the real PLAY button sits, as a fraction of the ART box - not of the
+ * viewport. The art is letterboxed rather than cover-cropped (see below), so
+ * these percentages address the same pixels of the image at every size.
  *
- * Measured off a rendered 360x780 screenshot, not estimated: the painted button
- * spans 69.1%-79.9% of the height and 19.4%-80.6% of the width once the art is
- * cover-fitted.
+ * Three of the six splashes (Free Me, Garden Keeper, Station Master) have no
+ * painted PLAY button at all, which is why those games looked like they had
+ * none: the screen only ever drew a transparent hotspot over the art and
+ * trusted the artwork to show a button. The button is real now, and on the
+ * three splashes that DO paint one these rects are measured to sit over the
+ * painted pill and cover it, so no screen shows two.
+ *
+ * Measured off the source webp files, not estimated - the painted pills span
+ * y 69.3-79.3% (shopping), 68.8-79.9% (spot) and 64.3-74.4% (tiffen), and each
+ * rect below is that span padded out far enough to hide the pill's drop shadow.
  */
-const PLAY_HOTSPOT = { top: '69%', height: '11%', left: '20%', width: '60%' };
+const DEFAULT_PLAY: Rect = { top: '67.6%', height: '14.4%', left: '21.5%', width: '57%' };
+
+const PLAY_RECT: Record<string, Rect> = {
+  // Over the painted pill on the three splashes that have one.
+  'market-memory': { top: '67.6%', height: '14.4%', left: '21.5%', width: '57%' },
+  'spot-focus':    { top: '67.0%', height: '15.4%', left: '23.5%', width: '59%' },
+  'serve-guests':  { top: '63.6%', height: '13.4%', left: '21.5%', width: '58%' },
+  // Free Me paints no pill, and its info panel hangs lower than the other five
+  // (63.8-75.5%), so the button clears it rather than sitting in the default slot.
+  'clear-the-way': { top: '76.5%', height: '12.5%', left: '21.5%', width: '57%' },
+};
 
 /**
  * The screen between the category intro and the board.
  *
- * This is the supplied artwork rather than composed UI, and deliberately so:
- * splash-*.webp is a finished screen - it already contains the game logo, the
- * tagline, the cream "scientifically designed game" panel and a painted PLAY
- * button. There is no clean background plate, so the handoff's "rebuild these
- * as real screens" is not buildable without new art.
+ * The background is the supplied artwork rather than composed UI, and
+ * deliberately so: splash-*.webp is a finished screen - it already contains the
+ * game logo, the tagline and the cream "scientifically designed game" panel.
+ * There is no clean background plate, so the handoff's "rebuild these as real
+ * screens" is not buildable without new art.
  *
- * What is real: a full-size transparent button over the painted one, so the
- * control is focusable, has an accessible name and shows a focus ring; and the
- * close control. Known limitation: every word painted into the art is English,
- * in all three languages.
+ * What is NOT taken from the art is the PLAY button. It is a real `btn-green`,
+ * so it exists on all six games, carries a translated label, focuses, and
+ * responds to a press - none of which a painted rectangle could do.
+ *
+ * The art is contained inside an aspect-locked box on the deep blue field
+ * rather than cover-cropped to the viewport. Cover meant the art box and the
+ * screen box were different rectangles, so a percentage position could not
+ * address the artwork reliably, and a short viewport could crop the painted
+ * button off entirely. Known limitation: every word painted into the art is
+ * English, in all three languages.
  */
 export default function GameTitleScreen() {
   const { t } = useTranslation();
@@ -49,6 +78,8 @@ export default function GameTitleScreen() {
 
   if (!game || !splash) return null;
 
+  const play = PLAY_RECT[game.id] ?? DEFAULT_PLAY;
+
   function handlePlay() {
     navigate(`/app/game/${gameId}`);
   }
@@ -62,44 +93,64 @@ export default function GameTitleScreen() {
 
   return (
     <div
-      className="flex-1 min-h-0"
-      style={{ position: 'relative', overflow: 'hidden', background: '#0E2AA8' }}
+      className="flex-1 min-h-0 flex items-center justify-center"
+      style={{
+        position: 'relative', overflow: 'hidden', background: '#0E2AA8',
+        // A size container, so the art box below can letterbox itself in CSS.
+        containerType: 'size',
+      }}
     >
-      <img
-        src={splash}
-        alt=""
-        aria-hidden="true"
+      <div
         style={{
-          position: 'absolute', inset: 0,
-          width: '100%', height: '100%', objectFit: 'cover',
-        }}
-      />
-
-      <button
-        onClick={handlePlay}
-        aria-label={t('gameTitle.play', 'Play')}
-        style={{
-          position: 'absolute', ...PLAY_HOTSPOT,
-          minHeight: 44, background: 'transparent', border: 'none',
-          borderRadius: 16, cursor: 'pointer',
-        }}
-      />
-
-      <button
-        onClick={handleClose}
-        aria-label={t('gameTitle.close', 'Close')}
-        style={{
-          position: 'absolute', top: 12, right: 12,
-          width: 34, height: 34, borderRadius: '50%',
-          border: '1px solid rgba(255,255,255,0.6)',
-          background: 'rgba(10,20,40,0.45)',
-          color: '#FFFFFF', fontSize: 18, lineHeight: 1,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer',
+          position: 'relative',
+          /*
+           * Exact `contain` against the stage. Expressed as container-query math
+           * rather than aspect-ratio + max-width, because clamping a max-width
+           * does not walk an explicit height back and the art would squash.
+           */
+          width: `min(100cqw, 100cqh * ${ART_W} / ${ART_H})`,
+          height: `min(100cqh, 100cqw * ${ART_H} / ${ART_W})`,
+          // So the button below can size its label against the art, not the page.
+          containerType: 'size',
         }}
       >
-        &#10005;
-      </button>
+        <img
+          src={splash}
+          alt=""
+          aria-hidden="true"
+          style={{ display: 'block', width: '100%', height: '100%', objectFit: 'fill' }}
+        />
+
+        <button
+          className="btn-brand btn-green"
+          onClick={handlePlay}
+          style={{
+            position: 'absolute', ...play,
+            fontSize: 'clamp(20px, 9cqw, 44px)',
+            // The painted pills read PLAY. Latin-only, so a no-op for hi and kn.
+            textTransform: 'uppercase',
+            padding: 0,
+          }}
+        >
+          {t('gameTitle.play', 'Play')}
+        </button>
+
+        <button
+          onClick={handleClose}
+          aria-label={t('gameTitle.close', 'Close')}
+          style={{
+            position: 'absolute', top: 12, right: 12,
+            width: 44, height: 44, borderRadius: '50%',
+            border: '1px solid rgba(255,255,255,0.6)',
+            background: 'rgba(10,20,40,0.45)',
+            color: '#FFFFFF', fontSize: 20, lineHeight: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          &#10005;
+        </button>
+      </div>
     </div>
   );
 }

@@ -365,6 +365,7 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
     >
       <TrainYardStyles />
       <div
+        data-board
         style={{
           width: CANVAS_W,
           height: CANVAS_H,
@@ -381,12 +382,16 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
         }}
       >
         {/* HUD */}
+        {/* Centred, not left-aligned: GameShell floats the level badge over the board's
+            top-left corner and the exit over its top-right, and anything parked at
+            either end of this bar sits under one of them. */}
         <div
           style={{
             position: 'absolute', left: 0, top: 0, width: CANVAS_W, height: HUD_H,
             background: 'linear-gradient(180deg, #2C5580 0%, #1E3E63 100%)',
             borderBottom: `4px solid ${COLOURS.navyDeep}`,
-            display: 'flex', alignItems: 'center', gap: 14, padding: '0 18px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
+            padding: '0 18px',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
