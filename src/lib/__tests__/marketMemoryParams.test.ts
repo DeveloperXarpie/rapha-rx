@@ -27,11 +27,18 @@ describe('getMarketMemoryParams', () => {
     expect(getMarketMemoryParams(1).retentionMs).toBe(4000 + 2500);
   });
 
-  it('keeps lives and hints fixed across the whole curve', () => {
+  it('keeps hints fixed across the whole curve', () => {
     for (const s of [0, 0.25, 0.5, 0.75, 1]) {
-      expect(getMarketMemoryParams(s).lives).toBe(3);
       expect(getMarketMemoryParams(s).hints).toBe(2);
     }
+  });
+
+  /*
+   * The hearts system is gone from the game, so the curve must not hand it a life count
+   * to spend. Accuracy reaches difficulty through the round metrics instead.
+   */
+  it('emits no life count', () => {
+    expect(getMarketMemoryParams(0.5)).not.toHaveProperty('lives');
   });
 
   it('never shortens the list or the covered hold as score rises', () => {

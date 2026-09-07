@@ -1,6 +1,6 @@
 import { BLIND } from './geometry';
 import { COLOURS } from './palette';
-import { EASE_SETTLE } from './styles';
+import { BLIND_MS, EASE_SETTLE } from './styles';
 
 interface BlindProps {
   down: boolean;
@@ -11,11 +11,15 @@ interface BlindProps {
 }
 
 /**
- * The retention cover. The scene never crossfades under normal motion: a physical cover
- * moves, and the list blanks underneath it once it has landed.
+ * The retention cover, and the only thing on screen during the walk to the shop.
  *
- * It also spans the walk to the shop - the background changes behind it while it is
- * down - so it has to read as an opaque object, not as a veil.
+ * It spans the whole board (see BLIND in geometry.ts), so the backdrop, the shelf and
+ * the clipboard are all free to change underneath it without the resident watching them
+ * do it. That is why it carries the caption and the hold dots: while it is down there is
+ * no other UI to read.
+ *
+ * It moves fast on purpose. The cover is an opaque screen rather than something to
+ * watch, so the only time the resident spends here is the retention hold itself.
  */
 export default function Blind({ down, progress, label, reduced }: BlindProps) {
   return (
@@ -29,13 +33,13 @@ export default function Blind({ down, progress, label, reduced }: BlindProps) {
         zIndex: 8,
         pointerEvents: down ? 'auto' : 'none',
         background: `linear-gradient(180deg, ${COLOURS.navyHudTop} 0%, ${COLOURS.navyHudBot} 100%)`,
-        border: `6px solid ${COLOURS.navyDeep}`,
-        borderRadius: 22,
         boxSizing: 'border-box',
         transformOrigin: 'top center',
         transform: reduced ? 'translateY(0)' : `translateY(${down ? 0 : -BLIND.lift}px)`,
         opacity: reduced ? (down ? 1 : 0) : 1,
-        transition: reduced ? 'opacity 540ms linear' : `transform 540ms ${EASE_SETTLE}`,
+        transition: reduced
+          ? `opacity ${BLIND_MS}ms linear`
+          : `transform ${BLIND_MS}ms ${EASE_SETTLE}`,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -45,8 +49,8 @@ export default function Blind({ down, progress, label, reduced }: BlindProps) {
       }}
     >
       <div style={{
-        fontSize: 30, fontWeight: 800, letterSpacing: '.06em', color: COLOURS.creamLight,
-        textAlign: 'center', padding: '0 24px',
+        fontSize: 38, fontWeight: 800, letterSpacing: '.06em', color: COLOURS.creamLight,
+        textAlign: 'center', padding: '0 48px',
       }}>
         {label}
       </div>

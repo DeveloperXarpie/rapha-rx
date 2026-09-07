@@ -9,10 +9,14 @@ interface CartStripProps {
   /** One entry per list slot; null is an empty slot. */
   slots: (Item | null)[];
   listLength: number;
+  /** False once the round is scored: the slots stop being removable, so the hint goes. */
+  interactive: boolean;
   submitEnabled: boolean;
   cartLabel: string;
   submitLabel: string;
   reduced: boolean;
+  /** Label for a filled slot, e.g. "Remove Toor Dal". Takes the item name. */
+  removeLabel: (name: string) => string;
   onRemove: (slot: number) => void;
   onSubmit: () => void;
 }
@@ -25,7 +29,7 @@ interface CartStripProps {
  * with the list length. The colours come from the same palette so it sits with the rest.
  */
 export default function CartStrip({
-  slots, listLength, submitEnabled, cartLabel, submitLabel, reduced, onRemove, onSubmit,
+  slots, listLength, interactive, submitEnabled, cartLabel, submitLabel, removeLabel, reduced, onRemove, onSubmit,
 }: CartStripProps) {
   const w = slotWidth(listLength);
   const filled = slots.filter(Boolean).length;
@@ -73,18 +77,56 @@ export default function CartStrip({
               type="button"
               disabled={!it}
               onClick={() => it && onRemove(i)}
-              aria-label={it ? it.name : undefined}
+              aria-label={it ? removeLabel(it.name) : undefined}
               style={{
+                position: 'relative',
                 width: w, height: slotH, flex: '0 0 auto', padding: 0,
                 background: it ? COLOURS.creamSlot : 'rgba(255,255,255,.35)',
                 border: it ? `4px solid ${COLOURS.creamBorder}` : `4px dashed ${COLOURS.slotDash}`,
                 borderRadius: 14, boxSizing: 'border-box',
                 cursor: it ? 'pointer' : 'default',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                animation: it ? (reduced ? 'mm-fade 240ms ease both' : `mm-slidein 240ms ${EASE_SETTLE} both`) : undefined,
+                // `overflow: visible` is the default, but the badge below hangs outside
+                // the slot and this is the one place that would be easy to clip later.
+                overflow: 'visible',
               }}
             >
-              {it && <Product item={it} size={Math.min(w, slotH) - 20} />}
+              {/*
+                The entrance animation is on this inner wrapper, not on the button. Both
+                mm-fade and mm-slidein end on `opacity: 1` with fill `both`, so a button
+                carrying either could never afterwards be dimmed - see styles.tsx.
+              */}
+              {it && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '100%', height: '100%',
+                  animation: reduced ? 'mm-fade 240ms ease both' : `mm-slidein 240ms ${EASE_SETTLE} both`,
+                }}>
+                  <Product item={it} size={Math.min(w, slotH) - 20} />
+                </div>
+              )}
+
+              {/*
+                The undo hint. A filled slot has always been removable by tapping it, but
+                nothing said so - the resident had to tap one to find out, which is a poor
+                thing to learn by experiment when the tap is destructive. Same badge
+                language as the tick on a picked crate, so it reads as a control.
+              */}
+              {it && interactive && (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute', right: -8, top: -8,
+                    width: 34, height: 34, borderRadius: '50%',
+                    background: COLOURS.amber, border: `3px solid ${COLOURS.amberEdge}`,
+                    boxSizing: 'border-box',
+                    color: '#FFFFFF', fontSize: 20, fontWeight: 800, lineHeight: 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  &#8630;
+                </span>
+              )}
             </button>
           ))}
         </div>

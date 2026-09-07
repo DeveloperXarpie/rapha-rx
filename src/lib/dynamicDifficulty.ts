@@ -389,7 +389,6 @@ export interface MarketMemoryDynamicParams {
   delayedRetrieval: boolean;
   /** Draw targets and most filler from a single product group. */
   listCategory: boolean;
-  lives: number;
   hints: number;
 }
 
@@ -406,7 +405,6 @@ const MM = {
   similarPackagingAt: 0.25,
   delayedRetrievalAt: 0.55,
   listCategoryAt: 0.75,
-  lives: 3,
   hints: 2,
 } as const;
 
@@ -420,7 +418,6 @@ export function getMarketMemoryParams(score: number): MarketMemoryDynamicParams 
     similarPackaging: s >= MM.similarPackagingAt,
     delayedRetrieval,
     listCategory: s >= MM.listCategoryAt,
-    lives: MM.lives,
     hints: MM.hints,
   };
 }

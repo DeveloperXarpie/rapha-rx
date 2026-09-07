@@ -29,6 +29,18 @@ export const KEYFRAMES = `
   to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
 }
 
+/*
+ * The result badge landing on an item. Scale and opacity only - deliberately no
+ * translate, so it can be positioned by its corner offsets like any other badge. Using
+ * mm-cardin here instead would drag it half its own size up and left forever, because
+ * that animation bakes a centring translate into every keyframe.
+ */
+@keyframes mm-pop {
+  from { opacity: 0; transform: scale(.5); }
+  60%  { opacity: 1; transform: scale(1.12); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
 @keyframes mm-glow {
   0%   { box-shadow: 0 0 0 0 rgba(255,214,102,0); }
   50%  { box-shadow: 0 0 0 14px rgba(255,214,102,.5); }
@@ -53,6 +65,17 @@ export const KEYFRAMES = `
 `;
 
 export const EASE_SETTLE = 'cubic-bezier(.22,.61,.36,1)';
+
+/**
+ * How long the retention cover takes to fall and to lift.
+ *
+ * Lives here rather than in index.tsx because Blind.tsx has to animate for exactly as
+ * long as the phase schedule waits for it. It was 540ms in two places that had no way of
+ * staying in step, and the walk to the shop was over a second of animation on either
+ * side of the retention hold. The cover is opaque and full-board now, so there is nothing
+ * to watch during the move: the resident only pays the hold itself.
+ */
+export const BLIND_MS = 120;
 export const EASE_OUT = 'cubic-bezier(.33,1,.68,1)';
 
 export function MarketMemoryStyles() {

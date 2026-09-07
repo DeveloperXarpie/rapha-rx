@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildRound, scoreRound, CRATE_COUNT } from '../round';
+import { buildRound, resultRows, scoreRound, CRATE_COUNT } from '../round';
 import { BY_ID, ITEMS } from '../items';
 
 /** Deterministic stand-in for Math.random: cycles a fixed sequence. */
@@ -89,28 +89,65 @@ describe('scoreRound', () => {
     expect(s.missed).toEqual(['rice']);
   });
 
-  it('marks a perfect round and costs no lives', () => {
-    const s = scoreRound(['milk', 'jam'], ['jam', 'milk']);
-    expect(s.perfect).toBe(true);
-    expect(s.livesLost).toBe(0);
-  });
-
-  it('caps the wrong-pick penalty at 2 hearts', () => {
-    const s = scoreRound(['milk'], ['cream', 'jam', 'honey', 'oil']);
-    // 3+ wrong caps at 2, plus 1 for having missed something.
-    expect(s.livesLost).toBe(3);
-  });
-
-  it('charges exactly one heart for any number of misses', () => {
-    const s = scoreRound(['milk', 'jam', 'rice', 'oil'], ['milk']);
-    expect(s.livesLost).toBe(1);
+  it('marks a perfect round', () => {
+    expect(scoreRound(['milk', 'jam'], ['jam', 'milk']).perfect).toBe(true);
+    expect(scoreRound(['milk', 'jam'], ['milk']).perfect).toBe(false);
+    expect(scoreRound(['milk', 'jam'], ['milk', 'jam', 'cream']).perfect).toBe(false);
   });
 
   it('handles an empty pick set', () => {
     const s = scoreRound(['milk', 'jam'], []);
     expect(s.correct).toEqual([]);
+    expect(s.wrong).toEqual([]);
     expect(s.missed).toEqual(['milk', 'jam']);
-    expect(s.livesLost).toBe(1);
     expect(s.perfect).toBe(false);
+  });
+
+  /*
+   * The hearts system is gone, so a round can no longer be lost - only finished more or
+   * less accurately. These three counts are what the effectiveness measure reads, and
+   * this holds that nothing has quietly reintroduced a life count beside them.
+   */
+  it('carries no life count', () => {
+    expect(scoreRound(['milk'], ['milk'])).not.toHaveProperty('livesLost');
+  });
+});
+
+describe('resultRows', () => {
+  it('lists the shopping list in its original order, then the wrong picks', () => {
+    // Picked out of order on purpose: the rows follow the list, not the cart.
+    expect(resultRows(['milk', 'jam', 'rice'], ['cream', 'rice', 'milk'])).toEqual([
+      { id: 'milk',  status: 'correct' },
+      { id: 'jam',   status: 'missed'  },
+      { id: 'rice',  status: 'correct' },
+      { id: 'cream', status: 'wrong'   },
+    ]);
+  });
+
+  it('keeps wrong picks in the order they were picked', () => {
+    const rows = resultRows(['milk'], ['honey', 'milk', 'cream']);
+    expect(rows.filter((r) => r.status === 'wrong')).toEqual([
+      { id: 'honey', status: 'wrong' },
+      { id: 'cream', status: 'wrong' },
+    ]);
+  });
+
+  it('marks every row correct on a perfect round', () => {
+    const rows = resultRows(['milk', 'jam'], ['jam', 'milk']);
+    expect(rows).toHaveLength(2);
+    expect(rows.every((r) => r.status === 'correct')).toBe(true);
+  });
+
+  it('marks the whole list missed when the cart is empty', () => {
+    expect(resultRows(['milk', 'jam'], [])).toEqual([
+      { id: 'milk', status: 'missed' },
+      { id: 'jam',  status: 'missed' },
+    ]);
+  });
+
+  it('accounts for every item exactly once', () => {
+    const rows = resultRows(['milk', 'jam', 'rice'], ['cream', 'rice', 'milk']);
+    expect(rows).toHaveLength(new Set(rows.map((r) => r.id)).size);
+    expect(rows).toHaveLength(3 + 1);
   });
 });
