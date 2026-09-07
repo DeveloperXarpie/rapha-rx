@@ -1,4 +1,4 @@
-import { CRATE_H, CRATE_W, crateBox } from './geometry';
+import { CRATE_H, CRATE_TOP_CLEARANCE, CRATE_W, crateBox } from './geometry';
 import type { Item } from './items';
 import { COLOURS } from './palette';
 import Product from './Product';
@@ -88,7 +88,7 @@ export default function Crate({ item, index, picked, hinted, interactive, reduce
           animation: hinted && !reduced ? 'mm-glow 2000ms ease-in-out infinite' : undefined,
         }}
       >
-        <Product item={item} size={CRATE_H - PLATE_H - 6} />
+        <Product item={item} size={CRATE_H - PLATE_H - CRATE_TOP_CLEARANCE} />
       </div>
 
       <span style={{

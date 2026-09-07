@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  CANVAS_H, CANVAS_W, CART, COL_X, CRATE_H, CRATE_W, DONE_BTN,
-  PLANK_Y, ROW_Y, SHELF_COLS, SHELF_ROWS, crateBox,
+  CANVAS_H, CANVAS_W, CART, COL_X, CRATE_H, CRATE_TOP_CLEARANCE, CRATE_W, DONE_BTN,
+  INTERIOR_X, PLANK_Y, ROW_Y, SHELF_COLS, SHELF_ROWS, crateBox,
 } from '../geometry';
 import { CRATE_COUNT } from '../round';
 
@@ -33,9 +33,26 @@ describe('shelf grid', () => {
   });
 
   it('keeps the whole shelf inside the unit painted on the backdrop', () => {
-    // bg-store.jpg puts the unit's interior at x = 78..735 at this canvas width.
-    expect(COL_X[0]).toBeGreaterThanOrEqual(78);
-    expect(COL_X[COL_X.length - 1] + CRATE_W).toBeLessThanOrEqual(735);
+    // INTERIOR_X is measured off the art and moves with the backdrop zoom, so this
+    // asserts the relationship rather than restating numbers that would go stale.
+    expect(COL_X[0]).toBeGreaterThanOrEqual(INTERIOR_X[0]);
+    expect(COL_X[COL_X.length - 1] + CRATE_W).toBeLessThanOrEqual(INTERIOR_X[1]);
+  });
+
+  it('centres the columns in the unit', () => {
+    const leftGap = COL_X[0] - INTERIOR_X[0];
+    const rightGap = INTERIOR_X[1] - (COL_X[COL_X.length - 1] + CRATE_W);
+    expect(Math.abs(leftGap - rightGap)).toBeLessThanOrEqual(1);
+  });
+
+  it('leaves the goods clear of the shelf board above them', () => {
+    // The whole point of the backdrop zoom: a crate's contents have to fit the
+    // compartment with room to spare, or the product art jams into the shelf above.
+    const shelfBoard = 18;
+    expect(CRATE_TOP_CLEARANCE).toBeGreaterThanOrEqual(shelfBoard);
+    for (let i = 1; i < PLANK_Y.length; i++) {
+      expect(PLANK_Y[i] - PLANK_Y[i - 1], 'compartment must hold a crate').toBeGreaterThanOrEqual(CRATE_H);
+    }
   });
 
   it('lays the crates out in row-major order', () => {

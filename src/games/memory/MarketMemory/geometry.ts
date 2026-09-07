@@ -28,39 +28,99 @@ export const HUD_H = 96;
 export const BOARD_W = CANVAS_W;
 export const BOARD_H = CANVAS_H;
 
-// ─── Shelf grid ───────────────────────────────────────────────────────────────
+// ─── The backdrop, and the grid derived from it ────────────────────────────────
 
 /**
- * Column left edges. The unit's interior runs x 78..735, and four 150px crates with
- * 13px between them centre inside it.
+ * `bg-store.jpg` in its own pixels, and the plank front edges measured in them.
+ *
+ * Everything about the shelf is derived from these two facts, so the zoom below can
+ * change without any number here being re-measured by hand.
  */
-export const COL_X = [82, 245, 408, 571];
+const ART_W = 1280;
+const ART_H = 2000;
+const ART_PLANK_Y = [674, 897, 1114, 1330, 1547];
+/** The unit's interior, in art pixels. */
+const ART_INTERIOR_X = [125, 1176];
+
+/**
+ * How much taller than the board the backdrop is drawn. Vertical only.
+ *
+ * Drawn 1:1 the art's compartments are 135px apart, and a crate's contents - a 79px
+ * product above a 50px name plate - come to 129px. The shelf board above eats about
+ * 18px of that, so the goods ran into the underside of the shelf above them. The art
+ * cannot be redrawn from here, so the backdrop is stretched instead: the compartments
+ * grow and the crate contents, which are sized in board pixels, do not.
+ *
+ * Deliberately not a uniform zoom. Scaling both axes by this much crops 48px off each
+ * side, which takes the unit's own frame rails off the board and stops it reading as a
+ * freestanding shelf. Stretching one axis costs a 12% distortion of the wood grain and
+ * the blurred scenery instead, which is not noticeable, and keeps the unit whole.
+ *
+ * The cost is a crop of 120px off the top - ceiling - and 30px off the bottom floor.
+ */
+export const BG_STRETCH_Y = 1.12;
+/** How far up the stretched backdrop is pulled, so the crop lands on ceiling not floor. */
+export const BG_OFFSET_Y = -120;
+
+/**
+ * Where the backdrop is drawn. Scene paints both layers into this box, and because it is
+ * a different shape from the art it must be drawn with `object-fit: fill`.
+ */
+export const BG = {
+  left: 0,
+  top: BG_OFFSET_Y,
+  width: CANVAS_W,
+  height: CANVAS_H * BG_STRETCH_Y,
+};
+
+/** Art pixels to board pixels. X is untouched; Y carries the stretch and the offset. */
+const artX = (x: number) => Math.round(x * (BG.width / ART_W));
+const artY = (y: number) => Math.round(y * (BG.height / ART_H) + BG.top);
 
 /**
  * The plank surfaces. Goods stand on the top four; the fifth is covered by the cart
  * tray, exactly as the spare planks were on the art before this one.
- *
- * The unit sits lower on this backdrop - its top rail is at y 269, where the previous
- * one started at 138 - so the first row of goods starts further down the board.
  */
-export const PLANK_Y = [421, 561, 696, 831, 967];
+export const PLANK_Y = ART_PLANK_Y.map(artY);
 
 /** How many plank rows carry goods. The rest are behind the cart. */
 export const SHELF_ROWS = 4;
 export const SHELF_COLS = 4;
 
+/** The unit's interior in board pixels, which the columns are centred inside. */
+export const INTERIOR_X = ART_INTERIOR_X.map(artX) as [number, number];
+
 export const CRATE_W = 150;
+const COL_GAP = 15;
+
+/** Column left edges, centred in the unit's interior rather than written down. */
+export const COL_X = Array.from({ length: 4 }, (_, i) => {
+  const span = 4 * CRATE_W + 3 * COL_GAP;
+  const start = INTERIOR_X[0] + Math.round((INTERIOR_X[1] - INTERIOR_X[0] - span) / 2);
+  return start + i * (CRATE_W + COL_GAP);
+});
 
 /**
- * Exactly the compartment height, so crates tile the shelf without overlapping.
+ * The compartment height, taken from the tightest of the five gaps so crates tile the
+ * shelf without ever overlapping.
  *
- * An earlier pass made this 153 and hung the name plate over the shelf's front lip, to
- * win the product art some height back. That does not work: crates paint in index order,
- * so a plate hanging into the compartment below is painted over by the next row's
- * product rather than sitting in front of it, and the goods below lose their top 18px.
- * The plate stands on the deck instead, and the product takes the smaller size.
+ * An earlier pass made this taller than the compartment and hung the name plate over the
+ * shelf's front lip, to win the product art some height back. That does not work: crates
+ * paint in index order, so a plate hanging into the compartment below is painted over by
+ * the next row's product rather than sitting in front of it, and the goods below lose
+ * their top 18px. The plate stands on the deck instead.
  */
-export const CRATE_H = 135;
+export const CRATE_H = 151;
+
+/**
+ * Empty space reserved at the top of every crate.
+ *
+ * The shelf board above a compartment is painted about 18px thick, and a crate spans the
+ * whole compartment, so without this the product art is drawn hard against the underside
+ * of the shelf above it and reads as jammed in. This is the gap that keeps the goods
+ * clear of it.
+ */
+export const CRATE_TOP_CLEARANCE = 22;
 
 export interface Box { left: number; top: number; width: number; height: number }
 
@@ -135,7 +195,8 @@ export const CART_HEADER_H = 52;
 export const CART_PAD = 14;
 export const SLOT_GAP = 10;
 
-export const DONE_BTN = { left: 250, top: 1090, width: 300, height: 147 };
+/** 20% smaller than the 300x147 it was, and re-centred at that width. */
+export const DONE_BTN = { left: 280, top: 1096, width: 240, height: 118 };
 
 /**
  * Slots shrink as the list grows so the row always fits the tray's inner width of
