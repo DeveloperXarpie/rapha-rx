@@ -99,15 +99,15 @@ export default function SignupScreen() {
     }
   }
 
-  const label = { color: BRAND.cyan, fontSize: 17 } as const;
+  const label = { color: BRAND.cyan, fontSize: 20 } as const;
   const field = {
     width: '100%', maxWidth: 320, minHeight: 62, marginTop: 8,
     borderRadius: 16, border: '2px solid #D3DBEA', background: '#FFFFFF',
-    color: '#1B2438', fontSize: 19, padding: '0 16px', textAlign: 'center',
+    color: '#1B2438', fontSize: 23, padding: '0 16px', textAlign: 'center',
   } as const;
-  /** The captions under each field. 17px cyan, per the prototype. */
+  /** The captions under each field. Cyan, sized 20% above the prototype for legibility. */
   const hint = {
-    maxWidth: 320, margin: '10px 4px 0', fontSize: 17, lineHeight: 1.3,
+    maxWidth: 320, margin: '10px 4px 0', fontSize: 20, lineHeight: 1.3,
     fontWeight: 600, color: BRAND.cyan, textWrap: 'pretty',
   } as const;
 
@@ -176,7 +176,7 @@ export default function SignupScreen() {
                 </p>
 
                 {error && (
-                  <p role="alert" className="font-baloo" style={{ marginTop: 12, fontSize: 17, color: '#FFD5D5' }}>
+                  <p role="alert" className="font-baloo" style={{ marginTop: 12, fontSize: 20, color: '#FFD5D5' }}>
                     {error}
                   </p>
                 )}
