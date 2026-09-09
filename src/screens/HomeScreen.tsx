@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { checkForResumableSession } from '../lib/resumeSession';
+import * as fullscreen from '../lib/fullscreen';
 import { getLastLevels } from '../lib/lastLevel';
 import { getGame, marqueeGames, tileArt } from '../lib/gameCatalog';
 import { ROTATION_THRESHOLD_SECONDS } from '../components/GameShell';
@@ -66,15 +67,27 @@ export default function HomeScreen() {
     getLastLevels(profile.userId, planned).then(setLastLevels);
   }, [profile, planned.join(','), refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /*
+   * The three taps below are the only places a session begins, and each one goes
+   * fullscreen on the way in. It has to happen here rather than in AppShell: a browser
+   * grants fullscreen only from inside a user gesture, so a mount or route-change effect
+   * would simply be refused. AppShell keeps it from there on - see the re-entry listener.
+   */
+  function enterSession(to: string) {
+    fullscreen.arm();
+    void fullscreen.enter();
+    navigate(to);
+  }
+
   function handleStartSession() {
     startSession();
-    navigate('/app/education');
+    enterSession('/app/education');
   }
 
   function handleResumeSession() {
     // Back into the intro for whichever category was in play. The old rotation
     // screen this used to target is gone.
-    navigate(`/app/intro/${session.currentCategory ?? 'memory'}`);
+    enterSession(`/app/intro/${session.currentCategory ?? 'memory'}`);
   }
 
   // Re-runs the lookups once the Dexie write lands, so the screen reflects the
@@ -209,7 +222,7 @@ export default function HomeScreen() {
            */}
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             {todayDone ? (
-              <Button variant="green" style={PRIMARY_ACTION} onClick={() => navigate('/app/free-play')}>
+              <Button variant="green" style={PRIMARY_ACTION} onClick={() => enterSession('/app/free-play')}>
                 {t('home.freePlay', 'Free Play')}
               </Button>
             ) : isResumable ? (

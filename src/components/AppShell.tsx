@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import * as fullscreen from '../lib/fullscreen';
 import RotateDevice from './RotateDevice';
 import AppFrame from './chrome/AppFrame';
 
@@ -29,6 +30,30 @@ export default function AppShell() {
     html.className = html.className.replace(/\btext-size-\w+\b/g, '').trim();
     html.classList.add(`text-size-${settings.textSize}`);
   }, [settings.textSize]);
+
+  /*
+   * Fullscreen re-entry. Home arms this when the resident starts, resumes or free-plays;
+   * from then on a session runs with no browser chrome.
+   *
+   * No browser lets a page hold fullscreen - Escape and an Android swipe-from-top always
+   * let go - so instead of trying to prevent that, we quietly take it back on the next
+   * tap. The listener is on capture so it runs before anything calls stopPropagation, and
+   * `isFullscreen` is a property read, so the ordinary case costs nothing.
+   *
+   * Unmounting means the resident left /app entirely (sign out, back to the splash), so
+   * the chrome goes back to them rather than stranding them in a fullscreen page.
+   */
+  useEffect(() => {
+    function reenter() {
+      if (fullscreen.isArmed() && !fullscreen.isFullscreen()) void fullscreen.enter();
+    }
+    document.addEventListener('pointerdown', reenter, true);
+    return () => {
+      document.removeEventListener('pointerdown', reenter, true);
+      fullscreen.disarm();
+      void fullscreen.exit();
+    };
+  }, []);
 
 
   return (
