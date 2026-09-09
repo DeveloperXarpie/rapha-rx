@@ -8,7 +8,8 @@ import { useImagesReady } from '../../../lib/useImagesReady';
 import { useStageScale } from '../../../hooks/useStageFit';
 import { getGardenKeeperParams, type GardenKeeperDynamicParams } from '../../../lib/dynamicDifficulty';
 import {
-  BOARD_H, CANVAS_H, CANVAS_W, HUD_H, buildBed, recedeFor, ringColour, ringSweepDeg,
+  BOARD_H, CANVAS_H, CANVAS_W, GROUND, HUD_H, SAFE_X, buildBed, recedeFor, ringColour,
+  ringSweepDeg,
   zIndexFor, type Plant,
 } from './geometry';
 import {
@@ -535,7 +536,7 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
 
   // The board is measured against the play box GameShell hands us, not against the
   // viewport minus a guess at the chrome. See hooks/useStageFit.ts.
-  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H);
+  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H, { safe: SAFE_X, ground: GROUND });
 
   const handleNext = useCallback(() => {
     if (reported.current || !state.outcome) return;
@@ -566,12 +567,16 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
     <div
       ref={stageRef}
       className="w-full h-full overflow-hidden flex justify-center items-start"
+      // Leftover height is painted with the board's own sky and soil. See useStageFit.ts.
+      style={{ background: stage.ground }}
     >
       <GardenKeeperStyles />
       <div
         data-board
         style={{
           width: CANVAS_W, height: CANVAS_H,
+          // Centres the board in the leftover height. 0 once the board fills the box.
+          marginTop: stage.offsetY,
           // Flex centring on the stage, not `margin: 0 auto` here: the canvas is 800
           // design px and the play box is routinely narrower, and auto margins collapse
           // to zero once the child overflows. The board then scales about a centre that

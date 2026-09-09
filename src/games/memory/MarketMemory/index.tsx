@@ -14,7 +14,7 @@ import Scene from './Scene';
 import { EffectView } from './effects';
 import { lifetime, makeConfetti, makeToast, type Effect } from './effectModel';
 import {
-  BOARD_H, BOARD_W, CANVAS_H, CANVAS_W, CAPTION, HINT_BTN, HUD_H, READY_BTN,
+  BOARD_H, BOARD_W, CANVAS_H, CANVAS_W, CAPTION, GROUND, HINT_BTN, HUD_H, READY_BTN, SAFE_X,
 } from './geometry';
 import { BY_ID, type Item } from './items';
 import { COLOURS } from './palette';
@@ -293,7 +293,10 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
 
   // The board is measured against the play box GameShell hands us, not against the
   // viewport minus a guess at the chrome. See hooks/useStageFit.ts.
-  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H);
+  // The living room during the list, the shop aisle from the walk onwards - the fill
+  // colours have to follow the background the board is actually showing.
+  const ground = phase === 'encoding' || phase === 'covering' ? GROUND.home : GROUND.store;
+  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H, { safe: SAFE_X, ground });
 
   const listItems: Item[] = round.list.map((id) => BY_ID[id]);
   const slots: (Item | null)[] = Array.from({ length: round.list.length }, (_, i) =>
@@ -330,11 +333,15 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
         // viewport is routinely narrower, and auto margins collapse to zero once the
         // child overflows, which parks the board off to the right. Flex still centres.
         display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
+        // Leftover height is painted with the board's own room or aisle, not app grey.
+        background: stage.ground,
       }}
     >
       <MarketMemoryStyles />
       <div data-board style={{
         width: CANVAS_W, height: CANVAS_H, flex: '0 0 auto',
+        // Centres the board in the leftover height. 0 once the board fills the box.
+        marginTop: stage.offsetY,
         transform: `scale(${stage.scale})`, transformOrigin: 'top center',
         position: 'relative', fontFamily: "'Baloo 2', sans-serif", userSelect: 'none',
       }}>

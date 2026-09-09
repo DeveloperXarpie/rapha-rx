@@ -62,7 +62,16 @@ function useBoardAnchor(enabled: boolean, gameId: string): [(el: HTMLDivElement 
     const b = board.getBoundingClientRect();
     const p = box.getBoundingClientRect();
     if (b.width <= 0 || b.height <= 0) return;
-    const next = { top: b.top - p.top, left: b.left - p.left, right: p.right - b.right };
+    /*
+     * Clamped at zero: a board that has been given a croppable margin (geometry's SAFE_X)
+     * can be drawn wider than the box, and a negative inset would park the level badge and
+     * the exit off the side of the screen. The chrome belongs to the box, not the canvas.
+     */
+    const next = {
+      top: Math.max(0, b.top - p.top),
+      left: Math.max(0, b.left - p.left),
+      right: Math.max(0, p.right - b.right),
+    };
     // Sub-pixel equality, or the observer and this state trade updates forever.
     setAnchor((prev) =>
       prev && Math.abs(prev.top - next.top) < 0.5
@@ -265,8 +274,10 @@ export default function GameShell({
           <span
             className="shell-tag shell-tag-level shell-tag-compact absolute z-20"
             style={{
-              // Inset from the board's own corner when there is one, else the box's.
-              top: (anchor?.top ?? 0) + 8,
+              // Inset from the board's own corner when there is one, else the box's, and
+              // never above a camera cutout: the board's art may run under one, but a
+              // control that sits there is unreadable and on some devices untappable.
+              top: `max(${(anchor?.top ?? 0) + 8}px, calc(var(--safe-top, 0px) + 8px))`,
               left: (anchor?.left ?? 0) + 8,
               // Never eats a tap meant for the board underneath it.
               pointerEvents: 'none',
@@ -284,7 +295,10 @@ export default function GameShell({
            * easy to hit by accident. This exception applies to exit and nothing else.
            */
           className="absolute z-20 w-11 h-11 shrink-0 rounded-xl flex items-center justify-center hover:bg-hover-state transition-colors text-xl text-caption-text border border-gray-200 bg-white/80"
-          style={{ top: (anchor?.top ?? 0) + 8, right: (anchor?.right ?? 0) + 8 }}
+          style={{
+            top: `max(${(anchor?.top ?? 0) + 8}px, calc(var(--safe-top, 0px) + 8px))`,
+            right: (anchor?.right ?? 0) + 8,
+          }}
           aria-label={t('btn.exit')}
         >
           ✕

@@ -23,6 +23,16 @@ export const SOIL = { x: 45, y: 280, right: 760, bottom: 1107 } as const;
  */
 export const BED = { x: 110, y: 400, w: 580, h: 700 } as const;
 
+/**
+ * The band that must stay on screen on any viewport. The lantern badge sits at x6, which
+ * is as far in as the left edge can come; the right is mirrored because the board is
+ * centred. Outside it is only the garden wall. See lib/fitScale.ts `fitBoard`.
+ */
+export const SAFE_X = [6, CANVAS_W - 6] as const;
+
+/** Edge colours of board.jpg - evening sky above, soil below. */
+export const GROUND = { top: '#85CBDA', bottom: '#597733' } as const;
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 /**

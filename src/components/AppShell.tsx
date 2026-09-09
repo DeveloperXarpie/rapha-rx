@@ -61,7 +61,13 @@ export default function AppShell() {
       {/* Offline banner. Also hidden in a game: it carries no action, and it is visible
           on Home before the round starts. */}
       {!isOnline && !fullBleed && (
-        <div className="bg-accent-amber/20 border-b border-accent-amber flex-none px-6 py-3 text-center" role="status">
+        <div
+          className="bg-accent-amber/20 border-b border-accent-amber flex-none px-6 py-3 text-center"
+          // The banner is the one piece of chrome above the screens, so it clears the
+          // cutout itself - `.app-root` no longer pads the top for everything.
+          style={{ paddingTop: 'calc(0.75rem + var(--safe-top, 0px))' }}
+          role="status"
+        >
           <p className="text-body-md text-amber-800 font-medium">{t('offline.banner')}</p>
         </div>
       )}

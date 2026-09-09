@@ -199,6 +199,22 @@ export const SLOT_GAP = 10;
 export const DONE_BTN = { left: 280, top: 1096, width: 240, height: 118 };
 
 /**
+ * The band that must stay on screen on any viewport. The cart is the widest thing on the
+ * board - its outer slots reach x20 and x780 - so only the 20px of shop floor outside it
+ * is croppable. See lib/fitScale.ts `fitBoard`.
+ */
+export const SAFE_X = [CART.left, CANVAS_W - CART.left] as const;
+
+/**
+ * Edge colours of the two backgrounds, used to fill any height the board does not cover.
+ * The list phase is the living room, the rest of the round is the shop aisle.
+ */
+export const GROUND = {
+  home: { top: '#725228', bottom: '#74390B' },
+  store: { top: '#AE8861', bottom: '#E5BB88' },
+} as const;
+
+/**
  * Slots shrink as the list grows so the row always fits the tray's inner width of
  * 732px: six 118s and five gaps come to 758 at the widest, so six 112s and five gaps
  * come to 722 and clear it.

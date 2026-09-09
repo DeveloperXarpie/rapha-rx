@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fitScale } from '../lib/fitScale';
+import { fitBoard } from '../lib/fitScale';
 
 export interface StageBox {
   width: number;
@@ -12,6 +12,29 @@ export interface StageScale {
   width: number;
   height: number;
   box: StageBox;
+  /** Top margin that centres the board in the box. 0 once the board fills the height. */
+  offsetY: number;
+  /** How far the canvas runs past each side of the box. 0 unless the board offered a margin. */
+  bleedPerSide: number;
+  /** Ready-made `background` for the stage, filling whatever the board does not cover. */
+  ground?: string;
+}
+
+/** The two colours the leftover height is painted with, above and below the board. */
+export interface StageGround {
+  top: string;
+  bottom: string;
+}
+
+export interface StageOptions {
+  /**
+   * The horizontal band of the canvas that must stay on screen, in design px. Everything
+   * outside it is scenery the fit may crop on a viewport too narrow to show the lot.
+   * Defaults to the whole canvas, which is the old uniform-fit behaviour.
+   */
+  safe?: readonly [number, number];
+  /** Edge colours of the board's own art, used to fill the leftover height. */
+  ground?: StageGround;
 }
 
 /**
@@ -83,7 +106,12 @@ export function useStageFit(): [(el: HTMLElement | null) => void, StageBox] {
 }
 
 /**
- * `useStageFit` plus the uniform fit of a fixed design canvas into that box.
+ * `useStageFit` plus the fit of a fixed design canvas into that box - see `fitBoard` for
+ * why the fit is not simply uniform.
+ *
+ * Callers apply three things: `scale` as the transform, `offsetY` as the board's top
+ * margin, and `ground` as the stage's background. The last two are what turn the leftover
+ * height on a tall phone from a slab of app grey into more of the board's own scenery.
  *
  * `scale` is 0 until the box has been measured. Callers already render a loading state
  * while sprites decode, which covers that frame.
@@ -91,8 +119,26 @@ export function useStageFit(): [(el: HTMLElement | null) => void, StageBox] {
 export function useStageScale(
   canvasW: number,
   canvasH: number,
+  opts: StageOptions = {},
 ): [(el: HTMLElement | null) => void, StageScale] {
   const [ref, box] = useStageFit();
-  const scale = fitScale(box.width, box.height, canvasW, canvasH);
-  return [ref, { scale, width: canvasW * scale, height: canvasH * scale, box }];
+  const [safeLeft, safeRight] = opts.safe ?? [0, canvasW];
+  const fit = fitBoard(box.width, box.height, canvasW, canvasH, safeLeft, safeRight);
+  /*
+   * A hard stop at the halfway line rather than a blend. The board is centred, so the gap
+   * above it lies entirely in the top half and the gap below entirely in the bottom half;
+   * each one meets the board's own edge colour and reads as more of the same sky or ground.
+   */
+  const ground = opts.ground
+    ? `linear-gradient(180deg, ${opts.ground.top} 0 50%, ${opts.ground.bottom} 50% 100%)`
+    : undefined;
+  return [ref, {
+    scale: fit.scale,
+    width: canvasW * fit.scale,
+    height: canvasH * fit.scale,
+    box,
+    offsetY: fit.offsetY,
+    bleedPerSide: fit.bleedPerSide,
+    ground,
+  }];
 }

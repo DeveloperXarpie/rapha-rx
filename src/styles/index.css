@@ -39,13 +39,21 @@
    * A plain `100vh` box is sized for a viewport that shrinks the moment the user scrolls,
    * which puts the bottom of a game board underneath the toolbar.
    *
-   * The safe-area padding is taken here, once, so nothing further down has to know a
-   * notch or a home indicator exists.
+   * The side and bottom safe-area padding is taken here, once, so nothing further down
+   * has to know a notch or a home indicator exists.
+   *
+   * The TOP inset is deliberately not taken here. It used to be, and on a phone with a
+   * camera cutout that painted a 32px band of app grey across the top of every screen:
+   * the artwork and the blue wash both started below it, so the strip read as a bug.
+   * Backgrounds want to run under the cutout; only controls need to clear it. So the
+   * inset is published as a variable here and spent by the two things that actually sit
+   * at the top edge - `.screen-blue`, which pads its content down while its wash still
+   * bleeds, and GameShell's overlay chrome.
    */
   .app-root {
+    --safe-top: env(safe-area-inset-top);
     height: 100vh;
     height: 100dvh;
-    padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);

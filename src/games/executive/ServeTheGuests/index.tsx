@@ -11,10 +11,10 @@ import {
   bubbleCentreX, bubbleWidth, CANVAS_H, CANVAS_W, CARD_BTN_DY, CARD_BTN_H, CARD_H,
   CARD_IMG_DY, CARD_IMG_H, CARD_NAME_DY, CARD_NAME_H, CARD_PAD, CARD_W, cardX, cardY,
   COOK_BAR_H, COOK_BAR_W, FACE_BOTTOM_Y, FACE_H, FACE_TOP_Y,
-  faceCentreX, GUEST_CHIP_H, GUEST_CHIP_Y, GUEST_DIAL, GUEST_FONT,
+  faceCentreX, GROUND, GUEST_CHIP_H, GUEST_CHIP_Y, GUEST_DIAL, GUEST_FONT,
   HUD_LEFT_X, HUD_RIGHT_X, HUD_Y, PATIENCE_BAR_H,
   patienceBarWidth, SCORE_CAPSULE_H, SCORE_COIN, SCORE_FONT, SCORE_FRAME_SCALE,
-  TRAY_H, TRAY_W, TRAY_X, TRAY_Y,
+  SAFE_X, TRAY_H, TRAY_W, TRAY_X, TRAY_Y,
 } from './geometry';
 import {
   cookProgress, createInitialState, guestsHandled, spoilProgress, tapDish, tick, TOTAL_GUESTS,
@@ -73,7 +73,7 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
 
   // The board is measured against the play box GameShell hands us, not against the
   // viewport minus a guess at the chrome. See hooks/useStageFit.ts.
-  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H);
+  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H, { safe: SAFE_X, ground: GROUND });
 
   // ── Game loop ───────────────────────────────────────────────────────────────
 
@@ -142,6 +142,8 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
     <div
       ref={stageRef}
       className="w-full h-full overflow-hidden flex justify-center items-start"
+      // Leftover height is painted with the board's own awning and counter.
+      style={{ background: stage.ground }}
     >
       <ServeTheGuestsStyles reduced={reduced} />
 
@@ -150,6 +152,8 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
         style={{
           position: 'relative',
           flex: '0 0 auto',
+          // Centres the board in the leftover height. 0 once the board fills the box.
+          marginTop: stage.offsetY,
           width: CANVAS_W * stage.scale,
           height: CANVAS_H * stage.scale,
           overflow: 'hidden',

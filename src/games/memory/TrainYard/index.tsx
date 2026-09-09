@@ -12,7 +12,8 @@ import TrackLayer from './TrackLayer';
 import { EffectView, TickView } from './effects';
 import { TICK_MS, lifetime, makeConfetti, nextFxId, type Effect, type Tick } from './effectModel';
 import {
-  BANNER, BOARD_H, BOARD_W, CANVAS_H, CANVAS_W, COL_X, HUD_H, MOUTH_Y, RESET_BTN, SCENERY,
+  BANNER, BOARD_H, BOARD_W, CANVAS_H, CANVAS_W, COL_X, GROUND, HUD_H, MOUTH_Y, RESET_BTN,
+  SAFE_X, SCENERY,
 } from './geometry';
 import { STATION_NAME_FALLBACKS, STATION_NAME_KEYS, paletteFor, shuffled } from './palette';
 import { ALL_SPRITE_URLS, BOARD_BACKGROUND, HEART, RESET_GLYPH, SCENERY_SPRITES } from './sprites';
@@ -323,7 +324,7 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
 
   // The board is measured against the play box GameShell hands us, not against the
   // viewport minus a guess at the chrome. See hooks/useStageFit.ts.
-  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H);
+  const [stageRef, stage] = useStageScale(CANVAS_W, CANVAS_H, { safe: SAFE_X, ground: GROUND });
 
   const selectedColour = selected !== null ? palette[trains[selected].c] : null;
   const caption = (() => {
@@ -362,6 +363,9 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
     <div
       ref={stageRef}
       className="w-full h-full overflow-hidden flex justify-center items-start"
+      // Whatever height the board cannot fill is painted with its own grass, above and
+      // below, rather than left as a slab of app grey. See hooks/useStageFit.ts.
+      style={{ background: stage.ground }}
     >
       <TrainYardStyles />
       <div
@@ -374,6 +378,8 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
           // to zero once the child overflows. The board then scales about a centre that
           // is not the box's centre and hangs off to the right, mostly clipped.
           flex: '0 0 auto',
+          // Centres the board in the leftover height. 0 once the board fills the box.
+          marginTop: stage.offsetY,
           transform: `scale(${stage.scale})`,
           transformOrigin: 'top center',
           position: 'relative',

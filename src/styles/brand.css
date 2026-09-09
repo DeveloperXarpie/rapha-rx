@@ -21,6 +21,12 @@
 .screen-blue {
   position: relative;
   overflow-x: hidden;
+  /*
+   * The wash paints from the very top of the screen, under a camera cutout, while the
+   * content inside starts below it. `--safe-top` is published by `.app-root`; the
+   * fallback keeps this right for anything rendered outside that column.
+   */
+  padding-top: var(--safe-top, env(safe-area-inset-top));
   background: radial-gradient(
     120% 60% at 50% -6%,
     #45CFEE 0%, #2A86DE 34%, #1B5AD0 62%, #0E2AA8 100%

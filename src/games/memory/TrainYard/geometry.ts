@@ -144,6 +144,21 @@ export const TRAIN_H = Math.round(TRAIN_W * (TRAIN_SPRITES[0].h / TRAIN_SPRITES[
 
 export const BANNER = { left: 156, top: 18, width: 488 };
 export const RESET_BTN = { left: 14, top: 760, width: 104, height: 96 };
+
+/**
+ * The band that must stay on screen on any viewport, however narrow. Everything outside
+ * it is grass and scenery - trees, the signal box, the water tower - which the fit may
+ * crop rather than shrink the board. RESET sits at x14, so that is as far in as the left
+ * edge can come; the right is mirrored because the board is centred in its box.
+ *
+ * Widen this band (by moving RESET inward, say) and the board automatically fills more of
+ * a tall phone. lib/__tests__/boardFit.test.ts holds the promise that nothing inside it
+ * is ever cropped.
+ */
+export const SAFE_X = [RESET_BTN.left, CANVAS_W - RESET_BTN.left] as const;
+
+/** Edge colours of board-grass.webp, used to fill any height the board does not cover. */
+export const GROUND = { top: '#95BD1D', bottom: '#8CB81B' } as const;
 export const BLIND = { top: 132, height: 310, lift: 442 };
 
 export type SceneryKind = keyof typeof SCENERY_SPRITES;

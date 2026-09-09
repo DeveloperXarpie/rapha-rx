@@ -31,6 +31,17 @@ export const TRAY_W = 886;
 export const TRAY_H = 720;
 
 /**
+ * The whole canvas, with nothing to spare: the guests tile the full width one seat each,
+ * so there is no edge to crop without losing one of them. Declared anyway, because the
+ * fit reads it and because a later redraw that inset the seats would only have to change
+ * these two numbers. See lib/fitScale.ts `fitBoard`.
+ */
+export const SAFE_X = [0, CANVAS_W] as const;
+
+/** Edge colours of bg_cook_pt.jpg - the awning above, the counter below. */
+export const GROUND = { top: '#0E6AC2', bottom: '#D4631A' } as const;
+
+/**
  * The painted frame's thickness, as rendered. The sprite's own band is 34px at its native
  * 787px width; this is that scaled to `TRAY_W`, so the border-image slice and the interior
  * agree no matter what width the tray is given.
