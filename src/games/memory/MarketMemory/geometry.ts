@@ -22,6 +22,12 @@
 
 export const CANVAS_W = 800;
 export const CANVAS_H = 1250;
+
+/**
+ * The chrome strip across the top of the board. The Sep-9 review repaints it from
+ * the old deep navy to the kit's near-white, but keeps it: GameShell's level plate
+ * and exit sit on it, and the mock shows the board art starting below it.
+ */
 export const HUD_H = 96;
 
 /** The board is the whole canvas - the backgrounds run under the HUD. */
@@ -147,25 +153,18 @@ export const ROW_Y = PLANK_Y.slice(0, SHELF_ROWS).map((y) => y - CRATE_H);
 // ─── Fixed furniture ──────────────────────────────────────────────────────────
 
 /**
- * The caption sits between the HUD bar and the shelf unit, whose top rail is at y 269.
- * The first row of crates starts at y 286, so there is plenty of room here - but it
- * stays a single line, because two lines is the shape that covered the goods when the
- * unit sat higher, and the copy was rewritten to suit. That is a 54px slot, so the caption is a single line - the old
- * two-line panel would have covered the top row of goods. The shopping caption's copy
- * was shortened to suit.
- */
-export const CAPTION = { left: 150, top: 100, width: 500 };
-
-/**
- * HINT is a round button centred in the HUD bar now. The old 132 x 116 tile lived at
- * y 196, which is inside the shelf on this art.
+ * The caption sits in the gap between the chrome strip, which ends at HUD_H plus its
+ * 4px rule, and the first row of crates at `crateBox(0).top`.
  *
- * Centred rather than tucked into a corner because GameShell insets its level badge and
- * exit button 8px from the board's *rendered* corners, in viewport pixels - so how much
- * of this board's top-left and top-right they cover changes with the stage scale. The
- * middle of the bar is the only part that is reliably the game's own.
+ * It stays a single line: two lines is the shape that covered the goods when the unit
+ * sat higher, and the copy was rewritten to suit.
  */
-export const HINT_BTN = { left: 364, top: 12, size: 72 };
+/*
+ * Height matters here, not just the top: the clipboard's own top is at y 150 and the
+ * caption must end above it. At 24px on 6px padding the plate is 46 tall, so 104
+ * lands its bottom edge exactly on the clipboard rather than under it.
+ */
+export const CAPTION = { left: 150, top: 104, width: 500 };
 
 /**
  * The clipboard sprite, `ui-clipboard.png`, is 465 x 868. Drawn at 430 wide it keeps its
@@ -184,14 +183,77 @@ export const CLIPBOARD_PAPER = {
   height: 663,
 };
 
+/** `ui-clipboard.png` in its own pixels, so the rules below can be converted. */
+const ART_CLIPBOARD_W = 465;
+
+/**
+ * The rules printed on the clipboard, sampled off the sliced art as the eight
+ * dark horizontal bands inside the paper. Evenly spaced 76 art px apart.
+ *
+ * The Sep-9 review's "alignment issue" is what happens without these: the rows
+ * used to be a flex column centred on the paper, at a row height that had
+ * nothing to do with the printed rules, so an item's name landed wherever it
+ * fell - usually straight across a line. A row belongs in the band BETWEEN two
+ * rules, which is what these coordinates are for.
+ */
+const ART_RULE_Y = [191, 267, 344, 420, 495, 573, 648, 723];
+
+/** Rule positions in board pixels. */
+export const LIST_RULE_Y = ART_RULE_Y.map(
+  (y) => Math.round(CLIPBOARD.top + y * (CLIPBOARD.width / ART_CLIPBOARD_W)),
+);
+
+/** Writing bands, one fewer than the rules that bound them. */
+export const LIST_BANDS = LIST_RULE_Y.length - 1;
+
+/** The height of one band, which is every row's height. */
+export const LIST_ROW_H = Math.round(
+  (LIST_RULE_Y[LIST_RULE_Y.length - 1] - LIST_RULE_Y[0]) / LIST_BANDS,
+);
+
+/**
+ * The first band an `n`-item list occupies, so the block sits centred on the
+ * page in whole bands rather than straddling them.
+ */
+export function listStartBand(n: number): number {
+  return Math.max(0, Math.floor((LIST_BANDS - n) / 2));
+}
+
 /** The retention cover. Full canvas - see the note in Blind.tsx. */
 export const BLIND = { left: 0, top: 0, width: CANVAS_W, height: CANVAS_H, lift: CANVAS_H };
 
-export const READY_BTN = { left: 250, top: 975, width: 300, height: 166 };
+/**
+ * 20% wider than the 300x166 it was, per the Sep-9 review, and re-centred at that
+ * width. `ui-ready.png` is 328x182, so the 1.80 ratio is the art's own.
+ */
+export const READY_BTN = { left: 220, top: 955, width: 360, height: 200 };
 
 /** Covers the sixth plank and the floor below it, starting clear of row 5. */
 export const CART = { left: 20, top: 856, width: 760, height: 220 };
 export const CART_HEADER_H = 52;
+
+/**
+ * HINT, straddling the cart's top-left corner, where the Sep-9 review put it. It
+ * used to sit in the middle of a HUD bar across the top of the board; that bar is
+ * gone, and the shell's level plate now occupies the space it held.
+ *
+ * `ui_icon_hint_.png` is 72x64, and the ratio is kept so the badge baked into its
+ * top-left corner stays circular. Deliberately overhanging rather than tucked
+ * inside: the cart header is only 52px tall and the disc is 76.
+ */
+export const HINT_BTN = {
+  left: CART.left - 8,
+  top: CART.top - 26,
+  width: 86,
+  height: 76,
+};
+
+/**
+ * Where the remaining-count sits on that art, as a fraction of its box - the green
+ * badge is painted into the PNG, so the number has to land on it rather than beside
+ * it. Measured off the asset: badge centre (17.4%, 24.2%), diameter 33.3% of width.
+ */
+export const HINT_BADGE = { cx: 0.174, cy: 0.242, d: 0.333 } as const;
 export const CART_PAD = 14;
 export const SLOT_GAP = 10;
 

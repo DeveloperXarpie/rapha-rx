@@ -6,6 +6,7 @@ import { track } from '../lib/analytics';
 import { adjustDifficulty, scoreLevelLabel, scoreToLevel } from '../lib/dynamicDifficulty';
 import { recordLastLevel } from '../lib/lastLevel';
 import { getGame } from '../lib/gameCatalog';
+import { UI_CLOSE_X } from '../lib/uiKit';
 import { useAppStore } from '../store';
 import { Button } from './ui/Button';
 import type { LevelConfig } from '../games/types';
@@ -271,20 +272,30 @@ export default function GameShell({
           score's 1-10 label beside it would be two conflicting level numbers.
         */}
         {gameId !== 'picture-postcard' && (
-          <span
-            className="shell-tag shell-tag-level shell-tag-compact absolute z-20"
+          /*
+           * Centred over the board, per the Sep-9 review. A full-width row rather than
+           * `left: 50%` + a transform, because the board is only centred in the box when
+           * its fit leaves equal margins; spanning the measured edges centres the plate
+           * on the ARTWORK even when it does not.
+           *
+           * The row stops short of the exit button's column on both sides, so a long
+           * translated label runs out of room before it runs underneath the exit.
+           */
+          <div
+            className="absolute z-20 flex justify-center"
             style={{
               // Inset from the board's own corner when there is one, else the box's, and
               // never above a camera cutout: the board's art may run under one, but a
               // control that sits there is unreadable and on some devices untappable.
               top: `max(${(anchor?.top ?? 0) + 8}px, calc(var(--safe-top, 0px) + 8px))`,
-              left: (anchor?.left ?? 0) + 8,
+              left: (anchor?.left ?? 0) + 60,
+              right: (anchor?.right ?? 0) + 60,
               // Never eats a tap meant for the board underneath it.
               pointerEvents: 'none',
             }}
           >
-            {levelLabel}
-          </span>
+            <span className="shell-tag-plate">{levelLabel}</span>
+          </div>
         )}
 
         <button
@@ -294,14 +305,17 @@ export default function GameShell({
            * this app's own 80px touch-min token: exit ends a round, and it should not be
            * easy to hit by accident. This exception applies to exit and nothing else.
            */
-          className="absolute z-20 w-11 h-11 shrink-0 rounded-xl flex items-center justify-center hover:bg-hover-state transition-colors text-xl text-caption-text border border-gray-200 bg-white/80"
+          className="absolute z-20 w-11 h-11 shrink-0 rounded-full flex items-center justify-center transition-transform active:scale-95"
           style={{
             top: `max(${(anchor?.top ?? 0) + 8}px, calc(var(--safe-top, 0px) + 8px))`,
             right: (anchor?.right ?? 0) + 8,
+            // The kit's art carries the whole button, so no border or fill of our own.
+            background: 'none', border: 'none', padding: 0,
+            filter: 'drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35))',
           }}
           aria-label={t('btn.exit')}
         >
-          ✕
+          <img src={UI_CLOSE_X} alt="" aria-hidden="true" className="w-full h-full" draggable={false} />
         </button>
       </div>
 

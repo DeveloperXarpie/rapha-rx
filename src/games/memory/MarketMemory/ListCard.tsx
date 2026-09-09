@@ -1,4 +1,4 @@
-import { CLIPBOARD, CLIPBOARD_PAPER } from './geometry';
+import { CLIPBOARD, LIST_ROW_H, LIST_RULE_Y, listStartBand } from './geometry';
 import { listRowStyles } from './listRowStyles';
 import type { Item } from './items';
 import { COLOURS } from './palette';
@@ -23,7 +23,12 @@ interface ListCardProps {
  * against the sprite's own edges.
  */
 export default function ListCard({ items, covered, leaving, reduced }: ListCardProps) {
-  const rowH = Math.min(120, CLIPBOARD_PAPER.height / Math.max(items.length, 1));
+  /*
+   * Rows sit in the bands between the clipboard's printed rules rather than in a
+   * flex column centred on the paper. Centring at an unrelated row height is what
+   * put a name across a printed line - the Sep-9 review's "alignment issue".
+   */
+  const startBand = listStartBand(items.length);
 
   return (
     <div
@@ -49,34 +54,38 @@ export default function ListCard({ items, covered, leaving, reduced }: ListCardP
         style={{ width: '100%', height: '100%', display: 'block' }}
       />
 
-      <div style={{
-        position: 'absolute',
-        left: CLIPBOARD_PAPER.left - CLIPBOARD.left,
-        top: CLIPBOARD_PAPER.top - CLIPBOARD.top,
-        width: CLIPBOARD_PAPER.width,
-        height: CLIPBOARD_PAPER.height,
-        display: 'flex', flexDirection: 'column', alignItems: 'stretch',
-        // Centred, so a three-item list does not leave two thirds of the page blank.
-        justifyContent: 'center',
-        padding: '0 14px', boxSizing: 'border-box',
-      }}>
-        {items.map((it, i) => {
-          const style = listRowStyles(i, covered, reduced);
-          return (
-            // Two elements, not one: the outer owns the entrance animation and the inner
-            // owns the blanking. See listRowStyles for why they cannot be the same node.
-            <div key={it.id} style={{ height: rowH, ...style.entrance }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 18, height: '100%',
-                ...style.content,
+      {items.map((it, i) => {
+        const style = listRowStyles(i, covered, reduced);
+        // The band's own top, relative to the clipboard sprite this sits inside.
+        const bandTop = LIST_RULE_Y[Math.min(startBand + i, LIST_RULE_Y.length - 2)] - CLIPBOARD.top;
+        return (
+          // Two elements, not one: the outer owns the entrance animation and the inner
+          // owns the blanking. See listRowStyles for why they cannot be the same node.
+          <div
+            key={it.id}
+            style={{
+              position: 'absolute',
+              left: 42, right: 34,
+              top: bandTop, height: LIST_ROW_H,
+              ...style.entrance,
+            }}
+          >
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 18, height: '100%',
+              ...style.content,
+            }}>
+              <Product item={it} size={LIST_ROW_H - 14} />
+              <span style={{
+                fontSize: 30, fontWeight: 700, color: COLOURS.ink,
+                // The name is the row's own; it must not run over the next item's art.
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               }}>
-                <Product item={it} size={Math.min(78, rowH - 12)} />
-                <span style={{ fontSize: 30, fontWeight: 700, color: COLOURS.ink }}>{it.name}</span>
-              </div>
+                {it.name}
+              </span>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -17,6 +17,7 @@ import {
 } from './geometry';
 import { STATION_NAME_FALLBACKS, STATION_NAME_KEYS, paletteFor, shuffled } from './palette';
 import { ALL_SPRITE_URLS, BOARD_BACKGROUND, HEART, RESET_GLYPH, SCENERY_SPRITES } from './sprites';
+import { KIT_COLOURS } from '../../../lib/uiKit';
 import { COLOURS, EASE_SETTLE, TrainYardStyles } from './styles';
 
 // ─── Timings ──────────────────────────────────────────────────────────────────
@@ -388,41 +389,48 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
         }}
       >
         {/* HUD */}
-        {/* Centred, not left-aligned: GameShell floats the level badge over the board's
-            top-left corner and the exit over its top-right, and anything parked at
-            either end of this bar sits under one of them. */}
+        {/*
+          The Sep-9 review repaints this strip from deep navy to the kit's near-white
+          and moves the hearts to its left end, with GameShell's level plate centred
+          between them and the exit at the right.
+
+          Left-aligned is safe now where it was not before: the shell's plate used to
+          sit in the top-left corner, so anything parked at this end vanished under
+          it. The plate is centred now, and the hearts have the corner to themselves.
+        */}
         <div
           style={{
             position: 'absolute', left: 0, top: 0, width: CANVAS_W, height: HUD_H,
-            background: 'linear-gradient(180deg, #2C5580 0%, #1E3E63 100%)',
-            borderBottom: `4px solid ${COLOURS.navyDeep}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
-            padding: '0 18px',
+            background: KIT_COLOURS.panel,
+            borderBottom: `4px solid ${KIT_COLOURS.navy}`,
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '0 22px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {[0, 1, 2].map((i) => (
-              <img
-                key={i}
-                src={HEART.src}
-                alt=""
-                draggable={false}
-                style={{
-                  width: 38,
-                  height: 38 * (HEART.h / HEART.w),
-                  opacity: i < lives ? 1 : 0.22,
-                  filter: i < lives ? 'drop-shadow(0 2px 3px rgba(0,0,0,.35))' : 'grayscale(1)',
-                  transition: 'opacity 300ms linear, filter 300ms linear',
-                }}
-              />
-            ))}
-          </div>
-          <span
-            aria-live="polite"
-            style={{ fontSize: 17, fontWeight: 700, letterSpacing: '.12em', color: '#9FC0DE' }}
-          >
-            {t('ty.hearts', 'HEARTS')}
+          {/*
+            The count is spoken rather than printed. The "HEARTS" caption went with the
+            navy bar - it was labelling a strip that no longer needs labelling - so this
+            is what still tells a screen reader how many are left.
+          */}
+          <span className="sr-only" aria-live="polite">
+            {t('ty.heartsLeft', '{{count}} hearts left', { count: Math.max(0, lives) })}
           </span>
+          {[0, 1, 2].map((i) => (
+            <img
+              key={i}
+              src={HEART.src}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              style={{
+                width: 44,
+                height: 44 * (HEART.h / HEART.w),
+                opacity: i < lives ? 1 : 0.22,
+                filter: i < lives ? 'drop-shadow(0 2px 3px rgba(0,0,0,.28))' : 'grayscale(1)',
+                transition: 'opacity 300ms linear, filter 300ms linear',
+              }}
+            />
+          ))}
         </div>
 
         {/* Board */}
@@ -499,10 +507,11 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
             style={{
               position: 'absolute', left: BANNER.left, top: BANNER.top, width: BANNER.width,
               zIndex: 7,
-              background: COLOURS.cream,
-              border: `3px solid ${COLOURS.creamBorder}`,
-              borderBottomWidth: 6,
-              borderRadius: 18,
+              // The kit's pale plate, matching Market Memory's caption. Was cream.
+              background: KIT_COLOURS.panel,
+              border: '3px solid rgba(3, 62, 132, 0.16)',
+              borderRadius: 22,
+              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.22)',
               padding: '16px 20px 18px',
               display: 'flex', alignItems: 'center', gap: 16,
             }}
@@ -520,7 +529,7 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
             <p
               key={captionKey}
               style={{
-                fontSize: 25, fontWeight: 700, color: COLOURS.brownText, lineHeight: 1.28,
+                fontSize: 25, fontWeight: 800, color: KIT_COLOURS.navy, lineHeight: 1.28,
                 textWrap: 'pretty',
                 animation: reduced
                   ? 'ty-fade 300ms ease-out both'

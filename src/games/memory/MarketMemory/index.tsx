@@ -14,7 +14,7 @@ import Scene from './Scene';
 import { EffectView } from './effects';
 import { lifetime, makeConfetti, makeToast, type Effect } from './effectModel';
 import {
-  BOARD_H, BOARD_W, CANVAS_H, CANVAS_W, CAPTION, GROUND, HINT_BTN, HUD_H, READY_BTN, SAFE_X,
+  BOARD_H, BOARD_W, CANVAS_H, CANVAS_W, CAPTION, GROUND, HUD_H, READY_BTN, SAFE_X,
 } from './geometry';
 import { BY_ID, type Item } from './items';
 import { COLOURS } from './palette';
@@ -307,7 +307,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
       : phase === 'covering' || phase === 'travel' ? t('mm.caption.travel', 'Off to the shop!')
         : phase === 'revealing' ? t('mm.caption.revealing', 'The list is gone now.')
           // Shortened for the single-line caption panel: the old copy needed two lines.
-          : t('mm.caption.shopping', 'Collect those items, then press DONE.');
+          : t('mm.caption.shopping', 'Remember & Collect Items');
 
   // The clipboard's exit animation runs inside `revealing`, so unmounting on `shopping`
   // lets it finish rather than cutting it short.
@@ -350,65 +350,36 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
           <Scene inStore={inStore} reduced={reduced} />
 
           {/*
-            The HUD bar, painted over the backdrop rather than in a band above it.
+            The chrome strip, in the kit's near-white rather than the old deep navy.
 
-            It holds only HINT since the hearts left, and it is kept at full width
-            because GameShell floats the level badge over the board's top-left corner
-            and the exit over its top-right, and this strip is what gives both of them
-            something legible to sit on.
+            It stays, and stays full width, because GameShell floats the level plate
+            over the board's top-centre and the exit over its top-right, and this is
+            what both of them sit on. The Sep-9 mock repaints it; it does not remove
+            it - the board art still begins below it.
+
+            HINT no longer lives here. It moved to the cart's top-left corner, which
+            is where the mock puts it. See CartStrip.
           */}
           <div style={{
             position: 'absolute', left: 0, top: 0, width: BOARD_W, height: HUD_H, zIndex: 7,
-            background: `linear-gradient(180deg, ${COLOURS.navyHudTop} 0%, ${COLOURS.navyHudBot} 100%)`,
-            borderBottom: `4px solid ${COLOURS.navyDeep}`,
+            background: COLOURS.panel,
+            borderBottom: `4px solid ${COLOURS.panelInk}`,
           }} />
 
           {/*
-            HINT, centred in the bar. It was a 132 x 116 tile at y 196 on the old art,
-            which on this backdrop is inside the shelf unit - it would have sat on the
-            goods. Round and compact here, with the remaining count on its badge.
-          */}
-          <button
-            type="button"
-            onClick={handleHint}
-            disabled={!hintLive}
-            aria-label={t('mm.hint', 'HINT')}
-            style={{
-              position: 'absolute', left: HINT_BTN.left, top: HINT_BTN.top,
-              width: HINT_BTN.size, height: HINT_BTN.size, zIndex: 8,
-              background: COLOURS.creamLight, border: `4px solid ${COLOURS.creamBorder}`,
-              borderRadius: '50%', boxSizing: 'border-box', padding: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              opacity: hintLive ? 1 : 0.45,
-              cursor: hintLive ? 'pointer' : 'default',
-            }}
-          >
-            <span aria-hidden="true" style={{ fontSize: 34, lineHeight: 1 }}>&#128161;</span>
-            <span
-              aria-hidden="true"
-              style={{
-                position: 'absolute', right: -8, top: -8, width: 32, height: 32, borderRadius: '50%',
-                background: COLOURS.greenBadge, border: '3px solid #FFFFFF', boxSizing: 'border-box',
-                color: '#FFFFFF', fontSize: 18, fontWeight: 800, lineHeight: 1,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: "'Baloo 2', sans-serif",
-              }}
-            >
-              {hintsLeft}
-            </span>
-          </button>
+            The caption, on the kit's pale plate.
 
-          {/*
-            One line, not two. The first row of crates starts at y 154 and this sits in
-            the 54px between it and the HUD, so a second line would cover the top row of
-            goods once shopping starts.
+            One line, not two: it sits between the chrome strip and the first row of
+            crates, and a second line would cover the top row of goods once shopping
+            starts.
           */}
           <div style={{
             position: 'absolute', left: CAPTION.left, top: CAPTION.top, width: CAPTION.width, zIndex: 6,
-            background: COLOURS.creamLight, border: `3px solid ${COLOURS.creamBorder}`, borderRadius: 14,
-            padding: '6px 14px', textAlign: 'center', boxSizing: 'border-box',
-            fontSize: 24, fontWeight: 700, color: COLOURS.ink,
+            background: COLOURS.panel, border: `3px solid ${COLOURS.panelEdge}`, borderRadius: 999,
+            padding: '6px 16px', textAlign: 'center', boxSizing: 'border-box',
+            fontSize: 24, fontWeight: 800, color: COLOURS.panelInk,
             whiteSpace: 'nowrap', overflow: 'hidden',
+            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.22)',
             transition: 'opacity 260ms ease',
           }}>
             {caption}
@@ -477,6 +448,10 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
               reduced={reduced}
               onRemove={handleRemove}
               onSubmit={handleSubmit}
+              hintsLeft={hintsLeft}
+              hintEnabled={hintLive}
+              hintLabel={t('mm.hint', 'HINT')}
+              onHint={handleHint}
             />
           )}
 
@@ -495,8 +470,15 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
               labels={{
                 title: result.perfect
                   ? t('mm.perfect', 'Whole list, exactly right')
-                  : t('mm.checked', 'Cart checked'),
-                action: t('mm.next', 'Next round'),
+                  : t('mm.checked', 'Cart Checked'),
+                action: t('mm.next', 'Next Round'),
+                // Not rendered - these carry the verdict to a screen reader now that
+                // the tiles show art and a badge rather than a printed name.
+                status: {
+                  correct: t('mm.status.correct', 'on the list'),
+                  wrong:   t('mm.status.wrong', 'not on the list'),
+                  missed:  t('mm.status.missed', 'missed'),
+                },
               }}
               reduced={reduced}
               onContinue={commit}

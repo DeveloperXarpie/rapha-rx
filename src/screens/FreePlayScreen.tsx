@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
 import { allByCategory, getGame } from '../lib/gameCatalog';
+import { UI_UNDO } from '../lib/uiKit';
 import ScreenBlue from '../components/chrome/ScreenBlue';
 import GameTile from '../components/chrome/GameTile';
 import { BRAND } from '../styles/tokens';
@@ -55,21 +56,19 @@ export default function FreePlayScreen() {
         <button
           onClick={() => navigate('/app/home')}
           aria-label={t('btn.back', 'Back')}
+          className="shrink-0 transition-transform active:scale-95"
           style={{
-            width: 44, height: 44, borderRadius: '50%',
-            border: '1px solid rgba(255,255,255,0.5)',
-            background: 'rgba(10,20,40,0.35)', color: '#FFFFFF',
-            fontSize: 20, lineHeight: 1,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 52, height: 52,
+            filter: 'drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35))',
           }}
         >
-          &#8592;
+          <img src={UI_UNDO} alt="" aria-hidden="true" className="w-full h-full" draggable={false} />
         </button>
         <div>
-          <h1 className="font-baloo" style={{ fontSize: 22, fontWeight: 700, color: '#FFFFFF' }}>
+          <h1 className="font-baloo" style={{ fontSize: 27, fontWeight: 700, color: '#FFFFFF' }}>
             {t('freePlay.title', 'Free Play')}
           </h1>
-          <p className="font-baloo" style={{ fontSize: 15, fontWeight: 600, color: BRAND.cyan }}>
+          <p className="font-baloo" style={{ fontSize: 18, fontWeight: 600, color: BRAND.cyan }}>
             {t('freePlay.subtitle', 'Choose any game you would like to play.')}
           </p>
         </div>
@@ -81,7 +80,7 @@ export default function FreePlayScreen() {
             <p
               className="font-baloo"
               style={{
-                fontSize: 11, fontWeight: 700, letterSpacing: '0.12em',
+                fontSize: 14, fontWeight: 700, letterSpacing: '0.12em',
                 color: BRAND.cyanBright, marginBottom: 10,
               }}
             >

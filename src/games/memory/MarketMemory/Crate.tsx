@@ -91,16 +91,22 @@ export default function Crate({ item, index, picked, hinted, interactive, reduce
         <Product item={item} size={CRATE_H - PLATE_H - CRATE_TOP_CLEARANCE} />
       </div>
 
+      {/*
+        The name plate. Pale blue rather than cream, per the Sep-9 review - the same
+        fill the cart's slots use, so the two shelves of the screen agree. A picked
+        crate still keeps its green edge, which is the only thing on the plate that
+        carries state.
+      */}
       <span style={{
         width: '100%',
-        background: COLOURS.creamLight,
-        border: `3px solid ${picked ? COLOURS.greenPick : COLOURS.creamBorder}`,
+        background: COLOURS.slotFill,
+        border: `3px solid ${picked ? COLOURS.greenPick : COLOURS.slotBorder}`,
         borderRadius: 9,
         boxSizing: 'border-box',
         height: PLATE_H,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '0 2px',
-        fontSize: PLATE_FONT, fontWeight: 700, color: COLOURS.ink, letterSpacing: '.01em',
+        fontSize: PLATE_FONT, fontWeight: 700, color: COLOURS.panelInk, letterSpacing: '.01em',
         lineHeight: 1.05, textAlign: 'center',
       }}>
         {item.name}

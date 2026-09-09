@@ -1,8 +1,11 @@
-import { CART, CART_HEADER_H, CART_PAD, DONE_BTN, SLOT_GAP, slotWidth } from './geometry';
+import {
+  CART, CART_HEADER_H, CART_PAD, DONE_BTN, HINT_BADGE, HINT_BTN, SLOT_GAP, slotWidth,
+} from './geometry';
 import type { Item } from './items';
 import { COLOURS } from './palette';
 import Product from './Product';
-import { UI_DONE, UI_UNDO } from './sprites';
+import { UI_DONE } from './sprites';
+import { UI_HINT, UI_UNDO } from '../../../lib/uiKit';
 import { EASE_SETTLE } from './styles';
 
 interface CartStripProps {
@@ -19,6 +22,11 @@ interface CartStripProps {
   removeLabel: (name: string) => string;
   onRemove: (slot: number) => void;
   onSubmit: () => void;
+  /** HINT, which straddles the cart's top-left corner. */
+  hintsLeft: number;
+  hintEnabled: boolean;
+  hintLabel: string;
+  onHint: () => void;
 }
 
 /**
@@ -29,7 +37,8 @@ interface CartStripProps {
  * with the list length. The colours come from the same palette so it sits with the rest.
  */
 export default function CartStrip({
-  slots, listLength, interactive, submitEnabled, cartLabel, submitLabel, removeLabel, reduced, onRemove, onSubmit,
+  slots, listLength, interactive, submitEnabled, cartLabel, submitLabel, removeLabel, reduced,
+  onRemove, onSubmit, hintsLeft, hintEnabled, hintLabel, onHint,
 }: CartStripProps) {
   const w = slotWidth(listLength);
   const filled = slots.filter(Boolean).length;
@@ -40,8 +49,10 @@ export default function CartStrip({
       <div style={{
         position: 'absolute', left: CART.left, top: CART.top, width: CART.width, height: CART.height,
         zIndex: 7, boxSizing: 'border-box',
-        background: `linear-gradient(180deg, ${COLOURS.woodLight} 0%, ${COLOURS.woodDark} 100%)`,
-        border: `6px solid ${COLOURS.woodDarker}`,
+        // The wooden tray frame goes with the cream: the Sep-9 kit's cart is a clean
+        // panel, so the frame is a thin edge of the header's own navy instead.
+        background: COLOURS.panel,
+        border: `4px solid ${COLOURS.panelInk}`,
         borderRadius: 20,
         overflow: 'hidden',
         fontFamily: "'Baloo 2', sans-serif",
@@ -49,18 +60,18 @@ export default function CartStrip({
         // on its own rather than popping in behind something else.
         animation: 'mm-fade 300ms ease both',
       }}>
+        {/* The kit's titled panel: navy bar, pale body. See `ui_text panel_01.png`. */}
         <div style={{
           height: CART_HEADER_H, boxSizing: 'border-box',
-          background: COLOURS.navyPlate, borderBottom: `4px solid ${COLOURS.navyPlateEdge}`,
+          background: COLOURS.panelInk,
           display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
           fontSize: 28, fontWeight: 800, color: '#FFFFFF', letterSpacing: '.06em',
         }}>
           {cartLabel}
+          {/* Plain on the bar rather than on a plate of its own, per the Sep-9 mock. */}
           <span style={{
-            position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-            background: COLOURS.creamLight, border: `2px solid ${COLOURS.creamBorder}`,
-            borderRadius: 9, padding: '2px 12px',
-            fontSize: 22, fontWeight: 800, color: COLOURS.inkSign, letterSpacing: 0,
+            position: 'absolute', right: 18, top: '50%', transform: 'translateY(-50%)',
+            fontSize: 26, fontWeight: 800, color: '#FFFFFF', letterSpacing: 0,
           }}>
             {filled}/{listLength}
           </span>
@@ -68,7 +79,7 @@ export default function CartStrip({
 
         <div style={{
           height: CART.height - CART_HEADER_H, boxSizing: 'border-box',
-          padding: CART_PAD, background: COLOURS.cream,
+          padding: CART_PAD, background: COLOURS.panel,
           display: 'flex', gap: SLOT_GAP, alignItems: 'center', justifyContent: 'center',
         }}>
           {slots.map((it, i) => (
@@ -81,8 +92,8 @@ export default function CartStrip({
               style={{
                 position: 'relative',
                 width: w, height: slotH, flex: '0 0 auto', padding: 0,
-                background: it ? COLOURS.creamSlot : 'rgba(255,255,255,.35)',
-                border: it ? `4px solid ${COLOURS.creamBorder}` : `4px dashed ${COLOURS.slotDash}`,
+                background: COLOURS.slotFill,
+                border: `4px dashed ${COLOURS.slotBorder}`,
                 borderRadius: 14, boxSizing: 'border-box',
                 cursor: it ? 'pointer' : 'default',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -130,6 +141,54 @@ export default function CartStrip({
           ))}
         </div>
       </div>
+
+      {/*
+        HINT, straddling the cart's top-left corner where the Sep-9 review put it.
+
+        A sibling of the tray rather than a child of it: the tray clips to its own
+        rounded corners, and the disc is meant to hang outside them.
+      */}
+      <button
+        type="button"
+        onClick={onHint}
+        disabled={!hintEnabled}
+        aria-label={hintLabel}
+        style={{
+          position: 'absolute',
+          left: HINT_BTN.left, top: HINT_BTN.top,
+          width: HINT_BTN.width, height: HINT_BTN.height,
+          zIndex: 8, padding: 0, border: 'none', background: 'transparent',
+          opacity: hintEnabled ? 1 : 0.45,
+          cursor: hintEnabled ? 'pointer' : 'default',
+          animation: 'mm-fade 300ms ease both',
+        }}
+      >
+        <img
+          src={UI_HINT}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          style={{ width: '100%', height: '100%', display: 'block' }}
+        />
+        {/*
+          The count sits on the green badge painted into the art, so it is placed
+          from HINT_BADGE's measured fractions rather than pinned to a corner.
+        */}
+        <span
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: `${HINT_BADGE.cx * 100}%`,
+            top: `${HINT_BADGE.cy * 100}%`,
+            transform: 'translate(-50%, -50%)',
+            fontSize: HINT_BTN.width * HINT_BADGE.d * 0.72,
+            fontWeight: 800, lineHeight: 1, color: '#FFFFFF',
+            fontFamily: "'Baloo 2', sans-serif",
+          }}
+        >
+          {hintsLeft}
+        </span>
+      </button>
 
       {/*
         The entrance fade lives on the wrapper and the disabled dimming on the button.

@@ -4,33 +4,61 @@ import { useTranslation } from 'react-i18next';
 import { track } from '../lib/analytics';
 import { getGame } from '../lib/gameCatalog';
 
-/** Every splash-*.webp is drawn at this size, so the art box is locked to it. */
-const ART_W = 540;
-const ART_H = 960;
+/**
+ * The art box is locked to the splash's own aspect, because the splashes are no
+ * longer one shape. Four are still the original 540x960 (0.5625); Shopping List
+ * and Station Master were re-cut at 1003x1568 (0.6397) for the Sep-9 review,
+ * which asked for wider art so the portrait column stops showing blue bars down
+ * both sides. A single global constant would letterbox the wide pair back to
+ * where they started, so the ratio is per-game with the old shape as default.
+ */
+const DEFAULT_ASPECT = 540 / 960;
 
-interface Rect { top: string; height: string; left: string; width: string }
+const ART_ASPECT: Record<string, number> = {
+  'market-memory': 1003 / 1568,
+  'train-yard':    1003 / 1568,
+};
+
+interface Rect {
+  top: string; height: string; left: string; width: string;
+  /**
+   * Corner radius, as a fraction of the ART box's height so it scales with the
+   * button. Omitted means `.btn-brand`'s 34px pill, which is what the four
+   * splashes with a painted pill want.
+   */
+  radiusCqh?: number;
+}
 
 /*
  * Where the real PLAY button sits, as a fraction of the ART box - not of the
  * viewport. The art is letterboxed rather than cover-cropped (see below), so
  * these percentages address the same pixels of the image at every size.
  *
- * Three of the six splashes (Free Me, Garden Keeper, Station Master) have no
- * painted PLAY button at all, which is why those games looked like they had
- * none: the screen only ever drew a transparent hotspot over the art and
- * trusted the artwork to show a button. The button is real now, and on the
- * three splashes that DO paint one these rects are measured to sit over the
- * painted pill and cover it, so no screen shows two.
+ * Four of the six splashes (Free Me, Garden Keeper, and now Shopping List and
+ * Station Master, whose re-cut art dropped the painted pill) have no painted
+ * PLAY button at all. That is why those games once looked like they had none:
+ * the screen only ever drew a transparent hotspot over the art and trusted the
+ * artwork to show a button. The button is real now, and on the two splashes
+ * that DO still paint one these rects are measured to sit over the painted pill
+ * and cover it, so no screen shows two.
  *
- * Measured off the source webp files, not estimated - the painted pills span
- * y 69.3-79.3% (shopping), 68.8-79.9% (spot) and 64.3-74.4% (tiffen), and each
- * rect below is that span padded out far enough to hide the pill's drop shadow.
+ * Measured off the source webp files, not estimated - the surviving painted
+ * pills span y 68.8-79.9% (spot) and 64.3-74.4% (tiffen), and each rect below
+ * is that span padded out far enough to hide the pill's drop shadow.
  */
 const DEFAULT_PLAY: Rect = { top: '67.6%', height: '14.4%', left: '21.5%', width: '57%' };
 
 const PLAY_RECT: Record<string, Rect> = {
-  // Over the painted pill on the three splashes that have one.
-  'market-memory': { top: '67.6%', height: '14.4%', left: '21.5%', width: '57%' },
+  /*
+   * The two re-cut splashes paint no pill at all, so these rects are placed on
+   * clear art rather than measured onto one. Shopping List sits on the empty
+   * pavement below the info panel, which ends at 61%. Station Master sits lower
+   * than any other game on purpose: the station master's face runs 55-72% and a
+   * button in the usual slot would cover it.
+   */
+  'market-memory': { top: '70.4%', height: '12.2%', left: '29%', width: '42%', radiusCqh: 2.68 },
+  'train-yard':    { top: '84.2%', height: '12.2%', left: '29%', width: '42%', radiusCqh: 2.68 },
+  // Over the painted pill on the two remaining splashes that have one.
   'spot-focus':    { top: '67.0%', height: '15.4%', left: '23.5%', width: '59%' },
   'serve-guests':  { top: '63.6%', height: '13.4%', left: '21.5%', width: '58%' },
   // Free Me paints no pill, and its info panel hangs lower than the other five
@@ -79,6 +107,7 @@ export default function GameTitleScreen() {
   if (!game || !splash) return null;
 
   const play = PLAY_RECT[game.id] ?? DEFAULT_PLAY;
+  const aspect = ART_ASPECT[game.id] ?? DEFAULT_ASPECT;
 
   function handlePlay() {
     navigate(`/app/game/${gameId}`);
@@ -108,8 +137,8 @@ export default function GameTitleScreen() {
            * rather than aspect-ratio + max-width, because clamping a max-width
            * does not walk an explicit height back and the art would squash.
            */
-          width: `min(100cqw, 100cqh * ${ART_W} / ${ART_H})`,
-          height: `min(100cqh, 100cqw * ${ART_H} / ${ART_W})`,
+          width: `min(100cqw, 100cqh * ${aspect})`,
+          height: `min(100cqh, 100cqw / ${aspect})`,
           // So the button below can size its label against the art, not the page.
           containerType: 'size',
         }}
@@ -122,10 +151,15 @@ export default function GameTitleScreen() {
         />
 
         <button
-          className="btn-brand btn-green"
+          className="btn-brand btn-green-kit"
           onClick={handlePlay}
           style={{
-            position: 'absolute', ...play,
+            position: 'absolute', top: play.top, height: play.height, left: play.left, width: play.width,
+            /*
+             * The kit's corner is a fraction of the button's own height, so it is a
+             * length in container units rather than a percentage - see btn-green-kit.
+             */
+            ...(play.radiusCqh ? { borderRadius: `${play.radiusCqh}cqh` } : {}),
             fontSize: 'clamp(20px, 9cqw, 44px)',
             // The painted pills read PLAY. Latin-only, so a no-op for hi and kn.
             textTransform: 'uppercase',

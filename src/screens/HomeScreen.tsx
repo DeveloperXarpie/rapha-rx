@@ -136,22 +136,23 @@ export default function HomeScreen() {
               color: '#FFFFFF', minHeight: 80, minWidth: 80,
             }}
           >
-            <span style={{ fontSize: 40, lineHeight: 1 }} aria-hidden="true">&#9881;</span>
+            <span style={{ fontSize: 52, lineHeight: 1 }} aria-hidden="true">&#9881;</span>
             <span
               className="font-baloo"
-              style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em' }}
+              style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.1em' }}
             >
               {t('nav.settings', 'SETTINGS').toUpperCase()}
             </span>
           </button>
         </div>
 
-        {/* Greeting */}
-        <div style={{ position: 'relative', padding: '12px 20px 0' }}>
-          <p className="font-baloo" style={{ fontSize: 22, fontWeight: 700, color: '#FFFFFF' }}>
+        {/* Greeting. Centred per the Sep-9 review; the logo and settings above it
+            keep the header's own left/right split. */}
+        <div style={{ position: 'relative', padding: '12px 20px 0', textAlign: 'center' }}>
+          <p className="font-baloo" style={{ fontSize: 24, fontWeight: 700, color: '#FFFFFF' }}>
             {getGreeting()}{firstName ? `, ${firstName}` : ''}
           </p>
-          <p className="font-baloo" style={{ fontSize: 17, fontWeight: 600, color: BRAND.cyan }}>
+          <p className="font-baloo" style={{ fontSize: 18, fontWeight: 600, color: BRAND.cyan }}>
             {todayDone
               ? t('home.sessionComplete', "Today's workout is complete.")
               : t('home.duration', "Today's Workout takes {{minutes}} minutes.", { minutes })}
@@ -182,21 +183,21 @@ export default function HomeScreen() {
           >
             <p
               className="font-baloo"
-              style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: BRAND.muted }}
+              style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', color: BRAND.muted }}
             >
               {t('home.anotherDay', 'ANOTHER DAY')}
             </p>
-            <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
               {anotherDay.map((g) => (
                 <img
                   key={g.id}
                   src={tileArt(g)}
                   alt=""
                   aria-hidden="true"
-                  width={40}
-                  height={40}
+                  width={60}
+                  height={60}
                   style={{
-                    width: 40, height: 40, borderRadius: 10,
+                    width: 60, height: 60, borderRadius: 14,
                     filter: 'grayscale(0.9)', opacity: 0.5,
                   }}
                 />

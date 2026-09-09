@@ -23,6 +23,20 @@ export const COLOURS = {
   creamBorder:  '#C9A055',
   slotDash:     '#C7A365',
 
+  /*
+   * The Sep-9 kit's panel colours, which the review asked cream to give way to on
+   * the cart, the crate name plates and the caption. Sampled from
+   * `ui_panel_selection.png` and `ui_text panel_01.png`, not picked by eye.
+   *
+   * The cream tokens above are still live: the clipboard's paper is painted into
+   * `ui-clipboard.png` and the list rows sit on it, so ink on cream stays there.
+   */
+  panel:        '#F4F4F4',
+  panelInk:     '#033E84',
+  panelEdge:    'rgba(3, 62, 132, 0.16)',
+  slotFill:     '#D8D9E6',
+  slotBorder:   '#7881C6',
+
   // The cart tray's wooden frame.
   woodLight:    '#C08A45',
   woodDark:     '#9A6428',

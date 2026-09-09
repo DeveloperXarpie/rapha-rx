@@ -11,6 +11,8 @@ const TILE = 118;
 interface Labels {
   title: string;
   action: string;
+  /** Spoken verdict per row, e.g. "on the list" / "not on the list". */
+  status: Record<RowStatus, string>;
 }
 
 interface ResultCardProps {
@@ -48,13 +50,15 @@ export default function ResultCard({ rows, perfect, labels, reduced, onContinue 
       <div style={{ position: 'absolute', inset: 0, zIndex: 9, background: 'rgba(11,44,56,.55)' }} />
       <div style={{
         position: 'absolute', left: '50%', top: '50%', zIndex: 10, width: 640,
-        background: COLOURS.creamLight, border: `5px solid ${COLOURS.creamBorder}`, borderRadius: 22,
+        // The kit's pale panel, per the Sep-9 review.
+        background: COLOURS.panel, border: `4px solid ${COLOURS.panelEdge}`, borderRadius: 26,
         padding: '32px 28px', textAlign: 'center',
+        boxShadow: '0 14px 30px rgba(0, 0, 0, 0.32)',
         animation: `mm-cardin 260ms ${EASE_SETTLE} both`,
       }}>
         <div style={{
           fontSize: 46, fontWeight: 800,
-          color: perfect ? COLOURS.greenResult : COLOURS.purple,
+          color: perfect ? COLOURS.greenResult : COLOURS.panelInk,
         }}>
           {labels.title}
         </div>
@@ -73,36 +77,44 @@ export default function ResultCard({ rows, perfect, labels, reduced, onContinue 
             const item = BY_ID[row.id];
             const badge = BADGE[row.status];
             return (
+              /*
+               * The Sep-9 mock draws each result as one of the kit's selection tiles
+               * with the verdict on its corner, and no name under it. The name is not
+               * lost - it moves onto the tile's accessible label, so a screen reader
+               * still hears "Grapes, not on the list" rather than an unlabelled image.
+               */
               <div
                 key={row.id}
                 role="listitem"
-                style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
+                aria-label={`${item.name}: ${labels.status[row.status]}`}
+                style={{
+                  position: 'relative',
+                  width: TILE, height: TILE,
+                  background: COLOURS.slotFill,
+                  border: `4px dashed ${COLOURS.slotBorder}`,
+                  borderRadius: 16, boxSizing: 'border-box',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  // The badge hangs outside the tile's corner.
+                  overflow: 'visible',
+                }}
               >
-                <div style={{ position: 'relative' }}>
-                  <Product item={item} size={TILE - 28} />
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      position: 'absolute', right: -10, top: -10,
-                      width: 42, height: 42, borderRadius: '50%',
-                      background: badge.bg, border: `3px solid ${badge.edge}`, boxSizing: 'border-box',
-                      color: '#FFFFFF', fontSize: 24, fontWeight: 800, lineHeight: 1,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      // mm-pop, not mm-cardin: mm-cardin carries a centring translate
-                      // that would drag the badge off its corner. See styles.tsx.
-                      animation: reduced
-                        ? `mm-fade 200ms ease ${i * BADGE_STAGGER_MS}ms both`
-                        : `mm-pop 260ms ${EASE_SETTLE} ${i * BADGE_STAGGER_MS}ms both`,
-                    }}
-                  >
-                    {badge.glyph}
-                  </span>
-                </div>
-                <span style={{
-                  fontSize: 17, fontWeight: 700, lineHeight: 1.1, color: COLOURS.ink,
-                  maxWidth: TILE, overflowWrap: 'break-word',
-                }}>
-                  {item.name}
+                <Product item={item} size={TILE - 34} />
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute', right: -12, top: -12,
+                    width: 42, height: 42, borderRadius: '50%',
+                    background: badge.bg, border: `3px solid ${badge.edge}`, boxSizing: 'border-box',
+                    color: '#FFFFFF', fontSize: 24, fontWeight: 800, lineHeight: 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    // mm-pop, not mm-cardin: mm-cardin carries a centring translate
+                    // that would drag the badge off its corner. See styles.tsx.
+                    animation: reduced
+                      ? `mm-fade 200ms ease ${i * BADGE_STAGGER_MS}ms both`
+                      : `mm-pop 260ms ${EASE_SETTLE} ${i * BADGE_STAGGER_MS}ms both`,
+                  }}
+                >
+                  {badge.glyph}
                 </span>
               </div>
             );
@@ -112,10 +124,14 @@ export default function ResultCard({ rows, perfect, labels, reduced, onContinue 
         <button
           type="button"
           onClick={onContinue}
+          /* Bigger, and on the kit's green, per the Sep-9 mock. */
           style={{
-            background: COLOURS.green, border: 'none', borderBottom: `7px solid ${COLOURS.greenEdge}`,
-            borderRadius: 16, padding: '14px 40px',
-            fontFamily: "'Baloo 2', sans-serif", fontSize: 34, fontWeight: 800, color: '#FFFFFF',
+            background: `linear-gradient(180deg, #61C12A 0%, #55B31A 46%, #22A70C 88%)`,
+            border: `4px solid ${COLOURS.greenEdge}`,
+            borderRadius: 20, padding: '18px 56px',
+            fontFamily: "'Baloo 2', sans-serif", fontSize: 40, fontWeight: 800, color: '#FFFFFF',
+            textShadow: '0 3px 0 rgba(4, 74, 2, 0.85)',
+            boxShadow: 'inset 0 4px 10px rgba(255,255,255,.32), 0 8px 16px rgba(0,0,0,.35)',
             cursor: 'pointer',
           }}
         >

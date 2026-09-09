@@ -49,7 +49,7 @@ export default function GameRow({ game, lastLevel, onClick }: Props) {
       <div style={{ minWidth: 0 }}>
         <p
           className="font-baloo"
-          style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: BRAND.cyan }}
+          style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.12em', color: BRAND.cyan }}
         >
           {t(CATEGORY_LABEL_KEY[game.category], CATEGORY_FALLBACK[game.category]).toUpperCase()}
         </p>
@@ -57,7 +57,7 @@ export default function GameRow({ game, lastLevel, onClick }: Props) {
           {t(game.nameKey, game.id)}
         </p>
         {lastLevel != null && (
-          <p className="font-baloo" style={{ fontSize: 15, fontWeight: 700, color: BRAND.lime }}>
+          <p className="font-baloo" style={{ fontSize: 18, fontWeight: 700, color: BRAND.lime }}>
             {t('home.lastLevel', 'Last time: level {{level}}', { level: lastLevel })}
           </p>
         )}
