@@ -14,6 +14,8 @@ export const BG_STORE = `${BASE}/bg-store.jpg`;
 export const UI_CLIPBOARD = `${BASE}/ui-clipboard.png`;
 export const UI_READY = `${BASE}/ui-ready.png`;
 export const UI_DONE = `${BASE}/ui-done.png`;
+/** The undo badge on a filled cart slot - dropped in by hand, not sliced by the script. */
+export const UI_UNDO = `${BASE}/ui-undo.png`;
 
 /** Warmed during encoding so the walk to the shop never lands on an unpainted board. */
 export const PRELOAD = [BG_STORE, UI_DONE];

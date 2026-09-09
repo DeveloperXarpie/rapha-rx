@@ -2,7 +2,7 @@ import { CART, CART_HEADER_H, CART_PAD, DONE_BTN, SLOT_GAP, slotWidth } from './
 import type { Item } from './items';
 import { COLOURS } from './palette';
 import Product from './Product';
-import { UI_DONE } from './sprites';
+import { UI_DONE, UI_UNDO } from './sprites';
 import { EASE_SETTLE } from './styles';
 
 interface CartStripProps {
@@ -109,23 +109,22 @@ export default function CartStrip({
               {/*
                 The undo hint. A filled slot has always been removable by tapping it, but
                 nothing said so - the resident had to tap one to find out, which is a poor
-                thing to learn by experiment when the tap is destructive. Same badge
-                language as the tick on a picked crate, so it reads as a control.
+                thing to learn by experiment when the tap is destructive. The badge is the
+                kit's undo icon, sized and placed like the tick on a picked crate so it
+                reads as a control.
               */}
               {it && interactive && (
-                <span
+                <img
+                  src={UI_UNDO}
+                  alt=""
                   aria-hidden="true"
+                  draggable={false}
                   style={{
                     position: 'absolute', right: -8, top: -8,
-                    width: 34, height: 34, borderRadius: '50%',
-                    background: COLOURS.amber, border: `3px solid ${COLOURS.amberEdge}`,
-                    boxSizing: 'border-box',
-                    color: '#FFFFFF', fontSize: 20, fontWeight: 800, lineHeight: 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 34, height: 34,
+                    display: 'block', pointerEvents: 'none',
                   }}
-                >
-                  &#8630;
-                </span>
+                />
               )}
             </button>
           ))}
