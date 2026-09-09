@@ -1,0 +1,28 @@
+we need to create a new game for the executive dysfunction category
+
+  Design Brief: Sliding-Block Escape Puzzle
+
+  Working title: Finding Temo
+
+  Concept. A grid-based sliding-block puzzle. The player frees a key-bearing tile by clearing a path to an exit gap in
+  the border wall. One-screen levels, no timer, pure spatial reasoning.
+
+  Core loop. Read the board → identify the blocking chain → move obstructions in dependency order → slide the key out →
+  next level. Sessions are 30–90 seconds per puzzle.
+
+  Rules.
+
+  Grid sizes 4×4 to 7×7, fixed per level.
+  Pieces are 1×1, 1×2, or 1×3 rectangles.
+  Rectangles slide only along their long axis; 1×1 pieces move freely. Nothing rotates.
+  Drag moves a piece as far as the player pulls it, stopping at the first collision. A move counts as one action
+  regardless of distance.
+  The key tile is 1×2 horizontal. Exit is a gap in the wall aligned to one row.
+
+  Progression. 10 hand-tuned or solver-verified levels.(ability to add more levels should be key) Difficulty scales by
+  piece count, then by dependency depth (how many moves must precede the first useful one), not by grid size alone.
+
+  Futuere support for: dead-end decoys, pieces that must move away from the exit, exits on the left or top edge
+
+  Ui reference in @assets-src/keyescape/image_13.png
+  

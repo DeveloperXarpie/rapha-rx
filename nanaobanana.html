@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Search - Senior Brain Training App</title>
+    <!-- We're mimicking the vibe of the rest of the application using modern clean constraints -->
+    <style>
+        :root {
+            --bg-color: #FDFBF7; /* Warm off-white, no glare */
+            --primary: #2A66B8; /* PRD primary blue */
+            --primary-light: #EBF2FA;
+            --success: #E8F5E9; /* Soft green, per design doc */
+            --success-dark: #2E7D32;
+            --text-main: #2C3E50;
+            --text-muted: #546E7A;
+            --grid-border: #CFD8DC;
+
+            /* Typography from PRD */
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none; /* Prevent standard text selection during swipe */
+            -webkit-user-select: none;
+        }
+
+        .tablet-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 12px 32px rgba(44, 62, 80, 0.08);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Header --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--grid-border);
+            padding-bottom: 20px;
+        }
+
+        .category-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 99px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .instructions {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* --- Main Content Area --- */
+        .game-area {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column-reverse;
+                align-items: center;
+            }
+        }
+
+        /* --- Target List --- */
+        .target-list-panel {
+            flex: 1;
+            background: var(--bg-color);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--grid-border);
+            min-width: 200px;
+        }
+
+        .target-list-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .word-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .word-item {
+            font-size: 1.4rem;
+            font-weight: 600;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .word-item.found {
+            background: var(--success);
+            color: var(--success-dark);
+            text-decoration: line-through;
+            opacity: 0.8;
+            border-color: rgba(46, 125, 50, 0.2);
+        }
+
+        .check-icon {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .word-item.found .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* --- Grid --- */
+        .grid-container {
+            position: relative;
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid var(--grid-border);
+            touch-action: none; /* Prevent scrolling during swipe */
+        }
+
+        .grid {
+            display: grid;
+            gap: 6px;
+            /* Injected via JS based on level, default 6x6 */
+            grid-template-columns: repeat(6, 1fr); 
+            position: relative;
+            z-index: 2;
+        }
+
+        .cell {
+            /* Minimum 80x80px per UX Rules */
+            width: 80px; 
+            height: 80px;
+            background: var(--bg-color);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            transition: transform 0.1s ease, background 0.2s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Highlighting Logic */
+        .cell.highlighted {
+            background: var(--primary-light);
+            color: var(--primary);
+            transform: scale(1.05);
+            box-shadow: 0 0 0 2px var(--primary);
+            z-index: 3;
+        }
+
+        .cell.found {
+            background: var(--success);
+            color: var(--success-dark);
+        }
+        
+        .cell.found.highlighted {
+            /* If dragging over already found ones */
+            background: #C8E6C9;
+        }
+
+        /* --- Overlay SVG for custom swipe rendering (Optional polish) --- */
+        #swipe-overlay {
+            position: absolute;
+            top: 16px; left: 16px; right: 16px; bottom: 16px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .swipe-line {
+            stroke: var(--primary-light);
+            stroke-width: 40px;
+            stroke-linecap: round;
+            opacity: 0.8;
+            transition: stroke 0.3s;
+        }
+        .swipe-line.found-line {
+            stroke: var(--success);
+            opacity: 1;
+        }
+
+
+        /* --- Overlay States (Start / Win) --- */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            padding: 40px;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .overlay h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .overlay p {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+
+        .btn-large {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 20px 48px;
+            border-radius: 99px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(42, 102, 184, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-large:active {
+            transform: scale(0.96);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="tablet-container">
+        
+        <!-- Start Screen -->
+        <div class="overlay active" id="start-screen">
+            <h2>Find the Words</h2>
+            <p>Today's theme: <strong>South Indian Foods</strong><br>Take your time, there is no timer.</p>
+            <button class="btn-large" id="start-btn">Start Game</button>
+        </div>
+
+        <!-- Win Screen -->
+        <div class="overlay" id="win-screen">
+            <h2>Great focus!</h2>
+            <p>You found them all.<br>A perfect session.</p>
+            <button class="btn-large" onclick="location.reload()">Return Home</button>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1 style="margin:0; font-size: 1.8rem;">Word Search</h1>
+            <div class="category-badge">South Indian Foods</div>
+        </div>
+        <p class="instructions">Tap and drag to highlight the words hidden in the grid.</p>
+
+        <!-- Main Game -->
+        <div class="game-area">
+            
+            <div class="grid-container">
+                <svg id="swipe-overlay"></svg>
+                <div class="grid" id="grid">
+                    <!-- Javascript populates cells -->
+                </div>
+            </div>
+
+            <div class="target-list-panel">
+                <h3 class="target-list-title">Find These:</h3>
+                <ul class="word-list" id="word-list">
+                    <!-- Javascript populates targets -->
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Hidden Audio for soft feedback (mimicked via console if actual audio fails in iframe) -->
+        <audio id="chime" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
+
+    </div>
+
+    <script>
+        // ─── Game Config (Mimicking 'Easy' / 'Medium' Level dynamically) ───
+        // We will simulate a 6x6 grid with 4 words, no diagonals.
+        const GRID_SIZE = 6;
+        const TARGET_WORDS = ["IDLI", "DOSA", "VADA", "UPMA"];
+        
+        // Hardcoded grid layout for the mock (to ensure words actually exist and intersect nicely)
+        // D O S A . .
+        // I . . . U .
+        // D V A D A .
+        // L . . . M .
+        // I . . . A .
+        // . . . . . .
+        const GRID_LETTERS = [
+            ['D', 'O', 'S', 'A', 'N', 'T'],
+            ['I', 'B', 'M', 'K', 'U', 'R'],
+            ['D', 'V', 'A', 'D', 'A', 'L'],
+            ['L', 'J', 'S', 'H', 'M', 'O'],
+            ['I', 'R', 'E', 'W', 'A', 'P'],
+            ['C', 'Z', 'X', 'Q', 'Y', 'B']
+        ];
+
+        // ─── DOM Elements ───
+        const gridEl = document.getElementById('grid');
+        const wordListEl = document.getElementById('word-list');
+        const swipeOverlay = document.getElementById('swipe-overlay');
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+        const winScreen = document.getElementById('win-screen');
+
+        let cells = [];
+        let isDragging = false;
+        let currentSelection = [];
+        let foundWords = new Set();
+        let foundLines = []; // To persist lines of found words
+
+        // ─── Initialization ───
+        function initGame() {
+            gridEl.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+            
+            // Build Targets
+            TARGET_WORDS.forEach(word => {
+                const li = document.createElement('li');
+                li.className = 'word-item';
+                li.id = `target-${word}`;
+                li.innerHTML = `
+                    <svg class="check-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    ${word}
+                `;
+                wordListEl.appendChild(li);
+            });
+
+            // Build Grid
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = GRID_LETTERS[r][c];
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+                    
+                    // Touch/Mouse events for swiping
+                    // Note: In a real app we'd use robust pointer events or custom touch routing.
+                    cell.addEventListener('mousedown', () => startSwipe(r, c));
+                    cell.addEventListener('mouseenter', () => continueSwipe(r, c));
+                    
+                    gridEl.appendChild(cell);
+                    cells.push(cell);
+                }
+            }
+
+            // Global mouseup to end swipe
+            document.addEventListener('mouseup', endSwipe);
+
+            // Hide overlay
+            startBtn.addEventListener('click', () => {
+                startScreen.classList.remove('active');
+            });
+        }
+
+        // ─── Game Logic ───
+        function getCell(r, c) {
+            return cells.find(el => parseInt(el.dataset.r) === r && parseInt(el.dataset.c) === c);
+        }
+
+        function clearHighlights() {
+            cells.forEach(c => c.classList.remove('highlighted'));
+            currentSelection = [];
+            renderLines();
+        }
+
+        function startSwipe(r, c) {
+            isDragging = true;
+            clearHighlights();
+            addToSelection(r, c);
+        }
+
+        function continueSwipe(r, c) {
+            if (!isDragging) return;
+            
+            // Basic logic: only allow straight lines (horizontal, vertical). No diagonal for this mock level.
+            const first = currentSelection[0];
+            const dr = Math.abs(first.r - r);
+            const dc = Math.abs(first.c - c);
+
+            if (dr === 0 || dc === 0) {
+                // Determine direction and fill in gaps
+                currentSelection = [first]; // reset to start
+                const rStep = r === first.r ? 0 : (r > first.r ? 1 : -1);
+                const cStep = c === first.c ? 0 : (c > first.c ? 1 : -1);
+                
+                let currR = first.r + rStep;
+                let currC = first.c + cStep;
+
+                while(true) {
+                    addToSelection(currR, currC);
+                    if (currR === r && currC === c) break;
+                    currR += rStep;
+                    currC += cStep;
+                }
+            }
+        }
+
+        function addToSelection(r, c) {
+            const cell = getCell(r, c);
+            if (cell && !currentSelection.find(s => s.r === r && s.c === c)) {
+                currentSelection.push({r, c, el: cell, letter: GRID_LETTERS[r][c]});
+                cell.classList.add('highlighted');
+                renderLines();
+            }
+        }
+
+        function endSwipe() {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const selectedWord = currentSelection.map(s => s.letter).join('');
+            const reversedWord = currentSelection.map(s => s.letter).reverse().join('');
+
+            // Check if valid
+            let matchedWord = null;
+            if (TARGET_WORDS.includes(selectedWord)) matchedWord = selectedWord;
+            if (TARGET_WORDS.includes(reversedWord)) matchedWord = reversedWord;
+
+            if (matchedWord && !foundWords.has(matchedWord)) {
+                // Success!
+                foundWords.add(matchedWord);
+                
+                // Visual updates
+                document.getElementById(`target-${matchedWord}`).classList.add('found');
+                currentSelection.forEach(s => s.el.classList.add('found'));
+                
+                // Save the line segment for permanence
+                foundLines.push([...currentSelection]);
+
+                // Play soft chime (simulated via empty audio tag so it doesn't actually throw errors if block autoplay)
+                try { document.getElementById('chime').play(); } catch(e){}
+                console.log(`%c Found word: ${matchedWord} `, "background: #E8F5E9; color: #2E7D32; font-size: 14px;");
+
+                // Check Win
+                if (foundWords.size === TARGET_WORDS.length) {
+                    setTimeout(() => {
+                        winScreen.classList.add('active');
+                    }, 800);
+                }
+            } else {
+                // Incorrect (or already found). Silently fade away.
+                // Requirement: NO buzzer, NO red flash, zero negative feedback.
+            }
+
+            // Always clear current highlights after releasing swipe. 
+            // The .found class handles persisting the background color.
+            clearHighlights(); 
+        }
+
+        // ─── Drawing Swipes natively behind text ───
+        function renderLines() {
+            swipeOverlay.innerHTML = '';
+            
+            // Draw permanent found lines
+            foundLines.forEach(lineCells => drawLineSVG(lineCells, true));
+            
+            // Draw active drag line
+            if (currentSelection.length > 0) {
+                drawLineSVG(currentSelection, false);
+            }
+        }
+
+        function drawLineSVG(lineCells, isFound) {
+            if (lineCells.length < 2) return;
+            
+            const first = lineCells[0].el;
+            const last = lineCells[lineCells.length - 1].el;
+
+            // Calculate centers relative to the grid container
+            const gridRect = gridEl.getBoundingClientRect();
+            const fRect = first.getBoundingClientRect();
+            const lRect = last.getBoundingClientRect();
+
+            const x1 = (fRect.left - gridRect.left) + fRect.width / 2;
+            const y1 = (fRect.top - gridRect.top) + fRect.height / 2;
+            const x2 = (lRect.left - gridRect.left) + lRect.width / 2;
+            const y2 = (lRect.top - gridRect.top) + lRect.height / 2;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('class', `swipe-line ${isFound ? 'found-line' : ''}`);
+            
+            swipeOverlay.appendChild(line);
+        }
+
+        // Start
+        initGame();
+
+    </script>
+</body>
+</html>
