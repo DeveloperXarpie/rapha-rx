@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { kitButton } from '../../../styles/kitButton';
 import type { LevelResult } from '../../../components/GameShell';
 import type { LevelConfig } from '../../types';
 import { useReducedMotion } from '../../../lib/useReducedMotion';
@@ -19,7 +20,7 @@ import {
 import { BY_ID, type Item } from './items';
 import { COLOURS } from './palette';
 import { buildRound, resultRows, scoreRound, type RoundScore } from './round';
-import { PRELOAD, UI_READY } from './sprites';
+import { PRELOAD } from './sprites';
 import { BLIND_MS, MarketMemoryStyles } from './styles';
 
 // ─── Timings ──────────────────────────────────────────────────────────────────
@@ -306,8 +307,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
     phase === 'encoding' ? t('mm.caption.encoding', 'Remember the items on the list.')
       : phase === 'covering' || phase === 'travel' ? t('mm.caption.travel', 'Off to the shop!')
         : phase === 'revealing' ? t('mm.caption.revealing', 'The list is gone now.')
-          // Shortened for the single-line caption panel: the old copy needed two lines.
-          : t('mm.caption.shopping', 'Remember & Collect Items');
+          : t('mm.caption.shopping', 'Remember and Collect items');
 
   // The clipboard's exit animation runs inside `revealing`, so unmounting on `shopping`
   // lets it finish rather than cutting it short.
@@ -367,17 +367,25 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
           }} />
 
           {/*
-            The caption, on the kit's pale plate.
+            The caption, on the kit's pale plate. The Sep-10 review asked for both the
+            plate and its text to grow; the numbers live in geometry's CAPTION because
+            the clipboard's top is derived from this plate's bottom edge.
 
             One line, not two: it sits between the chrome strip and the first row of
             crates, and a second line would cover the top row of goods once shopping
-            starts.
+            starts. The plate is a fixed-height flex box rather than padding around the
+            text so that its height is a fact geometry can rely on.
           */}
           <div style={{
-            position: 'absolute', left: CAPTION.left, top: CAPTION.top, width: CAPTION.width, zIndex: 6,
+            position: 'absolute',
+            left: CAPTION.left, top: CAPTION.top,
+            width: CAPTION.width, height: CAPTION.height,
+            zIndex: 6,
             background: COLOURS.panel, border: `3px solid ${COLOURS.panelEdge}`, borderRadius: 999,
-            padding: '6px 16px', textAlign: 'center', boxSizing: 'border-box',
-            fontSize: 24, fontWeight: 800, color: COLOURS.panelInk,
+            padding: '0 20px', boxSizing: 'border-box',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            textAlign: 'center',
+            fontSize: CAPTION.fontSize, fontWeight: 800, color: COLOURS.panelInk,
             whiteSpace: 'nowrap', overflow: 'hidden',
             boxShadow: '0 4px 10px rgba(0, 0, 0, 0.22)',
             transition: 'opacity 260ms ease',
@@ -415,24 +423,26 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
           />
 
           {phase === 'encoding' && (
+            /*
+             * Drawn, not painted. This was an <img> of `ui-ready.png` until the Sep-10
+             * review asked why the six games have six different buttons: the art is
+             * where `.btn-green-kit` was sampled FROM, so reproducing it in CSS costs
+             * nothing and buys the three things a bitmap cannot have - a translated
+             * label, a focus ring, and a press that moves.
+             */
             <button
               type="button"
+              className="btn-brand btn-green-kit"
               onClick={handleReady}
-              aria-label={t('mm.ready', 'READY')}
               style={{
+                ...kitButton(READY_BTN.height),
                 position: 'absolute',
                 left: READY_BTN.left, top: READY_BTN.top,
                 width: READY_BTN.width, height: READY_BTN.height,
-                zIndex: 7, padding: 0, border: 'none', background: 'transparent', cursor: 'pointer',
+                zIndex: 7, padding: 0, cursor: 'pointer',
               }}
             >
-              <img
-                src={UI_READY}
-                alt=""
-                aria-hidden="true"
-                draggable={false}
-                style={{ width: '100%', height: '100%', display: 'block' }}
-              />
+              {t('mm.ready', 'READY')}
             </button>
           )}
 

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  CANVAS_H, CANVAS_W, CART, COL_X, CRATE_H, CRATE_TOP_CLEARANCE, CRATE_W, DONE_BTN,
-  INTERIOR_X, PLANK_Y, ROW_Y, SHELF_COLS, SHELF_ROWS, crateBox,
+  CANVAS_H, CANVAS_W, CAPTION, CAPTION_CLEARANCE, CART, CLIPBOARD, COL_X, CRATE_H,
+  CRATE_TOP_CLEARANCE, CRATE_W, DONE_BTN, HUD_H, INTERIOR_X, PLANK_Y, READY_BTN,
+  ROW_Y, SHELF_COLS, SHELF_ROWS, crateBox,
 } from '../geometry';
 import { CRATE_COUNT } from '../round';
 
@@ -62,6 +63,32 @@ describe('shelf grid', () => {
     expect(crateBox(CRATE_COUNT - 1)).toMatchObject({
       left: COL_X[SHELF_COLS - 1], top: ROW_Y[SHELF_ROWS - 1],
     });
+  });
+});
+
+/*
+ * The Sep-10 review's "give space for the instruction panel". The panel, the clipboard
+ * and READY are a single stack down the encoding screen, and the review's complaint was
+ * that it had no slack in it: the panel's bottom edge landed exactly on the clipboard.
+ * These hold the stack apart, and hold it on the board once it has been pushed down.
+ */
+describe('the encoding stack', () => {
+  it('starts the caption below the chrome strip', () => {
+    expect(CAPTION.top).toBeGreaterThanOrEqual(HUD_H);
+  });
+
+  it('leaves clear air between the caption and the clipboard', () => {
+    expect(CLIPBOARD.top - (CAPTION.top + CAPTION.height)).toBe(CAPTION_CLEARANCE);
+    expect(CAPTION_CLEARANCE).toBeGreaterThan(0);
+  });
+
+  it('keeps the clipboard and READY on the board', () => {
+    expect(READY_BTN.top).toBeGreaterThanOrEqual(CLIPBOARD.top + CLIPBOARD.height);
+    expect(READY_BTN.top + READY_BTN.height).toBeLessThanOrEqual(CANVAS_H);
+  });
+
+  it('centres the caption plate on the canvas', () => {
+    expect(CAPTION.left).toBe(CANVAS_W - (CAPTION.left + CAPTION.width));
   });
 });
 

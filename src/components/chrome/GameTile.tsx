@@ -34,7 +34,12 @@ export default function GameTile({
       </div>
       <p
         className="font-baloo"
-        style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', marginTop: 8, lineHeight: 1.2 }}
+        /*
+         * 17, up from 15, per the Sep-10 review. Longer names wrap to two lines in the
+         * three-column grid at this size, which is why the grid's rows are free to
+         * stretch rather than being a fixed height.
+         */
+        style={{ fontSize: 17, fontWeight: 700, color: '#FFFFFF', marginTop: 8, lineHeight: 1.2 }}
       >
         {t(game.nameKey, game.id)}
       </p>

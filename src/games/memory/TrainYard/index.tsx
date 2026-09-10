@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
+import { kitButton } from '../../../styles/kitButton';
 import type { LevelResult } from '../../../components/GameShell';
 import type { LevelConfig } from '../../types';
 import { useImagesReady } from '../../../lib/useImagesReady';
@@ -329,7 +330,13 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
 
   const selectedColour = selected !== null ? palette[trains[selected].c] : null;
   const caption = (() => {
-    if (phase === 'encoding') return t('ty.caption.encoding', 'Learn the station names now - the signs go blank in a moment.');
+    /*
+     * The Sep-10 review's "fix UI text". The old line told the resident to learn the
+     * station NAMES, and the names are not the task - a train is matched to its
+     * station by colour, and the names on the signs are scenery. The line and the
+     * game now agree.
+     */
+    if (phase === 'encoding') return t('ty.caption.encoding', 'Remember the colour of each station.');
     if (phase === 'retention') return t('ty.caption.retention', 'Hold them in mind...');
     if (phase === 'roundEnd') return t('ty.caption.roundEnd', 'Every train home. Well done.');
     if (phase === 'gameOver') return t('ty.caption.gameOver', 'Out of hearts - try that yard again.');
@@ -339,7 +346,11 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
       });
     }
     if (busy) return t('ty.caption.sending', 'On its way…');
-    return t('ty.caption.dispatch', 'Tap the station this train belongs to.');
+    /*
+     * The standing instruction while the board waits, which is the state the review's
+     * reference mock is in. Selecting a train swaps it for the question above.
+     */
+    return t('ty.caption.dispatch', 'Remember the colour of each station.');
   })();
   const captionKey = `${phase}-${selected ?? 'none'}-${revealed.size}`;
 
@@ -581,13 +592,29 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
           {card && (
             <>
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,48,79,.55)', zIndex: 11 }} />
+              {/*
+                The kit's plate, not the old cream-and-amber card. The Sep-10 review
+                put this modal next to the instruction banner and asked them to match:
+                they are the two things in this game that speak to the resident in
+                sentences, and one of them was wearing a different game's skin.
+
+                Same plate and same navy ink as the banner above; only the heading
+                colour still varies, because "Round complete" and "Out of hearts" are
+                the one place the card has to say which of the two it is before the
+                resident reads a word.
+
+                NOT the banner's pink brain disc. On the banner that disc is the voice
+                giving the instruction, and a speaker with something to say. Repeated
+                here it is a decoration with nothing to say, and at 64px it reads as a
+                pink smudge rather than as a brain.
+              */}
               <div
                 style={{
                   position: 'absolute', left: '50%', top: '50%', width: 560, zIndex: 12,
-                  background: COLOURS.cream,
-                  border: `4px solid ${COLOURS.creamBorder}`,
-                  borderBottomWidth: 9,
+                  background: KIT_COLOURS.panel,
+                  border: '3px solid rgba(3, 62, 132, 0.16)',
                   borderRadius: 26,
+                  boxShadow: '0 10px 26px rgba(0, 0, 0, 0.32)',
                   padding: '44px 46px',
                   textAlign: 'center',
                   animation: reduced
@@ -605,20 +632,25 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
                     ? t('ty.roundComplete', 'Round complete')
                     : t('ty.outOfHearts', 'Out of hearts')}
                 </h3>
-                <p style={{ fontSize: 27, fontWeight: 500, color: COLOURS.brownSoft, marginBottom: 28 }}>
+                <p style={{ fontSize: 27, fontWeight: 600, color: KIT_COLOURS.navy, marginBottom: 30, textWrap: 'pretty' }}>
                   {card === 'roundEnd'
                     ? t('ty.roundComplete.body', 'All four trains are home with {{count}} hearts left.', { count: Math.max(0, lives) })
                     : t('ty.outOfHearts.body', 'Have another go at this yard - the stations will be shown again.')}
                 </p>
                 <button
                   type="button"
+                  className="btn-brand btn-green-kit"
                   onClick={() => commit(card === 'roundEnd', Date.now())}
                   style={{
-                    minHeight: 72, padding: '0 40px', borderRadius: 18,
-                    background: COLOURS.amber,
-                    border: 'none', borderBottom: `6px solid ${COLOURS.amberEdge}`,
-                    fontSize: 28, fontWeight: 700, color: '#4A3410', cursor: 'pointer',
-                    fontFamily: "'Baloo 2', sans-serif",
+                    ...kitButton(76),
+                    padding: '0 44px', cursor: 'pointer',
+                    /*
+                     * `.btn-brand` is display:flex, which makes the button block-level,
+                     * and a block-level box ignores the card's text-align. Auto margins
+                     * are what centres it - not the text-align that centred the
+                     * inline-block button this replaced.
+                     */
+                    margin: '0 auto',
                   }}
                 >
                   {card === 'roundEnd' ? t('ty.next', 'Next round') : t('ty.retry', 'Try again')}

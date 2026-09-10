@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { kitButton } from '../../../styles/kitButton';
 import type { LevelResult } from '../../../components/GameShell';
 import type { LevelConfig } from '../../types';
 import { useImagesReady } from '../../../lib/useImagesReady';
@@ -283,12 +284,10 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
                   </div>
                   <button
                     onClick={finish}
+                    className="btn-brand btn-green-kit"
                     style={{
-                      margin: '36px auto 0', width: 380, padding: '20px 0', borderRadius: 999,
-                      background: 'linear-gradient(180deg,#7ed957,#4caf27)',
-                      border: '4px solid #2f7d32', boxShadow: '0 6px 0 #2f7d32',
-                      color: '#fff', fontSize: 38, fontWeight: 800, cursor: 'pointer',
-                      textShadow: '0 2px 2px rgba(0,0,0,.25)', display: 'block',
+                      ...kitButton(96),
+                      margin: '36px auto 0', width: 380, padding: 0, cursor: 'pointer',
                     }}
                   >
                     {t('btn.continue', 'Continue')}

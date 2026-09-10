@@ -68,7 +68,7 @@ export default function FreePlayScreen() {
           <h1 className="font-baloo" style={{ fontSize: 27, fontWeight: 700, color: '#FFFFFF' }}>
             {t('freePlay.title', 'Free Play')}
           </h1>
-          <p className="font-baloo" style={{ fontSize: 18, fontWeight: 600, color: BRAND.cyan }}>
+          <p className="font-baloo" style={{ fontSize: 21, fontWeight: 600, color: BRAND.cyan }}>
             {t('freePlay.subtitle', 'Choose any game you would like to play.')}
           </p>
         </div>
@@ -77,11 +77,18 @@ export default function FreePlayScreen() {
       <div style={{ position: 'relative', padding: '18px 20px 40px' }}>
         {SECTIONS.map(({ category, labelKey, fallback }) => (
           <section key={category} style={{ marginBottom: 26 }}>
+            {/*
+              The section heading. Bigger and bolder than it was per the Sep-10 review:
+              at 14/700 it read as a label on the tiles below it rather than as the
+              divider between three separate shelves. Tracking comes down as the size
+              goes up - .12em was holding a small word open, and a 20px word does not
+              need it.
+            */}
             <p
               className="font-baloo"
               style={{
-                fontSize: 14, fontWeight: 700, letterSpacing: '0.12em',
-                color: BRAND.cyanBright, marginBottom: 10,
+                fontSize: 20, fontWeight: 800, letterSpacing: '0.08em',
+                color: BRAND.cyanBright, marginBottom: 12,
               }}
             >
               {t(labelKey, fallback).toUpperCase()}

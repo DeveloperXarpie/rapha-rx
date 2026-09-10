@@ -3,30 +3,38 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { track } from '../lib/analytics';
 import { getGame } from '../lib/gameCatalog';
+import { KIT_CORNER } from '../styles/kitButton';
 
 /**
  * The art box is locked to the splash's own aspect, because the splashes are no
- * longer one shape. Four are still the original 540x960 (0.5625); Shopping List
+ * longer one shape. Three are still the original 540x960 (0.5625); Shopping List
  * and Station Master were re-cut at 1003x1568 (0.6397) for the Sep-9 review,
  * which asked for wider art so the portrait column stops showing blue bars down
- * both sides. A single global constant would letterbox the wide pair back to
- * where they started, so the ratio is per-game with the old shape as default.
+ * both sides, and Spot Focus joined them in the Sep-10 drop. A single global
+ * constant would letterbox the wide group back to where they started, so the
+ * ratio is per-game with the old shape as default.
  */
 const DEFAULT_ASPECT = 540 / 960;
 
+const WIDE_ASPECT = 1003 / 1568;
+
 const ART_ASPECT: Record<string, number> = {
-  'market-memory': 1003 / 1568,
-  'train-yard':    1003 / 1568,
+  'market-memory': WIDE_ASPECT,
+  'train-yard':    WIDE_ASPECT,
+  'spot-focus':    WIDE_ASPECT,
 };
 
 interface Rect {
-  top: string; height: string; left: string; width: string;
+  /** All four in percent of the ART box, not of the viewport. */
+  top: number; height: number; left: number; width: number;
   /**
-   * Corner radius, as a fraction of the ART box's height so it scales with the
-   * button. Omitted means `.btn-brand`'s 34px pill, which is what the four
-   * splashes with a painted pill want.
+   * Set on the one splash whose art still paints a PLAY pill, so the button wears
+   * `.btn-brand`'s 34px pill and covers the painting underneath it. Omitted means
+   * the kit's rounded rectangle, which is what the other five want and what two of
+   * them were silently NOT getting: the flag used to run the other way round, and
+   * Free Me and Garden Keeper had simply never been given it.
    */
-  radiusCqh?: number;
+  paintedPill?: boolean;
 }
 
 /*
@@ -34,36 +42,38 @@ interface Rect {
  * viewport. The art is letterboxed rather than cover-cropped (see below), so
  * these percentages address the same pixels of the image at every size.
  *
- * Four of the six splashes (Free Me, Garden Keeper, and now Shopping List and
- * Station Master, whose re-cut art dropped the painted pill) have no painted
- * PLAY button at all. That is why those games once looked like they had none:
- * the screen only ever drew a transparent hotspot over the art and trusted the
- * artwork to show a button. The button is real now, and on the two splashes
- * that DO still paint one these rects are measured to sit over the painted pill
- * and cover it, so no screen shows two.
+ * Five of the six splashes (Free Me, Garden Keeper, Shopping List and Station
+ * Master, whose re-cut art dropped the painted pill, and now Spot Focus, whose
+ * Sep-10 re-cut dropped it too) have no painted PLAY button at all. That is why
+ * those games once looked like they had none: the screen only ever drew a
+ * transparent hotspot over the art and trusted the artwork to show a button. The
+ * button is real now, and on the one splash that DOES still paint one this rect
+ * is measured to sit over the painted pill and cover it, so no screen shows two.
+ * That one splash is the exception, so it is the one that carries a flag.
  *
- * Measured off the source webp files, not estimated - the surviving painted
- * pills span y 68.8-79.9% (spot) and 64.3-74.4% (tiffen), and each rect below
- * is that span padded out far enough to hide the pill's drop shadow.
+ * Measured off the source webp files, not estimated - the surviving painted pill
+ * spans y 64.3-74.4% (tiffen), and the rect below is that span padded out far
+ * enough to hide the pill's drop shadow.
  */
-const DEFAULT_PLAY: Rect = { top: '67.6%', height: '14.4%', left: '21.5%', width: '57%' };
+const DEFAULT_PLAY: Rect = { top: 67.6, height: 14.4, left: 21.5, width: 57 };
 
 const PLAY_RECT: Record<string, Rect> = {
   /*
-   * The two re-cut splashes paint no pill at all, so these rects are placed on
-   * clear art rather than measured onto one. Shopping List sits on the empty
-   * pavement below the info panel, which ends at 61%. Station Master sits lower
-   * than any other game on purpose: the station master's face runs 55-72% and a
-   * button in the usual slot would cover it.
+   * The re-cut splashes paint no pill at all, so these rects are placed on clear
+   * art rather than measured onto one. Shopping List sits on the empty pavement
+   * below the info panel, which ends at 61%. Spot Focus sits on the paved path in
+   * the same slot, clear of the bench and cat to its left and the bicycle to its
+   * right. Station Master sits lower than any other game on purpose: the station
+   * master's face runs 55-72% and a button in the usual slot would cover it.
    */
-  'market-memory': { top: '70.4%', height: '12.2%', left: '29%', width: '42%', radiusCqh: 2.68 },
-  'train-yard':    { top: '84.2%', height: '12.2%', left: '29%', width: '42%', radiusCqh: 2.68 },
-  // Over the painted pill on the two remaining splashes that have one.
-  'spot-focus':    { top: '67.0%', height: '15.4%', left: '23.5%', width: '59%' },
-  'serve-guests':  { top: '63.6%', height: '13.4%', left: '21.5%', width: '58%' },
+  'market-memory': { top: 70.4, height: 12.2, left: 29, width: 42 },
+  'spot-focus':    { top: 70.4, height: 12.2, left: 29, width: 42 },
+  'train-yard':    { top: 84.2, height: 12.2, left: 29, width: 42 },
+  // Over the painted pill on the one remaining splash that has one.
+  'serve-guests':  { top: 63.6, height: 13.4, left: 21.5, width: 58, paintedPill: true },
   // Free Me paints no pill, and its info panel hangs lower than the other five
   // (63.8-75.5%), so the button clears it rather than sitting in the default slot.
-  'clear-the-way': { top: '76.5%', height: '12.5%', left: '21.5%', width: '57%' },
+  'clear-the-way': { top: 76.5, height: 12.5, left: 21.5, width: 57 },
 };
 
 /**
@@ -75,9 +85,10 @@ const PLAY_RECT: Record<string, Rect> = {
  * There is no clean background plate, so the handoff's "rebuild these as real
  * screens" is not buildable without new art.
  *
- * What is NOT taken from the art is the PLAY button. It is a real `btn-green`,
- * so it exists on all six games, carries a translated label, focuses, and
- * responds to a press - none of which a painted rectangle could do.
+ * What is NOT taken from the art is the PLAY button. It is a real `.btn-green-kit`
+ * - the same green the boards use for READY - so it exists on all six games,
+ * carries a translated label, focuses, and responds to a press, none of which a
+ * painted rectangle could do.
  *
  * The art is contained inside an aspect-locked box on the deep blue field
  * rather than cover-cropped to the viewport. Cover meant the art box and the
@@ -154,12 +165,18 @@ export default function GameTitleScreen() {
           className="btn-brand btn-green-kit"
           onClick={handlePlay}
           style={{
-            position: 'absolute', top: play.top, height: play.height, left: play.left, width: play.width,
+            position: 'absolute',
+            top: `${play.top}%`, height: `${play.height}%`,
+            left: `${play.left}%`, width: `${play.width}%`,
             /*
              * The kit's corner is a fraction of the button's own height, so it is a
              * length in container units rather than a percentage - see btn-green-kit.
+             * The button's height is a percentage of the same container, so the two
+             * multiply out to KIT_CORNER of the button.
              */
-            ...(play.radiusCqh ? { borderRadius: `${play.radiusCqh}cqh` } : {}),
+            ...(play.paintedPill
+              ? {}
+              : { borderRadius: `${(KIT_CORNER * play.height).toFixed(2)}cqh` }),
             fontSize: 'clamp(20px, 9cqw, 44px)',
             // The painted pills read PLAY. Latin-only, so a no-op for hi and kn.
             textTransform: 'uppercase',

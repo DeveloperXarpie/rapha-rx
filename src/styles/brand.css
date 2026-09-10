@@ -136,24 +136,44 @@
  * The in-game kit's green button, as painted on `ui-ready.png` and `ui-done.png`.
  * `.btn-green` wears the app's gold rim; the kit's does not, and the Sep-9 review
  * asked for the title screen's PLAY to match the board's READY rather than the
- * app chrome. Gradient stops are sampled off ui-ready.png, not guessed.
+ * app chrome. The Sep-10 review asked again, so every value below is now sampled
+ * off ui-ready.png rather than approximated:
+ *
+ *   - the rim is #005000..#1B9305 dark green, about 10px on the art's 182px height;
+ *   - a bright #60D336 ring sits just inside it;
+ *   - the face runs #63D22F down to #23A80E;
+ *   - and a near-white specular band (#FAFED5) crosses the top eighth. That band is
+ *     what the earlier pass was missing, and it is most of what makes the art read
+ *     as moulded plastic rather than as a flat green rectangle.
  */
 .btn-green-kit {
   background:
-    linear-gradient(180deg, #61C12A 0%, #55B31A 46%, #22A70C 88%, #12900A 100%) padding-box,
-    linear-gradient(180deg, #2E9A17 0%, #0A7A03 60%, #056202 100%) border-box;
+    linear-gradient(180deg,
+      #7FDD45 0%,
+      #EAFBC8 5%,
+      #63D22F 13%,
+      #55C528 33%,
+      #3CB61B 56%,
+      #2FB215 77%,
+      #23A80E 96%,
+      #1E9C0C 100%) padding-box,
+    linear-gradient(180deg, #1A820A 0%, #087205 42%, #036600 100%) border-box;
   color: #FFFFFF;
   font-weight: 800;
   /*
-   * No border-radius here on purpose. The kit's corner is ~22% of the button's
-   * HEIGHT, and a percentage radius in CSS resolves per axis - `22%/34%` drew an
-   * ellipse that bulged badly on a wide button. A caller that wants the kit's
-   * corner passes a length, in container units, alongside its own height.
-   * Otherwise `.btn-brand`'s 34px pill stands.
+   * No border-radius here on purpose. The kit's corner is ~27% of the button's
+   * HEIGHT - measured on the art, where the corner arc leaves the top edge 50px
+   * in on a 182px-tall button - and a percentage radius in CSS resolves per axis,
+   * so `27%/9%` drew an ellipse that bulged badly on a wide button. A caller that
+   * wants the kit's corner passes a length, in container units, alongside its own
+   * height. Otherwise `.btn-brand`'s 34px pill stands.
    */
-  text-shadow: 0 3px 0 rgba(4, 74, 2, 0.85);
+  text-shadow:
+    0 2px 0 rgba(4, 74, 2, 0.95),
+    0 4px 6px rgba(2, 40, 0, 0.45);
   box-shadow:
-    inset 0 4px 10px rgba(255, 255, 255, 0.34),
+    /* The bright ring inside the rim. */
+    inset 0 0 0 2px rgba(126, 227, 74, 0.75),
     inset 0 -10px 14px rgba(6, 78, 2, 0.34),
     0 8px 16px rgba(0, 0, 0, 0.38);
 }

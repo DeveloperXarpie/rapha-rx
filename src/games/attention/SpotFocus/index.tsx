@@ -129,7 +129,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
           &#127881;
         </span>
         <div className="w-full max-w-xs">
-          <Button fullWidth onClick={handleComplete}>
+          <Button variant="kit" fullWidth onClick={handleComplete}>
             {t('spot-focus.btn.continue', 'Continue')}
           </Button>
         </div>
@@ -149,9 +149,12 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
     >
       {/*
         The button and the pill share one slot of fixed height, so nothing on the board
-        shifts when the round starts under a resident who is already looking at it.
+        shifts when the round starts under a resident who is already looking at it. The
+        slot is 74px because that is what a `lg` brand button stands at; it was 64 while
+        the button here was an 84px `.btn-ready`, so the button had always overhung its
+        own slot by 10px top and bottom.
       */}
-      <div className="flex h-16 flex-none items-center justify-center">
+      <div className="flex h-[74px] flex-none items-center justify-center">
         {playing ? (
           <p
             role="status"
@@ -167,7 +170,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
             {t('spot-focus.found', '{{found}} / {{total}} Found', { found: found.size, total })}
           </p>
         ) : (
-          <Button className="btn-ready" onClick={advance}>
+          <Button variant="kit" fullWidth onClick={advance}>
             {t('spot-focus.btn.ready', "I'm Ready")}
           </Button>
         )}

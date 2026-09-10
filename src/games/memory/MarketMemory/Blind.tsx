@@ -1,6 +1,17 @@
 import { BLIND } from './geometry';
 import { COLOURS } from './palette';
+import { UI_TRAVEL, UI_TRAVEL_ASPECT } from './sprites';
 import { BLIND_MS, EASE_SETTLE } from './styles';
+
+/**
+ * The travel plate, in board pixels. 640 of the canvas's 800 leaves 80px of cover
+ * either side, which is the same gutter the caption plate keeps.
+ */
+const ART_W = 640;
+const ART_H = Math.round(ART_W / UI_TRAVEL_ASPECT);
+
+/** The halo behind it. Wider than the art so it reads as light, not as a plate. */
+const HALO = Math.round(ART_W * 1.05);
 
 interface BlindProps {
   down: boolean;
@@ -20,6 +31,11 @@ interface BlindProps {
  *
  * It moves fast on purpose. The cover is an opaque screen rather than something to
  * watch, so the only time the resident spends here is the retention hold itself.
+ *
+ * The Sep-10 review found the flat gradient it used to be, and asked for the car and
+ * the shopfront above the caption. The art earns its place beyond decoration: it is
+ * the only thing on screen that says WHY the list has gone away, which is the story
+ * the retention hold is telling.
  */
 export default function Blind({ down, progress, label, reduced }: BlindProps) {
   return (
@@ -48,6 +64,34 @@ export default function Blind({ down, progress, label, reduced }: BlindProps) {
         fontFamily: "'Baloo 2', sans-serif",
       }}
     >
+      {/*
+        Art and halo in one box so the halo stays centred on the art at any size.
+        Both are decorative - the caption below carries the meaning - so the image is
+        aria-hidden and the cover is read by the caption alone.
+      */}
+      <div style={{
+        position: 'relative', width: ART_W, height: ART_H,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute', width: HALO, height: HALO, borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(143,196,206,.34) 0%, rgba(143,196,206,.10) 58%, rgba(143,196,206,0) 72%)',
+          }}
+        />
+        <img
+          src={UI_TRAVEL}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          style={{
+            position: 'relative', width: '100%', height: '100%',
+            objectFit: 'contain', display: 'block',
+          }}
+        />
+      </div>
+
       <div style={{
         fontSize: 38, fontWeight: 800, letterSpacing: '.06em', color: COLOURS.creamLight,
         textAlign: 'center', padding: '0 48px',

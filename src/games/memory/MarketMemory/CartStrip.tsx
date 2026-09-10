@@ -4,8 +4,8 @@ import {
 import type { Item } from './items';
 import { COLOURS } from './palette';
 import Product from './Product';
-import { UI_DONE } from './sprites';
 import { UI_HINT, UI_UNDO } from '../../../lib/uiKit';
+import { kitButton } from '../../../styles/kitButton';
 import { EASE_SETTLE } from './styles';
 
 interface CartStripProps {
@@ -201,27 +201,29 @@ export default function CartStrip({
         zIndex: 7,
         animation: 'mm-fade 300ms ease both',
       }}>
+        {/*
+          Drawn rather than painted, for the same reason READY is - see the note on
+          the encoding button in index.tsx. The dim-when-empty that used to be an
+          inline opacity/filter pair is `.btn-brand:disabled` now. The transition is
+          restated in full rather than extended: an inline `transition` replaces the
+          shared rule's outright, so dropping transform and box-shadow here would cost
+          the press its 80ms ease.
+        */}
         <button
           type="button"
+          className="btn-brand btn-green-kit"
           onClick={onSubmit}
           disabled={!submitEnabled}
-          aria-label={submitLabel}
           style={{
+            ...kitButton(DONE_BTN.height),
             width: '100%', height: '100%',
-            padding: 0, border: 'none', background: 'transparent',
-            opacity: submitEnabled ? 1 : 0.5,
-            filter: submitEnabled ? 'none' : 'grayscale(.55)',
+            padding: 0,
             cursor: submitEnabled ? 'pointer' : 'default',
-            transition: 'opacity 200ms linear, filter 200ms linear',
+            transition:
+              'opacity 200ms linear, filter 200ms linear, transform 80ms ease, box-shadow 80ms ease',
           }}
         >
-          <img
-            src={UI_DONE}
-            alt=""
-            aria-hidden="true"
-            draggable={false}
-            style={{ width: '100%', height: '100%', display: 'block' }}
-          />
+          {submitLabel}
         </button>
       </div>
     </>

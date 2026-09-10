@@ -133,6 +133,10 @@ export default function ChromeGallery() {
           <Button variant="blue" fullWidth trailing={<span style={{ fontSize: 15 }}>&#9660;</span>}>
             Prescribed by
           </Button>
+          <p style={{ color: '#fff', fontSize: 15 }}>The board&apos;s green, as every game&apos;s primary action now wears it:</p>
+          <Button variant="kit">Ready</Button>
+          <Button variant="kit" size="md">Next round</Button>
+          <Button variant="kit" disabled>Done</Button>
           <p style={{ color: '#fff', fontSize: 15 }}>Legacy variants, unchanged:</p>
           <Button variant="primary" size="md">Primary</Button>
           <Button variant="secondary" size="md">Secondary</Button>

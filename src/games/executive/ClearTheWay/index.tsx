@@ -499,7 +499,7 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
                     moves, best: level.minMoves,
                   })}
                 </p>
-                <Button onClick={handleFinish}>{t('clearTheWay.next', 'Next puzzle')}</Button>
+                <Button variant="kit" onClick={handleFinish}>{t('clearTheWay.next', 'Next puzzle')}</Button>
               </div>
             </div>
           )}

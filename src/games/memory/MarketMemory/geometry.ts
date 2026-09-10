@@ -160,17 +160,35 @@ export const ROW_Y = PLANK_Y.slice(0, SHELF_ROWS).map((y) => y - CRATE_H);
  * sat higher, and the copy was rewritten to suit.
  */
 /*
- * Height matters here, not just the top: the clipboard's own top is at y 150 and the
- * caption must end above it. At 24px on 6px padding the plate is 46 tall, so 104
- * lands its bottom edge exactly on the clipboard rather than under it.
+ * Height and font size are declared here, not just the top, because the clipboard's
+ * top is derived from this plate's bottom edge and the Sep-10 review asked for both
+ * to grow. The plate is drawn as a fixed-height flex box rather than padding around
+ * the text, so this height is what it actually occupies and CAPTION_CLEARANCE below
+ * can be trusted.
+ *
+ * Centred at 640 wide: 80px of shop floor either side. The old 500 could not hold
+ * "Remember and Collect items" at this size on one line, and the plate does not wrap
+ * - see the note on the caption in index.tsx.
  */
-export const CAPTION = { left: 150, top: 104, width: 500 };
+export const CAPTION = { left: 80, top: 104, width: 640, height: 60, fontSize: 30 };
+
+/** Clear air between the caption plate and whatever the phase puts under it. */
+export const CAPTION_CLEARANCE = 24;
 
 /**
  * The clipboard sprite, `ui-clipboard.png`, is 465 x 868. Drawn at 430 wide it keeps its
  * aspect at 803 tall, which fits the shorter canvas with the READY button below it.
+ *
+ * Its top hangs off the caption rather than being written down, which is the Sep-10
+ * review's "give space for the instruction panel": the panel grew, so the clipboard
+ * and the READY button below it move down by exactly as much as it grew.
  */
-export const CLIPBOARD = { left: 185, top: 150, width: 430, height: 803 };
+export const CLIPBOARD = {
+  left: 185,
+  top: CAPTION.top + CAPTION.height + CAPTION_CLEARANCE,
+  width: 430,
+  height: 803,
+};
 
 /**
  * The cream paper inside that sprite, measured on the sliced PNG at x = 26..433,
@@ -225,8 +243,18 @@ export const BLIND = { left: 0, top: 0, width: CANVAS_W, height: CANVAS_H, lift:
 /**
  * 20% wider than the 300x166 it was, per the Sep-9 review, and re-centred at that
  * width. `ui-ready.png` is 328x182, so the 1.80 ratio is the art's own.
+ *
+ * It rides just under the clipboard - the 2px is not a gap so much as the art's own
+ * transparent margin meeting the sprite's - so moving the clipboard down moves this
+ * with it. At the Sep-10 positions it ends at y 1193, just inside where DONE ends in
+ * the shopping phase, so the two phases put their button in the same place.
  */
-export const READY_BTN = { left: 220, top: 955, width: 360, height: 200 };
+export const READY_BTN = {
+  left: 220,
+  top: CLIPBOARD.top + CLIPBOARD.height + 2,
+  width: 360,
+  height: 200,
+};
 
 /** Covers the sixth plank and the floor below it, starting clear of row 5. */
 export const CART = { left: 20, top: 856, width: 760, height: 220 };

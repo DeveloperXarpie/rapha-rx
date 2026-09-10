@@ -1,7 +1,8 @@
 import React from 'react';
+import { kitButton } from '../../styles/kitButton';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'green' | 'blue';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'green' | 'blue' | 'kit';
   size?: 'md' | 'lg';
   fullWidth?: boolean;
   /**
@@ -39,7 +40,15 @@ export function Button({
   style,
   ...rest
 }: ButtonProps) {
-  const isBrand = variant === 'green' || variant === 'blue';
+  const isBrand = variant === 'green' || variant === 'blue' || variant === 'kit';
+
+  /*
+   * `kit` is the board's green - the one painted on `ui-ready.png` - and its class
+   * is not `btn-${variant}` like the other two. It exists here so a page-level
+   * button can wear the same green as the boards without every caller reaching for
+   * two class names and a radius of its own.
+   */
+  const brandClass = variant === 'kit' ? 'btn-green-kit' : `btn-${variant}`;
 
   if (isBrand) {
     /*
@@ -59,7 +68,7 @@ export function Button({
 
     return (
       <button
-        className={`btn-brand btn-${variant} ${fullWidth ? 'w-full' : ''} ${className}`}
+        className={`btn-brand ${brandClass} ${fullWidth ? 'w-full' : ''} ${className}`}
         /*
          * The caller's style is MERGED, not spread over the top. `{...rest}`
          * used to carry it and, being a later prop, replaced this object whole -
@@ -70,6 +79,13 @@ export function Button({
          */
         style={{
           minHeight: size === 'lg' ? 74 : 64,
+          /*
+           * The kit's corner, derived from that same height. `.btn-green-kit` sets
+           * no radius of its own - see the note in styles/kitButton.ts.
+           */
+          ...(variant === 'kit'
+            ? { borderRadius: kitButton(size === 'lg' ? 74 : 64).borderRadius }
+            : {}),
           /*
            * The label shrinks rather than wraps. At the full 28px "Start Session"
            * needs more than a 320px screen leaves, and Kannada's "ಸೆಷನ್ ಪ್ರಾರಂಭಿಸಿ"

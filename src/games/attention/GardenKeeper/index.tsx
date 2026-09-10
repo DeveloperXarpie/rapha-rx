@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { kitButton } from '../../../styles/kitButton';
 import type { TFunction } from 'i18next';
 import type { LevelResult } from '../../../components/GameShell';
 import type { LevelConfig } from '../../types';
@@ -714,14 +715,10 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
                   <button
                     type="button"
                     onClick={handleNext}
+                    className="btn-brand btn-green-kit"
                     style={{
-                      minHeight: 84, padding: '0 56px', borderRadius: 20,
-                      background: COLOURS.buttonGreen,
-                      border: 'none',
-                      borderBottom: `7px solid ${COLOURS.buttonGreenEdge}`,
-                      fontFamily: "'Baloo 2', sans-serif",
-                      fontSize: 31, fontWeight: 800, color: '#FFFFFF', letterSpacing: '.03em',
-                      cursor: 'pointer',
+                      ...kitButton(84),
+                      padding: '0 56px', letterSpacing: '.03em', cursor: 'pointer',
                     }}
                   >
                     {t('gk.next', 'Next round')}
@@ -782,14 +779,10 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
                   <button
                     type="button"
                     onClick={handleStart}
+                    className="btn-brand btn-green-kit"
                     style={{
-                      minHeight: 84, padding: '0 56px', borderRadius: 20,
-                      background: COLOURS.buttonGreen,
-                      border: 'none',
-                      borderBottom: `7px solid ${COLOURS.buttonGreenEdge}`,
-                      fontFamily: "'Baloo 2', sans-serif",
-                      fontSize: 31, fontWeight: 800, color: '#FFFFFF', letterSpacing: '.03em',
-                      cursor: 'pointer',
+                      ...kitButton(84),
+                      padding: '0 56px', letterSpacing: '.03em', cursor: 'pointer',
                     }}
                   >
                     {t('gk.start', 'Start')}

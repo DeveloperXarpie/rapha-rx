@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { BY_ID, GROUPS, ITEMS, spriteFor, type Group } from '../items';
-import { BG_HOME, BG_STORE, PRELOAD, UI_CLIPBOARD, UI_DONE, UI_READY } from '../sprites';
+import { BG_HOME, BG_STORE, PRELOAD, UI_CLIPBOARD, UI_TRAVEL } from '../sprites';
 import { CRATE_COUNT, categoryGroupMinimum, eligibleGroups } from '../round';
 
 /**
@@ -11,7 +11,7 @@ import { CRATE_COUNT, categoryGroupMinimum, eligibleGroups } from '../round';
  * widening that for one test would be the wrong trade.
  */
 const ON_DISK = new Set(
-  Object.keys(import.meta.glob('/public/shop-assets/*.{png,jpg}')).map((p) => p.replace('/public', '')),
+  Object.keys(import.meta.glob('/public/shop-assets/*.{png,jpg,webp}')).map((p) => p.replace('/public', '')),
 );
 
 /** Mirrors MM.listLengthMax in dynamicDifficulty.ts. */
@@ -77,15 +77,16 @@ describe('category groups', () => {
 
 describe('board art', () => {
   it('resolves every backdrop and ui sprite to a file that actually exists', () => {
-    for (const url of [BG_HOME, BG_STORE, UI_CLIPBOARD, UI_READY, UI_DONE]) {
+    for (const url of [BG_HOME, BG_STORE, UI_CLIPBOARD, UI_TRAVEL]) {
       expect(ON_DISK.has(url), `missing art: ${url}`).toBe(true);
     }
   });
 
   it('preloads the art the walk to the shop needs before it is on screen', () => {
-    // The store backdrop and the DONE button both appear behind the cover. Warming them
-    // late is a blank frame at exactly the moment the player is being tested.
+    // The store backdrop appears behind the cover, and the travel plate IS the cover.
+    // Warming either late is a blank frame at exactly the moment the player is being
+    // tested. DONE is not in the list any more because it is no longer art.
     expect(PRELOAD).toContain(BG_STORE);
-    expect(PRELOAD).toContain(UI_DONE);
+    expect(PRELOAD).toContain(UI_TRAVEL);
   });
 });

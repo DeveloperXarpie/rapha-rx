@@ -34,8 +34,6 @@ export const COLOURS = {
   legendBrown: '#6B5334',
   legendBlue: '#2F6BA8',
   warning: '#C13A33',
-  buttonGreen: '#6BA83C',
-  buttonGreenEdge: '#4E7C29',
 
   skyTop: '#9FD8F0',
   skyBot: '#CFEBF7',

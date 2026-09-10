@@ -43,7 +43,10 @@ export default function Train({
   const wrapperFilter = nudged
     ? `${baseShadow} drop-shadow(0 0 12px rgba(255,224,131,.95))`
     : selected
-      ? 'drop-shadow(0 8px 14px rgba(31,41,55,.32))'
+      // The Sep-10 review asked for a bolder highlight. A drop shadow alone was
+      // doing the work, and a shadow does not read on a green board; the selected
+      // train now carries the same amber glow the nudge does.
+      ? 'drop-shadow(0 8px 14px rgba(31,41,55,.38)) drop-shadow(0 0 14px rgba(255,224,131,.9))'
       : baseShadow;
 
   return (
@@ -83,7 +86,12 @@ export default function Train({
           position: 'absolute',
           inset: 0,
           transformOrigin: '50% 70%',
-          transform: selected ? 'scale(1.08)' : 'scale(1)',
+          /*
+           * 1.22, up from 1.08, per the Sep-10 review. There is room: the lanes are
+           * 140 apart and the ring around a scaled train comes to about 110, so the
+           * selected train grows into its own lane and never into its neighbour's.
+           */
+          transform: selected ? `scale(${SELECTED_SCALE})` : 'scale(1)',
           transition: `transform 220ms ${EASE_SETTLE}`,
           animation: selected && !reduced ? 'ty-bob 1500ms ease-in-out infinite' : undefined,
         }}
@@ -125,18 +133,27 @@ export default function Train({
           ))}
         </div>
 
-        {/* Selection ring. The nudge pulse runs here; the nudge glow runs on the wrapper. */}
+        {/*
+          Selection ring. The nudge pulse runs here; the nudge glow runs on the wrapper.
+
+          Three bands, not one: a dark edge outside the amber and another inside it.
+          The amber on its own was the Sep-10 review's "highlight should be bolder" -
+          pale yellow on a sunlit green board has almost no contrast either side of
+          it, so widening the band alone would not have been enough.
+        */}
         <div
           style={{
             position: 'absolute',
-            left: -9, top: -9, right: -9, bottom: -9,
-            border: `5px solid ${COLOUR_RING}`,
-            borderRadius: 26,
+            left: -11, top: -11, right: -11, bottom: -11,
+            border: `8px solid ${COLOUR_RING}`,
+            borderRadius: 28,
             opacity: selected ? 1 : nudged ? 0.6 : 0,
             transition: 'opacity 200ms linear',
             animation: nudged && !selected && !reduced ? 'ty-nudge 2000ms ease-in-out infinite' : undefined,
             pointerEvents: 'none',
-            boxShadow: selected ? `0 0 0 2px ${colour.dark}33` : undefined,
+            boxShadow: selected
+              ? `0 0 0 3px ${RING_EDGE}, inset 0 0 0 3px ${RING_EDGE}`
+              : undefined,
           }}
         />
       </div>
@@ -145,3 +162,7 @@ export default function Train({
 }
 
 const COLOUR_RING = '#FFE083';
+/** The dark band either side of the amber, so the ring holds against the green board. */
+const RING_EDGE = '#7A4E06';
+/** How much bigger a selected train rides. See the note where it is applied. */
+const SELECTED_SCALE = 1.22;
