@@ -11,7 +11,7 @@ import { getGardenKeeperParams, type GardenKeeperDynamicParams } from '../../../
 import {
   BOARD_H, CANVAS_H, CANVAS_W, GROUND, HUD_H, SAFE_X, buildBed, recedeFor, ringColour,
   ringSweepDeg,
-  zIndexFor, type Plant,
+  zIndexFor, isPest, type Plant,
 } from './geometry';
 import {
   buildMetrics, initialRoundState, pickSproutId, roundReducer,
@@ -21,7 +21,8 @@ import {
   spriteUrl, spriteUrlsFor, SPROUT_URL, bloomUrl, wiltedUrl,
   BOARD_URL, GLOW_RING_URL, BADGE_CAN_URL, LANTERN_URL, WATERING_CAN_URL,
 } from './sprites';
-import { COLOURS } from './palette';
+import { COLOURS, type PestKind, type PestSpecies } from './palette';
+import { pestLayers } from './pests';
 import { EASE, EASE_OUT, GardenKeeperStyles } from './styles';
 
 // ─── Effects ──────────────────────────────────────────────────────────────────
@@ -221,10 +222,17 @@ function PlantView({ plant, stage, active, until, windowMs, fx, reduced, onTap, 
     return () => cancelAnimationFrame(raf);
   }, [active, until, windowMs]);
 
-  // Figure and ground: the plant asking for water is the only thing at full saturation.
+  /*
+   * Figure and ground: the plant asking for water is the only thing at full saturation.
+   *
+   * Every hazard takes the same knock-down, wilted flowers and pests alike. It matters
+   * most for the pests: their CSS art is vivid flat colour and would otherwise out-shout
+   * the painted flowers it sits among, and a hazard that draws the eye harder than the
+   * target inverts the task.
+   */
   const filter = active
     ? undefined
-    : plant.kind === 'wilted'
+    : plant.kind !== 'flower'
       ? `saturate(0.62) brightness(${1 - recede})`
       : `saturate(0.9) brightness(${1 - recede * 0.4})`;
 
@@ -294,31 +302,61 @@ function PlantView({ plant, stage, active, until, windowMs, fx, reduced, onTap, 
         position: 'absolute', left: 0, bottom: 0, width: '100%', height: plant.hit,
         transformOrigin: '50% 100%', pointerEvents: 'none',
       }}>
-        <img
-          src={spriteUrl(plant.kind, plant.species, stage ?? 'seed')}
-          alt=""
-          draggable={false}
-          style={{
-            position: 'absolute', left: '50%', top: '100%',
-            width: plant.size * 1.3, height: 'auto',
-            transform: 'translate(-50%, -100%)',
-            transformOrigin: '50% 100%',
-            filter,
-            // Transient tap feedback outranks the stage animation: a wrong tap must be
-            // felt immediately, not queued behind a growth tween.
-            animation: reduced
-              ? undefined
-              : fx === 'shake'
-                ? 'gk-shake 460ms ease both'
-                : fx === 'watered'
-                  ? 'gk-watered 620ms cubic-bezier(.22,.61,.36,1) both'
-                  : stage === 'sprouted'
-                    ? 'gk-sprout 420ms cubic-bezier(.22,.61,.36,1) both'
-                    : stage === 'dried'
-                      ? 'gk-droop 500ms ease both'
-                      : undefined,
-          }}
-        />
+        {isPest(plant) ? (
+          /*
+           * A pest is a stack of CSS primitives rather than one bitmap, so it gets its own
+           * box sized to the sprite - the layers inside are positioned in hundredths of
+           * that box. The box is anchored exactly as the <img> is, which is why the idle
+           * and shake keyframes can be shared between them.
+           */
+          <div
+            style={{
+              position: 'absolute', left: '50%', top: '100%',
+              width: plant.size, height: plant.size,
+              transform: 'translate(-50%, -100%)',
+              transformOrigin: '50% 100%',
+              filter,
+              // A wrong tap outranks the idle loop: the shake must be felt at once.
+              animation: reduced
+                ? undefined
+                : fx === 'shake'
+                  ? 'gk-shake 460ms ease both'
+                  : plant.idle
+                    ? `gk-${plant.species === 'bee' ? 'flutter' : `crawl-${plant.idle.crawl}`} ${plant.idle.durMs}ms ease-in-out ${plant.idle.delayMs}ms infinite`
+                    : undefined,
+            }}
+          >
+            {pestLayers(plant.kind, plant.species, plant.size).map((l) => (
+              <div key={l.key} style={l.style} />
+            ))}
+          </div>
+        ) : (
+          <img
+            src={spriteUrl(plant.kind, plant.species, stage ?? 'seed')}
+            alt=""
+            draggable={false}
+            style={{
+              position: 'absolute', left: '50%', top: '100%',
+              width: plant.size * 1.3, height: 'auto',
+              transform: 'translate(-50%, -100%)',
+              transformOrigin: '50% 100%',
+              filter,
+              // Transient tap feedback outranks the stage animation: a wrong tap must be
+              // felt immediately, not queued behind a growth tween.
+              animation: reduced
+                ? undefined
+                : fx === 'shake'
+                  ? 'gk-shake 460ms ease both'
+                  : fx === 'watered'
+                    ? 'gk-watered 620ms cubic-bezier(.22,.61,.36,1) both'
+                    : stage === 'sprouted'
+                      ? 'gk-sprout 420ms cubic-bezier(.22,.61,.36,1) both'
+                      : stage === 'dried'
+                        ? 'gk-droop 500ms ease both'
+                        : undefined,
+            }}
+          />
+        )}
       </div>
     </div>
   );
@@ -326,8 +364,19 @@ function PlantView({ plant, stage, active, until, windowMs, fx, reduced, onTap, 
 
 // ─── Intro card ───────────────────────────────────────────────────────────────
 
-function LegendRow({ src, ringed, text, colour }: {
-  src: string; ringed?: boolean; text: string; colour: string;
+/**
+ * One row of the intro card's legend.
+ *
+ * The figure is either a sprite or a drawn pest, because the bed now holds both and the
+ * card has to be able to show either. The pest draws at 58px inside the same 72x66 well,
+ * which is the size the handoff specified for the legend.
+ */
+function LegendRow({ src, pest, ringed, text, colour }: {
+  src?: string;
+  pest?: { kind: PestKind; species: PestSpecies };
+  ringed?: boolean;
+  text: string;
+  colour: string;
 }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '12px 8px' }}>
@@ -336,15 +385,26 @@ function LegendRow({ src, ringed, text, colour }: {
         borderRadius: ringed ? '50%' : undefined,
         boxShadow: ringed ? '0 0 0 4px #8FD65C, 0 0 0 12px rgba(143,214,92,.22)' : undefined,
       }}>
-        <img
-          src={src}
-          alt=""
-          draggable={false}
-          style={{
-            position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)',
-            width: 66, height: 'auto',
-          }}
-        />
+        {pest ? (
+          <div style={{
+            position: 'absolute', left: '50%', bottom: 2, width: 58, height: 58,
+            transform: 'translateX(-50%)',
+          }}>
+            {pestLayers(pest.kind, pest.species, 58).map((l) => (
+              <div key={l.key} style={l.style} />
+            ))}
+          </div>
+        ) : (
+          <img
+            src={src}
+            alt=""
+            draggable={false}
+            style={{
+              position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)',
+              width: 66, height: 'auto',
+            }}
+          />
+        )}
       </div>
       <span style={{ fontSize: 26, fontWeight: 700, lineHeight: 1.28, textAlign: 'left', color: colour }}>
         {text}
@@ -477,8 +537,9 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
     if (s.phase !== 'playing') return;
     const c = s.cycles[plant.id];
 
-    // No cycle at all means a wilted distractor: it never sprouts and never may be watered.
-    if (plant.kind === 'wilted' || !c) {
+    // No cycle at all means a hazard - a wilted flower, a weed, an insect or a toadstool.
+    // None of them ever sprouts, so none of them may ever be watered.
+    if (plant.kind !== 'flower' || !c) {
       flashPlant(plant.id, 'shake', 460);
       pushEffect({
         id: nextFxId(), kind: 'toast', x: plant.x, y: plant.y - plant.size * 0.5,
@@ -770,8 +831,8 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
                       colour={COLOURS.legendBrown}
                     />
                     <LegendRow
-                      src={wiltedUrl('rose')}
-                      text={t('gk.legend.avoid', 'Never water a flower that has already wilted')}
+                      pest={{ kind: 'poison', species: 'mushroom' }}
+                      text={t('gk.legend.avoid', 'Never water wilted flowers, weeds or bugs')}
                       colour={COLOURS.warning}
                     />
                   </div>

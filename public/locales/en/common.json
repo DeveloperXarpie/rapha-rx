@@ -487,7 +487,7 @@
   "gk.legend.seed": "A sprout. Leave it be",
   "gk.legend.sprouted": "In bloom, ring closing. Water it now",
   "gk.legend.dried": "Left too long, it wilts",
-  "gk.legend.avoid": "Never water a flower that has already wilted",
+  "gk.legend.avoid": "Never water wilted flowers, weeds or bugs",
   "gk.progress": "WATERED {{watered}} / {{target}}",
   "gk.toast.notReady": "Not ready yet",
   "gk.toast.tooLate": "Too late for this one",

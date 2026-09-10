@@ -10,7 +10,7 @@
  */
 
 import type { Stage } from './model';
-import type { PlantKind } from './geometry';
+import type { FlowerKind, PlantKind } from './geometry';
 import { FLOWER_SPECIES, type FlowerSpecies } from './palette';
 
 const BASE = '/garden-assets';
@@ -43,7 +43,7 @@ export function wiltedUrl(species: FlowerSpecies): string {
  * they must not water, and the rules already agree, since only a `sprouted` plant can be
  * watered and anything else costs a heart.
  */
-export function spriteUrl(kind: PlantKind, species: FlowerSpecies, stage: Stage): string {
+export function spriteUrl(kind: FlowerKind, species: FlowerSpecies, stage: Stage): string {
   if (kind === 'wilted') return wiltedUrl(species);
   if (stage === 'sprouted' || stage === 'thriving') return bloomUrl(species);
   if (stage === 'dried') return wiltedUrl(species);
@@ -99,11 +99,15 @@ export const ALL_SPRITE_URLS: string[] = [
  * Only the bitmaps this bed can actually show. A round uses at most a handful of species,
  * so preloading the whole catalogue would stall the start for art that never appears.
  */
-export function spriteUrlsFor(plants: readonly { kind: PlantKind; species: FlowerSpecies }[]): string[] {
+export function spriteUrlsFor(plants: readonly { kind: PlantKind; species: string }[]): string[] {
   const urls = new Set<string>([SPROUT_URL, ...FURNITURE_URLS]);
   for (const p of plants) {
-    urls.add(wiltedUrl(p.species));
-    if (p.kind === 'flower') urls.add(bloomUrl(p.species));
+    // Pests are CSS primitives, not sprites. Asking for `bee-wilted.png` would preload a
+    // 404 and stall the round start on a file that does not exist.
+    if (p.kind !== 'flower' && p.kind !== 'wilted') continue;
+    const species = p.species as FlowerSpecies;
+    urls.add(wiltedUrl(species));
+    if (p.kind === 'flower') urls.add(bloomUrl(species));
   }
   return [...urls];
 }

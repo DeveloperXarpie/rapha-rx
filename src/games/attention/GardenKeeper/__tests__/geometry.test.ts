@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { getGardenKeeperParams } from '../../../../lib/dynamicDifficulty';
 import {
-  BED, buildBed, columnsFor, hitSize, recedeFor, ringColour, ringSweepDeg, spriteFor, zIndexFor,
+  BED, buildBed, columnsFor, hitSize, INSECT_BASE, isPest, PLANT_BASE,
+  recedeFor, ringColour, ringSweepDeg, spriteFor, zIndexFor,
 } from '../geometry';
-import { COLOURS, FLOWER_SPECIES } from '../palette';
+import {
+  COLOURS, FLOWER_SPECIES, INSECT_SPECIES, PEST_POOL, POISON_SPECIES, WEED_SPECIES,
+} from '../palette';
 
 /** Deterministic generator: cycles a fixed ramp so jitter, picks and shuffles are pinned. */
 function seededRng() {
@@ -18,16 +21,67 @@ describe('buildBed', () => {
     expect(buildBed(p, seededRng())).toHaveLength(16);
   });
 
-  it('allocates the distractor share, rounded', () => {
-    const p = getGardenKeeperParams(1); // 24 plants, ratio .55 -> 13 wilted
+  it('allocates the distractor share, rounded, however the hazards are split', () => {
+    // The return of the pests must not change how many tap hazards stand on the bed -
+    // only what they are. `distractorRatio` still governs the whole hazard budget.
+    const p = getGardenKeeperParams(1); // 24 plants, ratio .55 -> 13 hazards
     const bed = buildBed(p, seededRng());
-    expect(bed.filter((pl) => pl.kind === 'wilted')).toHaveLength(Math.round(24 * 0.55));
+    const hazards = bed.filter((pl) => pl.kind !== 'flower');
+    expect(hazards).toHaveLength(Math.round(24 * 0.55));
     expect(bed.filter((pl) => pl.kind === 'flower')).toHaveLength(24 - 13);
   });
 
-  it('gives every plant a species from the sheet', () => {
+  it('keeps wilted flowers the larger half of the hazard budget', () => {
+    // The wilted-versus-bloomed discrimination is the spine of the round; the pests are
+    // variety on top of it. If that ever inverts, the game has quietly become easier.
+    for (const d of [0, 0.35, 0.6, 1]) {
+      const bed = buildBed(getGardenKeeperParams(d), seededRng());
+      const wilted = bed.filter((pl) => pl.kind === 'wilted').length;
+      const pests = bed.filter(isPest).length;
+      expect(wilted).toBeGreaterThanOrEqual(pests);
+    }
+  });
+
+  it('puts weeds, insects and toadstools on the bed', () => {
+    // At the top of the curve there are 6 pest slots against a 9-entry pool, so all three
+    // families should be represented rather than one crowding the others out.
+    const bed = buildBed(getGardenKeeperParams(1), seededRng());
+    const kinds = new Set(bed.filter(isPest).map((pl) => pl.kind));
+    expect(kinds.size).toBeGreaterThan(1);
+    for (const k of kinds) expect(['weed', 'insect', 'poison']).toContain(k);
+  });
+
+  it('draws pests from the pool without repeating until the pool is exhausted', () => {
+    const bed = buildBed(getGardenKeeperParams(1), seededRng());
+    const pests = bed.filter(isPest);
+    expect(pests.length).toBeLessThanOrEqual(PEST_POOL.length);
+    const seen = pests.map((pl) => `${pl.kind}:${pl.species}`);
+    // weedA appears twice in the pool, so that one pair is the only legal duplicate.
+    const dupes = seen.length - new Set(seen).size;
+    expect(dupes).toBeLessThanOrEqual(1);
+  });
+
+  it('gives every plant a species from its own family', () => {
     for (const pl of buildBed(getGardenKeeperParams(0.5), seededRng())) {
-      expect(FLOWER_SPECIES).toContain(pl.species);
+      if (pl.kind === 'weed') expect(WEED_SPECIES).toContain(pl.species);
+      else if (pl.kind === 'insect') expect(INSECT_SPECIES).toContain(pl.species);
+      else if (pl.kind === 'poison') expect(POISON_SPECIES).toContain(pl.species);
+      else expect(FLOWER_SPECIES).toContain(pl.species);
+    }
+  });
+
+  it('gives every insect an idle loop and leaves everything rooted without one', () => {
+    for (const pl of buildBed(getGardenKeeperParams(1), seededRng())) {
+      if (pl.kind === 'insect') {
+        expect(pl.idle).toBeDefined();
+        expect(['a', 'b']).toContain(pl.idle!.crawl);
+        expect(pl.idle!.durMs).toBeGreaterThanOrEqual(5200);
+        expect(pl.idle!.durMs).toBeLessThanOrEqual(8400);
+        expect(pl.idle!.delayMs).toBeGreaterThanOrEqual(0);
+        expect(pl.idle!.delayMs).toBeLessThanOrEqual(2600);
+      } else {
+        expect(pl.idle).toBeUndefined();
+      }
     }
   });
 
@@ -53,11 +107,13 @@ describe('buildBed', () => {
     }
   });
 
-  it('scales sprites with depth, uniformly across both kinds', () => {
-    // The amendment removed insects, so there is no longer a second, smaller base size.
+  it('scales sprites with depth, off a smaller base for insects', () => {
+    // A bee the size of a rose reads as a prop rather than as an insect, so insects keep
+    // the handoff's second, smaller base.
     for (const pl of buildBed(getGardenKeeperParams(1), seededRng())) {
-      expect(pl.size).toBeGreaterThanOrEqual(96 * 0.86 - 0.001);
-      expect(pl.size).toBeLessThanOrEqual(96 * 1.14 + 0.001);
+      const base = pl.kind === 'insect' ? INSECT_BASE : PLANT_BASE;
+      expect(pl.size).toBeGreaterThanOrEqual(base * 0.86 - 0.001);
+      expect(pl.size).toBeLessThanOrEqual(base * 1.14 + 0.001);
     }
   });
 

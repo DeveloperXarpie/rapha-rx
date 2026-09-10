@@ -64,6 +64,21 @@ describe('spriteUrl', () => {
 });
 
 describe('spriteUrlsFor', () => {
+  it('never builds a sprite URL for a pest', () => {
+    // Pests are CSS primitives; `bee-wilted.png` does not exist. Preloading one would
+    // fire a 404 and, worse, hold the round start on a file that can never arrive.
+    const urls = spriteUrlsFor([
+      { kind: 'flower', species: 'rose' },
+      { kind: 'weed', species: 'weedA' },
+      { kind: 'insect', species: 'bee' },
+      { kind: 'poison', species: 'mushroom' },
+    ]);
+    for (const url of urls) expect(ON_DISK).toContain(url);
+    for (const url of urls) {
+      expect(url).not.toMatch(/weedA|bee|mushroom/);
+    }
+  });
+
   it('preloads only what the bed can show', () => {
     const urls = spriteUrlsFor([
       { kind: 'flower', species: 'rose' },

@@ -487,7 +487,7 @@
   "gk.legend.seed": "यह अंकुर है। इसे रहने दें",
   "gk.legend.sprouted": "खिल गया, घेरा बंद हो रहा है। अभी पानी दें",
   "gk.legend.dried": "देर हो गई तो यह मुरझा जाता है",
-  "gk.legend.avoid": "जो फूल पहले ही मुरझा चुका है, उसे कभी पानी न दें",
+  "gk.legend.avoid": "मुरझाए फूल, खरपतवार या कीड़ों को कभी पानी न दें",
   "gk.progress": "पानी दिया {{watered}} / {{target}}",
   "gk.toast.notReady": "अभी तैयार नहीं",
   "gk.toast.tooLate": "इसके लिए देर हो गई",

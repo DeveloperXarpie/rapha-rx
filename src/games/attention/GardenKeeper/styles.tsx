@@ -35,6 +35,28 @@ export const KEYFRAMES = `
   80%      { transform: translate(-50%, -100%) translateX(-3px); }
 }
 
+/* Insect idle loops. Weeds and toadstools are rooted; only insects move, which is what
+   makes them catch the eye in peripheral vision and earn their place as hazards.
+
+   Every frame carries the centring translate, because the element these run on is
+   positioned the same way the sprite <img> is and the animation owns transform for the
+   element's whole life. Duration and delay are per instance, so the bed does not twitch
+   in lockstep. All three are suppressed under reduced motion. */
+@keyframes gk-flutter {
+  0%, 100% { transform: translate(-50%, -100%) translate(0, 0) rotate(-3deg); }
+  50%      { transform: translate(-50%, -100%) translate(9px, -7px) rotate(4deg); }
+}
+
+@keyframes gk-crawl-a {
+  0%, 100% { transform: translate(-50%, -100%) translateX(0) rotate(0deg); }
+  50%      { transform: translate(-50%, -100%) translateX(13px) rotate(3deg); }
+}
+
+@keyframes gk-crawl-b {
+  0%, 100% { transform: translate(-50%, -100%) translateX(0) rotate(0deg); }
+  50%      { transform: translate(-50%, -100%) translateX(-11px) rotate(-3deg); }
+}
+
 @keyframes gk-rise {
   0%   { opacity: 0; transform: translate(-50%, 6px); }
   25%  { opacity: 1; }

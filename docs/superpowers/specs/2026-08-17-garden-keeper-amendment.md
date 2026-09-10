@@ -1,7 +1,11 @@
 # Garden Keeper - spec amendment: wilted flowers as distractors
 
 Date: 2026-08-17
-Status: approved
+Status: approved, partially superseded 2026-09-10
+Superseded by: `docs/2026-09-10_GardenKeeper_Pests_Restored.md` - weeds, insects and
+toadstools are back alongside the wilted flowers, which remain the larger half of the
+distractor budget. This document's argument for wilted flowers still stands; only its
+claim that they are the *only* distractor no longer does.
 Amends: `docs/superpowers/specs/2026-08-12-garden-keeper-design.md`
 Affects: `docs/superpowers/plans/2026-08-12-garden-keeper.md`, principally Task 4
 
