@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './styles/index.css';
 import './lib/i18n';
 import { initAnalytics } from './lib/analytics';
+import { registerAppUpdates } from './lib/appUpdate';
 import App from './App';
 import AppBootGate from './components/AppBootGate';
 
@@ -21,6 +22,7 @@ if (stored) {
 }
 
 initAnalytics();
+registerAppUpdates();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

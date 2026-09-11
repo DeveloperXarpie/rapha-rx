@@ -6,7 +6,7 @@ Four sheets feed this game, each owning a different part of the board:
     assets-src/tiffin/food.png       the 22 dishes
     assets-src/tiffin/panels-1.png   the MAKE / COOKING / SERVE buttons
     assets-src/tiffin/panel-2.png    the DISPOSE button
-    public/Dar_assets_01.png         the order bubble, score capsule, bars, coin, props
+    assets-src/tiffin/Dar_assets_01.png  the order bubble, score capsule, bars, coin, props
 
 `assets-src/tiffin/bg-new.png` also becomes `public/bg_cook.jpg`, so the board's art has one
 command behind all of it.
@@ -34,7 +34,7 @@ from PIL import Image, ImageFilter
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TIFFIN = ROOT / "assets-src" / "tiffin"
-UI_SHEET = ROOT / "public" / "Dar_assets_01.png"
+UI_SHEET = TIFFIN / "Dar_assets_01.png"
 FOOD_SHEET = TIFFIN / "food.png"
 BUTTON_SHEET = TIFFIN / "panels-1.png"
 DISPOSE_SHEET = TIFFIN / "panel-2.png"

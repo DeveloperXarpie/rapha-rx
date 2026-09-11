@@ -6,7 +6,10 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' leaves a new worker waiting instead of swapping it in under a
+      // running page. AppUpdater (src/components/AppUpdater.tsx) lets it in, and
+      // reloads, only when nobody is mid-round.
+      registerType: 'prompt',
       includeAssets: ['favicon.ico', 'icons/*.png'],
       manifest: {
         name: 'Brain Training',
@@ -27,7 +30,10 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/index.html',
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
+        // Translations are precached rather than runtime-cached, so they are
+        // revisioned with the build and a copy change ships with the code that
+        // needs it. The old CacheFirst rule held them for a week past a deploy.
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}', 'locales/**/*.json'],
         runtimeCaching: [
           {
             // Photo scenes are precached today (one scene, ~212 KB) via the webp glob
@@ -42,14 +48,6 @@ export default defineConfig({
               cacheName: 'pp-scenes',
               expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 180 },
               cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: /\/locales\/.+\.json$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'locale-cache',
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 7 },
             },
           },
           {

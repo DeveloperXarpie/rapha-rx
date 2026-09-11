@@ -14,10 +14,12 @@ import SettingsScreen from './screens/SettingsScreen';
 import RequireProfile from './components/RequireProfile';
 import SessionManager from './session/SessionManager';
 import ChromeGallery from './screens/dev/ChromeGallery';
+import AppUpdater from './components/AppUpdater';
 
 export default function App() {
   return (
     <BrowserRouter>
+      <AppUpdater />
       <Routes>
         {/* Public routes */}
         <Route path="/"       element={<SplashScreen />} />
