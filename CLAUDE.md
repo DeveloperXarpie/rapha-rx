@@ -4,7 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-All commands run from `brain-training-app/`:
+All commands run from the repo root, which is where `package.json`, `src/` and
+`vite.config.ts` live. There is no `brain-training-app/` subdirectory.
 
 ```bash
 npm run dev       # start dev server (localhost:5173)
@@ -93,7 +94,13 @@ Each game has a `DifficultyState` record (score 0.0–1.0) per user per day. `ge
 Each game lives in `src/games/<category>/<GameName>/index.tsx` with a `levels.config.ts` (mostly unused now that dynamic difficulty drives params).
 
 ### i18n
-`src/lib/i18n.ts` — i18next with `i18next-http-backend` loading JSON files from `public/locales/<lang>/translation.json`. Supported languages: `en`, `hi`, `kn`. Use the `t()` hook with a fallback string: `t('key', 'Fallback text')`.
+`src/lib/i18n.ts` — i18next with `i18next-http-backend`. There is one namespace, `common`,
+so the load path `/locales/{{lng}}/{{ns}}.json` resolves to
+`public/locales/<lang>/common.json`. Supported languages: `en`, `hi`, `kn`. Use the `t()`
+hook with a fallback string: `t('key', 'Fallback text')`.
+
+These files are precached and revisioned with each build (the `globPatterns` entry in
+`vite.config.ts`), so a copy change ships with the code that needs it.
 
 ### Game catalog (`src/lib/gameCatalog.ts`)
 The one map from `gameId` to display key, category and art. Six games are `marquee` —
@@ -118,7 +125,25 @@ Tailwind is extended with named colours (`primary-blue`, `emerald-green`, etc.) 
 `src/lib/firebase.ts` — Firestore (offline-persistent) and anonymous Auth. Auth is only required at signup/login screens. `adaptiveDifficulty.ts` syncs `gameProgress` to Firestore after local writes, but the sync is fire-and-forget (wrapped in try/catch). The primary source of truth is Dexie.
 
 ### Hosting
-Deployed on Firebase Hosting. `firebase.json` at the repo root configures a catch-all SPA rewrite to `index.html`. `vite.config.ts` sets `navigateFallback: '/index.html'` in Workbox so the service worker also handles SPA navigation correctly.
+Deployed on **Vercel**, not Firebase. Production is `https://rapha-rx.vercel.app`, from the
+Vercel project `developersuperhuge-2100s-projects/rapha-rx` wired to the GitHub repo.
+
+**Pushing is not deploying.** Every push, on any branch, builds a Preview deployment
+automatically. Production is a separate manual "Promote to Production" in the Vercel
+dashboard. A commit can be pushed, green, and still not be live. That is exactly how
+v1.30.1 sat in Preview for days while residents were served v1.30.0 - and v1.30.1 was the
+commit that fixed the update mechanism, so the bug kept itself alive.
+
+`firebase.json` is **not used for hosting**. Firebase is Auth and Firestore only. The
+rewrites and `Cache-Control` headers in that file have never applied to anything; Vercel's
+own defaults cover the cache side (`sw.js` is served `public, max-age=0, must-revalidate`).
+
+Known gap: there is no `vercel.json`, so there is no server-side SPA rewrite. A cold deep
+link returns 404 - `https://rapha-rx.vercel.app/app/home` does today. It is invisible in
+normal use because residents land on `/` and React Router takes over client-side, and
+because once the service worker is installed Workbox's `navigateFallback: '/index.html'`
+(set in `vite.config.ts`) serves the shell for navigations. A first-time visitor opening or
+refreshing a deep link still gets the 404.
 
 ## Release Protocol
 
@@ -140,10 +165,25 @@ Every commit — including bug fixes — must include a version bump in `package
 5. **Version bump** — update `"version"` in `package.json` before committing.
 
 ### Deploying
-```bash
-npm run build
-firebase deploy --only hosting
-```
+There is no deploy command to run locally. Vercel builds from GitHub:
+
+1. **Push the branch.** Vercel builds a Preview automatically and reports it back as the
+   `Vercel` commit status, whose target URL is the build page.
+2. **Smoke test the Preview URL**, not localhost. This is the only place the real service
+   worker, the real headers and the real asset hashes exist together.
+3. **Promote to Production** in the Vercel dashboard (Deployments, then the build, then
+   "Promote to Production"). No rebuild happens; it re-points the alias. **Skip this and
+   the work is not live, however green the push looked.**
+
+After a promote, a tablet running v1.30.1 or later updates itself: `src/lib/appUpdate.ts`
+checks hourly and on foreground, and `AppUpdater` lets the waiting worker take over only on
+Splash, Home, Summary or Free Play (the list is in `src/lib/updatePolicy.ts`), so a resident
+is never cut off mid-round.
+
+A device still running a build **older than v1.30.1** will never update on its own. Those
+builds used `registerType: 'autoUpdate'` without importing `virtual:pwa-register`, so the
+worker registers and then never checks again. Such a device needs a one-time "Clear & reset"
+from Chrome's site settings. Nothing you deploy can reach it before that.
 
 ### Bug tracking
 Open bugs are tracked in a Google Sheet (ID: `1xgnKsCiOv8Dl0CZ0R7OxhenS2jzoQfFpB2k-UIKAxWg`) accessible via the Google Sheets MCP tool.
