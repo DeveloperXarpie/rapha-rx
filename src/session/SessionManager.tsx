@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAppStore } from '../store';
 import { nextStep } from '../lib/sessionPlan';
+import { isDebugLocation } from '../lib/debugLevels';
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
@@ -45,8 +46,25 @@ export default function SessionManager() {
   // Silent 1-second tick — never rendered
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  /*
+   * The tick is frozen while the debug level jumper is in play, so that time
+   * spent probing is not charged to the category a resident is mid-way through.
+   * See `isDebugLocation` for why the clock has to be sandboxed alongside the
+   * difficulty score, the current game and rotation.
+   *
+   * Held in a ref and read inside the interval rather than being a dependency
+   * of it: the interval must survive every navigation, and re-creating it on
+   * each one would drop the fraction of a second already counted towards the
+   * next tick each time.
+   */
+  const location = useLocation();
+  const frozen = isDebugLocation(location.pathname, location.search);
+  const frozenRef = useRef(frozen);
+  useEffect(() => { frozenRef.current = frozen; }, [frozen]);
+
   useEffect(() => {
     intervalRef.current = setInterval(() => {
+      if (frozenRef.current) return;
       tickCategory();
     }, 1000);
     return () => {

@@ -1,5 +1,6 @@
-import { useParams, Navigate, useNavigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '../store';
+import { DEBUG_LEVEL_PARAM, DEBUG_LEVELS_PATH, levelToScore, parseDebugLevel } from '../lib/debugLevels';
 import {
   getTodayDifficulty, scoreToLevel,
   getRememberMatchParams, getSpotFocusParams, getMorningRoutineParams, getWordSearchParams,
@@ -209,8 +210,19 @@ function generateContentForGame(gameId: string, score: number): { levelConfig: L
 export default function GameRouter() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const profile = useAppStore((s) => s.activeProfile);
   const setCurrentGame = useAppStore((s) => s.setCurrentGame);
+
+  /*
+   * The debug jumper's chosen level, or null for an ordinary round. Picture
+   * Postcard ignores the param outright: it reads its own 1-100 ladder row
+   * rather than the difficulty score, so an override here would move the label
+   * and nothing else - a half-applied jump is worse than no jump at all.
+   */
+  const debugLevel = gameId === 'picture-postcard'
+    ? null
+    : parseDebugLevel(searchParams.get(DEBUG_LEVEL_PARAM));
 
   const [difficultyScore, setDifficultyScore] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -220,18 +232,36 @@ export default function GameRouter() {
   const entry = gameId ? GAME_REGISTRY[gameId] : undefined;
 
   const refreshDifficulty = useCallback(async () => {
+    /*
+     * While the jumper is in play it is the authority on the level, on the
+     * first round and on every round after. This is also what makes a debug
+     * round repeatable: the round-end path below falls through to here whenever
+     * no new score came back, which for a debug round is always, and reading
+     * Dexie at that point would silently drop the probe to the resident's real
+     * level between rounds.
+     */
+    if (debugLevel !== null) {
+      setDifficultyScore(levelToScore(debugLevel));
+      return;
+    }
     if (!gameId || !profile) return;
     const state = await getTodayDifficulty(profile.userId, gameId);
     setDifficultyScore(state.score);
-  }, [gameId, profile]);
+  }, [gameId, profile, debugLevel]);
 
   useEffect(() => {
     refreshDifficulty().then(() => setLoading(false));
   }, [refreshDifficulty]);
 
   useEffect(() => {
-    if (gameId) setCurrentGame(gameId);
-  }, [gameId, setCurrentGame]);
+    /*
+     * A debug round must not become the session's current game. setCurrentGame
+     * persists to Dexie, so a probe taken mid-session would overwrite the game
+     * the resident was actually on and Home's Continue would then resume them
+     * into whatever was last being tested.
+     */
+    if (gameId && debugLevel === null) setCurrentGame(gameId);
+  }, [gameId, setCurrentGame, debugLevel]);
 
   // Generate content for this round (regenerated each time gameKey changes)
   const { levelConfig, generatedContent } = useMemo(() => {
@@ -266,7 +296,8 @@ export default function GameRouter() {
       levelConfig={levelConfig}
       difficultyScore={difficultyScore}
       onLevelComplete={handleLevelComplete}
-      onExit={() => navigate('/app/home')}
+      onExit={() => navigate(debugLevel !== null ? DEBUG_LEVELS_PATH : '/app/home')}
+      debug={debugLevel !== null}
     >
       <GameComponent
         key={gameKey}

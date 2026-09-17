@@ -14,6 +14,8 @@ import SettingsScreen from './screens/SettingsScreen';
 import RequireProfile from './components/RequireProfile';
 import SessionManager from './session/SessionManager';
 import ChromeGallery from './screens/dev/ChromeGallery';
+import DebugLevels from './screens/dev/DebugLevels';
+import { DEBUG_LEVELS_PATH } from './lib/debugLevels';
 import AppUpdater from './components/AppUpdater';
 
 export default function App() {
@@ -42,6 +44,11 @@ export default function App() {
               <Route path="/app/free-play"           element={<FreePlayScreen />} />
               <Route path="/app/summary"             element={<SessionSummary />} />
               <Route path="/app/settings"            element={<SettingsScreen />} />
+
+              {/* Debug level jumper. Unlike /dev/chrome this ships, so the levels
+                  can be checked on the tablet itself; Home only offers the way in
+                  after the version label is tapped five times. */}
+              <Route path={DEBUG_LEVELS_PATH}         element={<DebugLevels />} />
 
               {/* Bookmarks, and URLs the service worker cached before the redesign. */}
               <Route path="/app/questionnaire"       element={<Navigate to="/app/education" replace />} />

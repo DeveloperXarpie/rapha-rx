@@ -28,6 +28,13 @@ interface GameShellProps {
   onLevelComplete: (result: LevelResult) => void;
   onExit: () => void;
   children: React.ReactNode;
+  /**
+   * This round was reached through the debug level jumper, so it is a probe and
+   * not a resident's play. It leaves the difficulty score and the "Last time"
+   * label alone, and it does not rotate. Analytics still fire, tagged, so the
+   * jumper can be used to check instrumentation rather than hiding it.
+   */
+  debug?: boolean;
 }
 
 /**
@@ -115,6 +122,7 @@ export default function GameShell({
   onLevelComplete,
   onExit,
   children,
+  debug = false,
 }: GameShellProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -139,6 +147,7 @@ export default function GameShell({
       gameCategory,
       levelId: levelConfig.id,
       difficultyScore,
+      debug,
     });
 
     const handleBeforeUnload = () => {
@@ -150,7 +159,7 @@ export default function GameShell({
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [gameId, gameCategory, levelConfig.id, secondsInCurrentCategory, difficultyScore]);
+  }, [gameId, gameCategory, levelConfig.id, secondsInCurrentCategory, difficultyScore, debug]);
 
   async function handleLevelComplete(result: LevelResult) {
     const userId = profile?.userId;
@@ -158,8 +167,12 @@ export default function GameShell({
 
     // Adjust dynamic difficulty score. Picture Postcard is exempt: its own
     // ladder engine is the adaptive authority and already wrote the derived
-    // DifficultyState row inside commitTrial (spec SS2.4).
-    if (userId && gameId !== 'picture-postcard') {
+    // DifficultyState row inside commitTrial (spec SS2.4). A debug round is
+    // exempt too - it is a probe at a level someone picked, and letting it move
+    // the score would both corrupt the resident's progression and mean the next
+    // jump started from wherever the last probe pushed it rather than from the
+    // level asked for.
+    if (userId && gameId !== 'picture-postcard' && !debug) {
       // Calculate performance ratio from metrics
       const performanceRatio = computePerformanceRatio(gameId, result);
       const updated = await adjustDifficulty(userId, gameId, {
@@ -190,6 +203,7 @@ export default function GameShell({
       completed: result.completed,
       metrics: result.metrics,
       difficultyScore,
+      debug,
     });
 
     finishLevel({ ...result, newDifficultyScore });
@@ -203,8 +217,14 @@ export default function GameShell({
      * navigation and no next round - which froze the game on its round-end card with
      * its own commit guard already spent, so the button was dead. Whenever rotation
      * does not move us, the next round starts here.
+     *
+     * A debug round never rotates. The session ticker keeps running underneath
+     * the jumper, so without this a probe that ran past the threshold would
+     * throw whoever is testing into a category intro mid-investigation.
      */
-    const rotated = secondsInCurrentCategory >= ROTATION_THRESHOLD_SECONDS && triggerRotation();
+    const rotated = !debug
+      && secondsInCurrentCategory >= ROTATION_THRESHOLD_SECONDS
+      && triggerRotation();
     if (!rotated) onLevelComplete(result);
   }
 

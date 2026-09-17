@@ -5,6 +5,7 @@ import { useAppStore } from '../store';
 import { checkForResumableSession } from '../lib/resumeSession';
 import * as fullscreen from '../lib/fullscreen';
 import { getLastLevels } from '../lib/lastLevel';
+import { DEBUG_LEVELS_PATH } from '../lib/debugLevels';
 import { getGame, marqueeGames, tileArt } from '../lib/gameCatalog';
 import { ROTATION_THRESHOLD_SECONDS } from '../components/GameShell';
 import ScreenBlue from '../components/chrome/ScreenBlue';
@@ -251,7 +252,7 @@ export default function HomeScreen() {
               hidden until the version label is tapped DEV_UNLOCK_TAPS times, so
               a resident cannot reach them by accident. */}
           {(import.meta.env.DEV || versionTaps >= DEV_UNLOCK_TAPS) && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 12, paddingTop: 10 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12, paddingTop: 10 }}>
               <button
                 onClick={() => handleDevAction(devCompleteToday)}
                 className="font-mono"
@@ -265,6 +266,13 @@ export default function HomeScreen() {
                 style={{ fontSize: 12, color: '#FFE9A8', border: '1px dashed #FFE9A8', borderRadius: 4, padding: '4px 10px' }}
               >
                 dev: reset today
+              </button>
+              <button
+                onClick={() => navigate(DEBUG_LEVELS_PATH)}
+                className="font-mono"
+                style={{ fontSize: 12, color: '#FFE9A8', border: '1px dashed #FFE9A8', borderRadius: 4, padding: '4px 10px' }}
+              >
+                dev: levels
               </button>
             </div>
           )}
