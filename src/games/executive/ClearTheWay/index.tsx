@@ -19,6 +19,7 @@ import { blockSlab, cornerFlip, floorPaint, keyFacing, railPaint, SKIN } from '.
 import { CORNER_RATIO } from './sprites';
 import { ClearTheWayStyles } from './styles';
 import InstructionPanel, { InstructionPanelStyles } from '../../../components/chrome/InstructionPanel';
+import StageBackdrop from '../../../components/chrome/StageBackdrop';
 
 // ─── Params ───────────────────────────────────────────────────────────────────
 
@@ -281,16 +282,18 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
   const swimming = phase === 'swimming';
 
   return (
-    <div className="h-full min-h-0 flex flex-col items-center gap-3">
+    <div className="h-full min-h-0 flex flex-col items-center gap-3 relative overflow-hidden">
       <ClearTheWayStyles reduced={reduced} />
       <InstructionPanelStyles />
+      {/* The tank's own water, filling whatever the column is not. */}
+      <StageBackdrop src={SKIN.backdrop} />
 
       {/*
         The shared blue instruction panel, since the Sep-17 review. It was a plain line
         of caption text on the tank's own background, which is the one thing the review
         said should never be how a game speaks to a resident.
       */}
-      <InstructionPanel className="w-full max-w-2xl flex-none" fontSize={24}>
+      <InstructionPanel className="relative z-10 w-full max-w-2xl flex-none" fontSize={24}>
         {t('clearTheWay.instruction', 'Slide the blocks out of the way and free the fish.')}
       </InstructionPanel>
 
@@ -299,7 +302,7 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
         column above it, never from the board inside it, so observing it cannot feed back
         into the size it reports.
       */}
-      <div ref={stageRef} className="flex-1 min-h-0 w-full flex justify-center">
+      <div ref={stageRef} className="relative z-10 flex-1 min-h-0 w-full flex justify-center">
         <div
           data-board
           className="relative flex items-center justify-center"

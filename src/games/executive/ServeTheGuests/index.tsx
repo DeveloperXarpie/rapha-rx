@@ -28,6 +28,7 @@ import {
 import { Bar, type BarTint } from './Bar';
 import { BUTTON_SKIN, COLOURS } from './palette';
 import { ServeTheGuestsStyles } from './styles';
+import StageBackdrop from '../../../components/chrome/StageBackdrop';
 
 // ─── Params ───────────────────────────────────────────────────────────────────
 
@@ -142,11 +143,13 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
      */
     <div
       ref={stageRef}
-      className="w-full h-full overflow-hidden flex justify-center items-start"
-      // Leftover height is painted with the board's own awning and counter.
+      className="w-full h-full overflow-hidden flex justify-center items-start relative"
+      // Leftover is painted with the board's own awning and counter: the gradient is
+      // the fallback, StageBackdrop is the fill. See chrome/StageBackdrop.tsx.
       style={{ background: stage.ground }}
     >
       <ServeTheGuestsStyles reduced={reduced} />
+      <StageBackdrop src={BACKGROUND_SRC} />
 
       <div
         data-board
@@ -159,6 +162,7 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
           height: CANVAS_H * stage.scale,
           overflow: 'hidden',
           borderRadius: 24,
+          zIndex: 1,
         }}
       >
           <div

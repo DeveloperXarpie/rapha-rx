@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { track } from '../lib/analytics';
 import { getGame } from '../lib/gameCatalog';
 import { KIT_CORNER } from '../styles/kitButton';
+import StageBackdrop from '../components/chrome/StageBackdrop';
 
 /**
  * The art box is locked to the splash's own aspect, because the splashes are no
@@ -143,37 +144,18 @@ export default function GameTitleScreen() {
       }}
     >
       {/*
-        The letterbox fill.
-
-        The art box below is aspect-locked on purpose - the PLAY button addresses the
-        artwork by percentage, so the art box and the screen box have to be the same
-        rectangle. That is not negotiable, but the flat blue it leaves around the art is.
-        On a 19.5:9 phone the re-cut 0.64 splashes leave a little over 200px of it at the
-        top and the same at the bottom, and it reads as the screen failing to fill rather
-        than as a frame.
-
-        So the same image goes behind, cover-cropped to the whole stage and blurred past
-        legibility. It fills every shape of viewport, it is the right colours by
-        construction because it is the same art, and it costs no second asset and no
-        second decode - the browser has this src already. The scale is there because a
-        blur samples transparent pixels in from the edges and would otherwise leave a
-        pale border around the fill.
+        The letterbox fill. The art box below is aspect-locked on purpose - the PLAY
+        button addresses the artwork by percentage, so the art box and the screen box
+        have to be the same rectangle - and what that leaves over is filled with the same
+        art rather than the deep blue field it used to be. See StageBackdrop, which does
+        the same job for every game board.
       */}
-      <img
-        src={splash}
-        alt=""
-        aria-hidden="true"
-        style={{
-          position: 'absolute', inset: 0, width: '100%', height: '100%',
-          objectFit: 'cover',
-          filter: 'blur(34px) saturate(1.15) brightness(0.92)',
-          transform: 'scale(1.15)',
-          pointerEvents: 'none',
-        }}
-      />
+      <StageBackdrop src={splash} />
+
       <div
         style={{
           position: 'relative',
+          zIndex: 1,
           /*
            * Exact `contain` against the stage. Expressed as container-query math
            * rather than aspect-ratio + max-width, because clamping a max-width

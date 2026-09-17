@@ -20,9 +20,10 @@ import {
 import { BY_ID, type Item } from './items';
 import { COLOURS } from './palette';
 import { buildRound, resultRows, scoreRound, type RoundScore } from './round';
-import { PRELOAD } from './sprites';
+import { BG_HOME, BG_STORE, PRELOAD } from './sprites';
 import { BLIND_MS, MarketMemoryStyles } from './styles';
 import InstructionPanel, { InstructionPanelStyles } from '../../../components/chrome/InstructionPanel';
+import StageBackdrop from '../../../components/chrome/StageBackdrop';
 
 // ─── Timings ──────────────────────────────────────────────────────────────────
 
@@ -334,14 +335,18 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
         // viewport is routinely narrower, and auto margins collapse to zero once the
         // child overflows, which parks the board off to the right. Flex still centres.
         display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
-        // Leftover height is painted with the board's own room or aisle, not app grey.
+        // Leftover is painted with the board's own room or aisle, not app grey: the
+        // gradient is the fallback, StageBackdrop is the fill.
         background: stage.ground,
+        position: 'relative',
       }}
     >
       <MarketMemoryStyles />
       <InstructionPanelStyles />
+      {/* The plate changes with the walk to the shop, so the fill behind it does too. */}
+      <StageBackdrop src={inStore ? BG_STORE : BG_HOME} />
       <div data-board style={{
-        width: CANVAS_W, height: CANVAS_H, flex: '0 0 auto',
+        width: CANVAS_W, height: CANVAS_H, flex: '0 0 auto', zIndex: 1,
         // Centres the board in the leftover height. 0 once the board fills the box.
         marginTop: stage.offsetY,
         transform: `scale(${stage.scale})`, transformOrigin: 'top center',

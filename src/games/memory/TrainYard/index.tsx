@@ -20,6 +20,7 @@ import { STATION_NAME_FALLBACKS, STATION_NAME_KEYS, paletteFor, shuffled } from 
 import { ALL_SPRITE_URLS, BOARD_BACKGROUND, HEART, RESET_GLYPH, SCENERY_SPRITES } from './sprites';
 import { INSTRUCTION_SCRIM, INSTRUCTION_SCRIM_CLEAR, KIT_COLOURS } from '../../../lib/uiKit';
 import InstructionPanel, { InstructionPanelStyles } from '../../../components/chrome/InstructionPanel';
+import StageBackdrop from '../../../components/chrome/StageBackdrop';
 import { COLOURS, EASE_SETTLE, TrainYardStyles } from './styles';
 
 // ─── Timings ──────────────────────────────────────────────────────────────────
@@ -399,13 +400,15 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
      */
     <div
       ref={stageRef}
-      className="w-full h-full overflow-hidden flex justify-center items-start"
-      // Whatever height the board cannot fill is painted with its own grass, above and
-      // below, rather than left as a slab of app grey. See hooks/useStageFit.ts.
+      className="w-full h-full overflow-hidden flex justify-center items-start relative"
+      // Whatever the board cannot fill is painted with its own grass rather than left as
+      // a slab of app grey: the gradient is the fallback, StageBackdrop is the fill. See
+      // hooks/useStageFit.ts and components/chrome/StageBackdrop.tsx.
       style={{ background: stage.ground }}
     >
       <TrainYardStyles />
       <InstructionPanelStyles />
+      <StageBackdrop src={BOARD_BACKGROUND.src} />
       <div
         data-board
         style={{
@@ -416,6 +419,7 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
           // to zero once the child overflows. The board then scales about a centre that
           // is not the box's centre and hangs off to the right, mostly clipped.
           flex: '0 0 auto',
+          zIndex: 1,
           // Centres the board in the leftover height. 0 once the board fills the box.
           marginTop: stage.offsetY,
           transform: `scale(${stage.scale})`,

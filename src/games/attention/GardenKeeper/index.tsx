@@ -24,6 +24,7 @@ import {
 import { COLOURS, type PestKind, type PestSpecies } from './palette';
 import { pestLayers } from './pests';
 import { EASE, EASE_OUT, GardenKeeperStyles } from './styles';
+import StageBackdrop from '../../../components/chrome/StageBackdrop';
 
 // ─── Effects ──────────────────────────────────────────────────────────────────
 
@@ -628,11 +629,13 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
     // the left edge.)
     <div
       ref={stageRef}
-      className="w-full h-full overflow-hidden flex justify-center items-start"
-      // Leftover height is painted with the board's own sky and soil. See useStageFit.ts.
+      className="w-full h-full overflow-hidden flex justify-center items-start relative"
+      // Leftover is painted with the board's own sky and soil: the gradient is the
+      // fallback, StageBackdrop is the fill. See chrome/StageBackdrop.tsx.
       style={{ background: stage.ground }}
     >
       <GardenKeeperStyles />
+      <StageBackdrop src={BOARD_URL} />
       <div
         data-board
         style={{
@@ -646,6 +649,7 @@ export default function GardenKeeper({ levelConfig, onLevelComplete, reducedMoti
           flex: '0 0 auto',
           transform: `scale(${stage.scale})`, transformOrigin: 'top center',
           position: 'relative',
+          zIndex: 1,
           fontFamily: "'Baloo 2', sans-serif",
           userSelect: 'none',
         }}
