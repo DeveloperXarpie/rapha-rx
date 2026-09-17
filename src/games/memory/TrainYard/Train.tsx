@@ -136,23 +136,25 @@ export default function Train({
         {/*
           Selection ring. The nudge pulse runs here; the nudge glow runs on the wrapper.
 
-          Three bands, not one: a dark edge outside the amber and another inside it.
-          The amber on its own was the Sep-10 review's "highlight should be bolder" -
-          pale yellow on a sunlit green board has almost no contrast either side of
-          it, so widening the band alone would not have been enough.
+          A round white outline, per the Sep-17 mockup. It replaces the Sep-10 pass's
+          amber band with its two dark edges, which existed because pale yellow on a
+          sunlit green board had almost no contrast either side of it. The board is not
+          sunlit any more - the same review put a mask over it - and white on that
+          darkened green carries further than amber ever did. The single dark edge that
+          survives is there for the moment a train is over a pale sprite.
         */}
         <div
           style={{
             position: 'absolute',
-            left: -11, top: -11, right: -11, bottom: -11,
+            left: -14, top: -14, right: -14, bottom: -14,
             border: `8px solid ${COLOUR_RING}`,
-            borderRadius: 28,
+            borderRadius: '50%',
             opacity: selected ? 1 : nudged ? 0.6 : 0,
             transition: 'opacity 200ms linear',
             animation: nudged && !selected && !reduced ? 'ty-nudge 2000ms ease-in-out infinite' : undefined,
             pointerEvents: 'none',
             boxShadow: selected
-              ? `0 0 0 3px ${RING_EDGE}, inset 0 0 0 3px ${RING_EDGE}`
+              ? `0 0 0 3px ${RING_EDGE}, 0 2px 10px rgba(8, 26, 52, .45)`
               : undefined,
           }}
         />
@@ -161,8 +163,8 @@ export default function Train({
   );
 }
 
-const COLOUR_RING = '#FFE083';
-/** The dark band either side of the amber, so the ring holds against the green board. */
-const RING_EDGE = '#7A4E06';
+const COLOUR_RING = '#FFFFFF';
+/** A thin dark edge outside the white, so the ring holds against a pale sprite. */
+const RING_EDGE = 'rgba(8, 26, 52, .55)';
 /** How much bigger a selected train rides. See the note where it is applied. */
 const SELECTED_SCALE = 1.22;

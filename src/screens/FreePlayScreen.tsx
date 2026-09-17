@@ -65,10 +65,15 @@ export default function FreePlayScreen() {
           <img src={UI_UNDO} alt="" aria-hidden="true" className="w-full h-full" draggable={false} />
         </button>
         <div>
-          <h1 className="font-baloo" style={{ fontSize: 27, fontWeight: 700, color: '#FFFFFF' }}>
+          {/*
+            Up again on the Sep-17 review, which arrowed at all three of the words on
+            this screen that are not a game's name. The subtitle in particular was
+            being read as a caption on the title rather than as an instruction.
+          */}
+          <h1 className="font-baloo" style={{ fontSize: 34, fontWeight: 800, color: '#FFFFFF' }}>
             {t('freePlay.title', 'Free Play')}
           </h1>
-          <p className="font-baloo" style={{ fontSize: 21, fontWeight: 600, color: BRAND.cyan }}>
+          <p className="font-baloo" style={{ fontSize: 24, fontWeight: 700, color: BRAND.cyan }}>
             {t('freePlay.subtitle', 'Choose any game you would like to play.')}
           </p>
         </div>
@@ -78,17 +83,18 @@ export default function FreePlayScreen() {
         {SECTIONS.map(({ category, labelKey, fallback }) => (
           <section key={category} style={{ marginBottom: 26 }}>
             {/*
-              The section heading. Bigger and bolder than it was per the Sep-10 review:
-              at 14/700 it read as a label on the tiles below it rather than as the
-              divider between three separate shelves. Tracking comes down as the size
-              goes up - .12em was holding a small word open, and a 20px word does not
-              need it.
+              The section heading. Bigger and bolder on the Sep-10 review, and bigger
+              and bolder again on Sep-17: at 14/700 it read as a label on the tiles
+              below it rather than as the divider between three separate shelves, and
+              at 20 it still was not carrying across a room. Tracking keeps coming down
+              as the size goes up - .12em was holding a small word open, and a 26px word
+              does not need it at all.
             */}
             <p
               className="font-baloo"
               style={{
-                fontSize: 20, fontWeight: 800, letterSpacing: '0.08em',
-                color: BRAND.cyanBright, marginBottom: 12,
+                fontSize: 26, fontWeight: 800, letterSpacing: '0.05em',
+                color: BRAND.cyanBright, marginBottom: 14,
               }}
             >
               {t(labelKey, fallback).toUpperCase()}

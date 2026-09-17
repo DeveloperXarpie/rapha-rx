@@ -13,12 +13,13 @@ import TrackLayer from './TrackLayer';
 import { EffectView, TickView } from './effects';
 import { TICK_MS, lifetime, makeConfetti, nextFxId, type Effect, type Tick } from './effectModel';
 import {
-  BANNER, BOARD_H, BOARD_W, CANVAS_H, CANVAS_W, COL_X, GROUND, HUD_H, MOUTH_Y, RESET_BTN,
-  SAFE_X, SCENERY,
+  BANNER, BOARD_H, BOARD_W, CANVAS_H, CANVAS_W, COL_X, GROUND, HUD_H, LANE_Y, MOUTH_Y,
+  RESET_BTN, SAFE_X, SCENERY,
 } from './geometry';
 import { STATION_NAME_FALLBACKS, STATION_NAME_KEYS, paletteFor, shuffled } from './palette';
 import { ALL_SPRITE_URLS, BOARD_BACKGROUND, HEART, RESET_GLYPH, SCENERY_SPRITES } from './sprites';
-import { KIT_COLOURS } from '../../../lib/uiKit';
+import { INSTRUCTION_SCRIM, INSTRUCTION_SCRIM_CLEAR, KIT_COLOURS } from '../../../lib/uiKit';
+import InstructionPanel, { InstructionPanelStyles } from '../../../components/chrome/InstructionPanel';
 import { COLOURS, EASE_SETTLE, TrainYardStyles } from './styles';
 
 // ─── Timings ──────────────────────────────────────────────────────────────────
@@ -30,6 +31,30 @@ const ARRIVE_MS = RUN_MS + 60;
 const SETTLE_MS = 700;
 const RETURN_DELAY_MS = 380;
 const DOT_TICK_MS = 120;
+
+// ─── The mask's two holes ─────────────────────────────────────────────────────
+//
+// Both pools are the same size and hang off the geometry they are cut around, so a
+// change to where the stations or the lanes sit moves the holes with them.
+
+/** Centre of the station pool. The station body stands about 130px above its mouth. */
+const STATION_POOL_Y = MOUTH_Y - 40;
+/** Centre of the train pool. LANE_Y is where a parked train's track begins. */
+const TRAIN_POOL_Y = LANE_Y + 40;
+/**
+ * Where the top piece of the mask ends and the bottom begins. It has to fall between
+ * the two pools and far enough from both that each is already at full strength, or the
+ * seam shows as a band.
+ */
+const MASK_SPLIT = 620;
+/**
+ * Pool size, and how much of each radius is clear before the falloff starts. Wide
+ * enough that all four lanes are in the clear and only the board's margins - the house,
+ * the water tower, the trees down both edges - stay masked.
+ */
+const POOL_RX = 420;
+const POOL_RY = 300;
+const POOL_PLATEAU = '55%';
 
 // ─── Params ───────────────────────────────────────────────────────────────────
 
@@ -380,6 +405,7 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
       style={{ background: stage.ground }}
     >
       <TrainYardStyles />
+      <InstructionPanelStyles />
       <div
         data-board
         style={{
@@ -448,36 +474,84 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
         <div
           style={{
             position: 'absolute', left: 0, top: HUD_H, width: BOARD_W, height: BOARD_H,
-            // The plate carries its own scenery; the gradient stays as the fallback colour
-            // behind it while it decodes.
+            // The fallback colour behind the plate while it decodes. The plate itself
+            // moved onto the backdrop below, so that the mask can act on it.
             background: `url(${BOARD_BACKGROUND.src}) center / 100% 100% no-repeat, linear-gradient(180deg, #85BE55 0%, #7CB74E 40%, #74AF48 100%)`,
             overflow: 'hidden',
           }}
         >
-          <TrackLayer />
+          {/*
+            The backdrop: the track and the trees, in their own stacking context so the
+            mask below can cover them while staying under the stations and the trains.
+          */}
+          <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+            <TrackLayer />
 
-          {/* Scenery: decorative, never over a control. */}
-          <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none' }}>
-            {SCENERY.map((s, i) => {
-              const sprite = SCENERY_SPRITES[s.kind];
-              return (
-                <img
-                  key={`${s.kind}-${i}`}
-                  src={sprite.src}
-                  alt=""
-                  draggable={false}
-                  style={{
-                    position: 'absolute',
-                    left: s.left,
-                    top: s.top,
-                    height: s.height,
-                    width: s.height * (sprite.w / sprite.h),
-                    filter: 'drop-shadow(0 5px 7px rgba(31,41,55,.22))',
-                  }}
-                />
-              );
-            })}
+            {/* Scenery: decorative, never over a control. */}
+            <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none' }}>
+              {SCENERY.map((s, i) => {
+                const sprite = SCENERY_SPRITES[s.kind];
+                return (
+                  <img
+                    key={`${s.kind}-${i}`}
+                    src={sprite.src}
+                    alt=""
+                    draggable={false}
+                    style={{
+                      position: 'absolute',
+                      left: s.left,
+                      top: s.top,
+                      height: s.height,
+                      width: s.height * (sprite.w / sprite.h),
+                      filter: 'drop-shadow(0 5px 7px rgba(31,41,55,.22))',
+                    }}
+                  />
+                );
+              })}
+            </div>
+
           </div>
+
+          {/*
+            The mask, in two pieces, each with a hole cut in it.
+
+            The yard is masked; the station row and the train row are not. Those are the
+            two places in this game a resident reads colour, which is the whole task, so
+            masking them would be masking the thing the mask exists to make legible. The
+            reference render is explicit about it - the grass under the stations and
+            under the trains is the board's own #9EBA3F, untouched, while everything
+            between them sits at #416070.
+
+            A hole is a radial gradient that starts transparent, so one element can carry
+            one hole and no more: a second gradient stacked on the same element paints
+            its own opaque field straight over the first one's hole. Hence two elements,
+            split at MASK_SPLIT - which is chosen to sit in the fully masked middle, so
+            the seam falls where both pieces are already at full strength and cannot be
+            seen. They are siblings of the backdrop at the same z-index, so DOM order
+            alone puts them over the track and the trees and under the stations and the
+            trains.
+
+            The mask is a companion to the instruction panel rather than a property of a
+            phase: it is up for exactly as long as the app is speaking to the resident,
+            which in this game is the whole round. That is what both Sep-17 mockups
+            show - the encoding board and the dispatch board are masked alike.
+          */}
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute', left: 0, top: 0, width: BOARD_W, height: MASK_SPLIT,
+              zIndex: 0, pointerEvents: 'none',
+              background: `radial-gradient(ellipse ${POOL_RX}px ${POOL_RY}px at ${BOARD_W / 2}px ${STATION_POOL_Y}px, ${INSTRUCTION_SCRIM_CLEAR} 0, ${INSTRUCTION_SCRIM_CLEAR} ${POOL_PLATEAU}, ${INSTRUCTION_SCRIM} 100%)`,
+            }}
+          />
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute', left: 0, top: MASK_SPLIT, width: BOARD_W, height: BOARD_H - MASK_SPLIT,
+              zIndex: 0, pointerEvents: 'none',
+              background: `radial-gradient(ellipse ${POOL_RX}px ${POOL_RY}px at ${BOARD_W / 2}px ${TRAIN_POOL_Y - MASK_SPLIT}px, ${INSTRUCTION_SCRIM_CLEAR} 0, ${INSTRUCTION_SCRIM_CLEAR} ${POOL_PLATEAU}, ${INSTRUCTION_SCRIM} 100%)`,
+            }}
+          />
 
           {round.assign.map((paletteIndex, stIdx) => (
             <Station
@@ -513,43 +587,23 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
           {effects.map((fx) => <EffectView key={`fx-${fx.id}`} fx={fx} reduced={reduced} />)}
           {tick && <TickView key={`tick-${tick.id}`} tick={tick} reduced={reduced} />}
 
-          {/* Instruction banner */}
-          <div
+          {/*
+            Instruction banner. The Sep-17 review replaced the pale kit plate with the
+            shared blue panel and dropped the pink brain disc that used to sit at its
+            left - the mockups show the sentence alone, and with the plate now carrying
+            the board's strongest contrast the disc was one thing too many in it.
+          */}
+          <InstructionPanel
             style={{
               position: 'absolute', left: BANNER.left, top: BANNER.top, width: BANNER.width,
               zIndex: 7,
-              // The kit's pale plate, matching Market Memory's caption. Was cream.
-              background: KIT_COLOURS.panel,
-              border: '3px solid rgba(3, 62, 132, 0.16)',
-              borderRadius: 22,
-              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.22)',
-              padding: '16px 20px 18px',
-              display: 'flex', alignItems: 'center', gap: 16,
             }}
+            textKey={captionKey}
+            reduced={reduced}
+            fontSize={28}
           >
-            <div
-              style={{
-                width: 52, height: 52, flex: '0 0 52px', borderRadius: '50%',
-                background: '#F0A8BE', border: '3px solid #D07C99',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26,
-              }}
-              aria-hidden
-            >
-              🧠
-            </div>
-            <p
-              key={captionKey}
-              style={{
-                fontSize: 25, fontWeight: 800, color: KIT_COLOURS.navy, lineHeight: 1.28,
-                textWrap: 'pretty',
-                animation: reduced
-                  ? 'ty-fade 300ms ease-out both'
-                  : `ty-slidein 320ms ${EASE_SETTLE} both`,
-              }}
-            >
-              {caption}
-            </p>
-          </div>
+            {caption}
+          </InstructionPanel>
 
           {/* RESET */}
           <button

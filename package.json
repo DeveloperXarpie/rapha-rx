@@ -1,7 +1,7 @@
 {
   "name": "brain-training-app",
   "private": true,
-  "version": "1.31.0",
+  "version": "1.32.5",
   "type": "module",
   "scripts": {
     "dev": "vite",

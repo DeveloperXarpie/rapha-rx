@@ -70,6 +70,7 @@ export const KEYFRAMES = `
   70%  { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(.9); }
 }
+
 `;
 
 export const EASE_SETTLE = 'cubic-bezier(.22,.61,.36,1)';
@@ -81,9 +82,19 @@ export const COLOURS = {
   navyPanelEdge: '#0F2A47',
   cream: '#FBEFD5',
   creamBorder: '#C9A76B',
-  signWood: '#A8926C',
-  blindSlatA: '#C9B893',
-  blindSlatB: '#BFAD86',
+  /*
+    The level-crossing barrier, sampled off the Sep-17 mockup. It replaced the beige
+    blind, and `blindSlatA`, `blindSlatB` and `signWood` went with it - the last of
+    those was the blind's bottom rail and had no other caller.
+  */
+  barrierBoard: '#5A1C1D',
+  barrierBoardDeep: '#4A1617',
+  barrierBezel: '#241214',
+  hazardYellow: '#FFFC1E',
+  hazardDark: '#1C1418',
+  signalRed: '#F52C22',
+  signalGreen: '#19F231',
+  signalOff: '#1A2025',
   amber: '#F0A92B',
   amberEdge: '#C8821A',
   brownText: '#4A3A22',

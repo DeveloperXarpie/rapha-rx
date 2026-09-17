@@ -100,19 +100,26 @@ export interface FrameDef {
   w: number;
   h: number;
   slice: [top: number, right: number, bottom: number, left: number];
+  /**
+   * The art's own interior colour, painted behind the frame as a backstop against
+   * `border-image` seams. See `frameStyle`. Sampled from the centre of the art.
+   */
+  fill: string;
+  /** The art's corner radius in source pixels, so `fill` cannot square off the corners. */
+  radius: number;
 }
 
 export const FRAMES = {
   /** Order bubble above each guest. Grows downward as an order gains items. */
-  orderBubble: { src: `${DISH_BASE}/ui-panel.png`,   w: 194, h: 180, slice: [28, 28, 28, 28] },
+  orderBubble: { src: `${DISH_BASE}/ui-panel.png`,   w: 194, h: 180, slice: [28, 28, 28, 28], fill: '#FCEEDA', radius: 29 },
   /** HUD score chip. Interior is repainted clean by the slicer, so it takes live text. */
-  capsule:     { src: `${DISH_BASE}/ui-capsule.png`, w: 240, h: 103, slice: [24, 34, 24, 34] },
+  capsule:     { src: `${DISH_BASE}/ui-capsule.png`, w: 240, h: 103, slice: [24, 34, 24, 34], fill: '#FDF0DC', radius: 27 },
   /**
    * The counter tray. Its interior is flat, because the sheet draws 4x2 cells and the
    * board deals six in 3x2 - the cells come from geometry.ts instead. Slicing at the
    * frame's own 34px band means the panel can be any size without the rim distorting.
    */
-  tray:        { src: `${DISH_BASE}/pt-tray.png`,    w: 787, h: 576, slice: [34, 34, 34, 34] },
+  tray:        { src: `${DISH_BASE}/pt-tray.png`,    w: 787, h: 576, slice: [34, 34, 34, 34], fill: '#FCE8C6', radius: 50 },
 } satisfies Record<string, FrameDef>;
 
 /**
@@ -134,8 +141,8 @@ export const BUBBLE_TAIL = { src: `${DISH_BASE}/ui-panel-tail.png`, w: 47, h: 20
  * section, so the end caps are scaled with the bar's height instead of being sliced
  * vertically. `barWidth` below works that scale out.
  */
-export const BAR_TRACK: FrameDef = { src: `${DISH_BASE}/ui-bar-track.png`, w: 332, h: 53, slice: [0, 26, 0, 26] };
-export const BAR_FILL: FrameDef = { src: `${DISH_BASE}/ui-bar-fill.png`, w: 326, h: 47, slice: [0, 22, 0, 22] };
+export const BAR_TRACK: FrameDef = { src: `${DISH_BASE}/ui-bar-track.png`, w: 332, h: 53, slice: [0, 26, 0, 26], fill: '#FCEED9', radius: 26 };
+export const BAR_FILL: FrameDef = { src: `${DISH_BASE}/ui-bar-fill.png`, w: 326, h: 47, slice: [0, 22, 0, 22], fill: '#38A503', radius: 23 };
 
 export const COIN_SRC = `${DISH_BASE}/ui-coin.png`;
 
@@ -201,6 +208,23 @@ export function frameStyle(frame: FrameDef, scale = 1) {
     borderStyle: 'solid' as const,
     borderColor: 'transparent',
     borderWidth: `${t * scale}px ${r * scale}px ${b * scale}px ${l * scale}px`,
+    /*
+     * The art's own interior colour, under the frame.
+     *
+     * `border-image` draws nine separate tiles, and this board is laid out on a design
+     * canvas that is then `transform: scale()`d by whatever the viewport needs - almost
+     * never a whole number. The tile edges land on fractional device pixels, and the
+     * hairline gaps between them let the counter and the roof show through the panel as
+     * a faint rectangle inset by exactly the slice width. That is the "line drawings"
+     * behind the order bubbles: not something drawn on the art, but the background
+     * bleeding through the seams of the frame drawing it.
+     *
+     * A colour behind the tiles means a seam reveals the panel's own cream instead. The
+     * radius is the art's, so the fill stays inside the painted rim and does not square
+     * off the corners.
+     */
+    backgroundColor: frame.fill,
+    borderRadius: `${frame.radius * scale}px`,
   };
 }
 

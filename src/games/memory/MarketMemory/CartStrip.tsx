@@ -8,6 +8,9 @@ import { UI_HINT, UI_UNDO } from '../../../lib/uiKit';
 import { kitButton } from '../../../styles/kitButton';
 import { EASE_SETTLE } from './styles';
 
+/** The hint count, on the mid-green badge baked into `ui/hint.png`. */
+const HINT_BADGE_INK = '#0E3311';
+
 interface CartStripProps {
   /** One entry per list slot; null is an empty slot. */
   slots: (Item | null)[];
@@ -173,6 +176,10 @@ export default function CartStrip({
         {/*
           The count sits on the green badge painted into the art, so it is placed
           from HINT_BADGE's measured fractions rather than pinned to a corner.
+
+          Dark, not white, since the Sep-17 review: the badge is a mid green and the
+          numeral is small, and white on that green was the one number on the board a
+          resident could not read.
         */}
         <span
           aria-hidden="true"
@@ -181,8 +188,8 @@ export default function CartStrip({
             left: `${HINT_BADGE.cx * 100}%`,
             top: `${HINT_BADGE.cy * 100}%`,
             transform: 'translate(-50%, -50%)',
-            fontSize: HINT_BTN.width * HINT_BADGE.d * 0.72,
-            fontWeight: 800, lineHeight: 1, color: '#FFFFFF',
+            fontSize: HINT_BTN.width * HINT_BADGE.d * 0.92,
+            fontWeight: 800, lineHeight: 1, color: HINT_BADGE_INK,
             fontFamily: "'Baloo 2', sans-serif",
           }}
         >

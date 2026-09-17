@@ -25,8 +25,6 @@ export const COLOURS = {
   ribbonBlue: '#034eb4',
   ribbonRed: '#b20604',
   ribbonText: '#ffffff',
-
-  signText: '#43260c',
 } as const;
 
 /**

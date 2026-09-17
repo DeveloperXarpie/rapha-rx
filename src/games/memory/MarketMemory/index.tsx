@@ -22,6 +22,7 @@ import { COLOURS } from './palette';
 import { buildRound, resultRows, scoreRound, type RoundScore } from './round';
 import { PRELOAD } from './sprites';
 import { BLIND_MS, MarketMemoryStyles } from './styles';
+import InstructionPanel, { InstructionPanelStyles } from '../../../components/chrome/InstructionPanel';
 
 // ─── Timings ──────────────────────────────────────────────────────────────────
 
@@ -338,6 +339,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
       }}
     >
       <MarketMemoryStyles />
+      <InstructionPanelStyles />
       <div data-board style={{
         width: CANVAS_W, height: CANVAS_H, flex: '0 0 auto',
         // Centres the board in the leftover height. 0 once the board fills the box.
@@ -367,31 +369,31 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
           }} />
 
           {/*
-            The caption, on the kit's pale plate. The Sep-10 review asked for both the
-            plate and its text to grow; the numbers live in geometry's CAPTION because
-            the clipboard's top is derived from this plate's bottom edge.
+            The caption, on the shared blue instruction panel since the Sep-17 review.
+            The numbers live in geometry's CAPTION because the clipboard's top is
+            derived from this plate's bottom edge, and the same review asked for the
+            clipboard and READY to drop clear of it.
 
             One line, not two: it sits between the chrome strip and the first row of
             crates, and a second line would cover the top row of goods once shopping
-            starts. The plate is a fixed-height flex box rather than padding around the
-            text so that its height is a fact geometry can rely on.
+            starts. The plate is a fixed-height box rather than padding around the text
+            so that its height is a fact geometry can rely on - which is why the height
+            is passed through rather than left to the panel's own padding.
           */}
-          <div style={{
-            position: 'absolute',
-            left: CAPTION.left, top: CAPTION.top,
-            width: CAPTION.width, height: CAPTION.height,
-            zIndex: 6,
-            background: COLOURS.panel, border: `3px solid ${COLOURS.panelEdge}`, borderRadius: 999,
-            padding: '0 20px', boxSizing: 'border-box',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            textAlign: 'center',
-            fontSize: CAPTION.fontSize, fontWeight: 800, color: COLOURS.panelInk,
-            whiteSpace: 'nowrap', overflow: 'hidden',
-            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.22)',
-            transition: 'opacity 260ms ease',
-          }}>
+          <InstructionPanel
+            style={{
+              position: 'absolute',
+              left: CAPTION.left, top: CAPTION.top,
+              width: CAPTION.width, height: CAPTION.height,
+              zIndex: 6,
+              borderRadius: 999,
+              whiteSpace: 'nowrap', overflow: 'hidden',
+              transition: 'opacity 260ms ease',
+            }}
+            fontSize={CAPTION.fontSize}
+          >
             {caption}
-          </div>
+          </InstructionPanel>
 
           {/*
             The shelf is scenery as much as it is UI, so it appears with the store and

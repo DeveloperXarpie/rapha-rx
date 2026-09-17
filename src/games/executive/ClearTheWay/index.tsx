@@ -18,6 +18,7 @@ import { pickLevel } from './levels';
 import { blockSlab, cornerFlip, floorPaint, keyFacing, railPaint, SKIN } from './skin';
 import { CORNER_RATIO } from './sprites';
 import { ClearTheWayStyles } from './styles';
+import InstructionPanel, { InstructionPanelStyles } from '../../../components/chrome/InstructionPanel';
 
 // ─── Params ───────────────────────────────────────────────────────────────────
 
@@ -282,10 +283,16 @@ export default function ClearTheWay({ levelConfig, onLevelComplete, generatedCon
   return (
     <div className="h-full min-h-0 flex flex-col items-center gap-3">
       <ClearTheWayStyles reduced={reduced} />
+      <InstructionPanelStyles />
 
-      <p className="flex-none text-body text-caption-text text-center">
+      {/*
+        The shared blue instruction panel, since the Sep-17 review. It was a plain line
+        of caption text on the tank's own background, which is the one thing the review
+        said should never be how a game speaks to a resident.
+      */}
+      <InstructionPanel className="w-full max-w-2xl flex-none" fontSize={24}>
         {t('clearTheWay.instruction', 'Slide the blocks out of the way and free the fish.')}
-      </p>
+      </InstructionPanel>
 
       {/*
         `flex-1 min-h-0` is what makes this measurable: the frame's height comes from the

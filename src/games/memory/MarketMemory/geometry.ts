@@ -170,10 +170,18 @@ export const ROW_Y = PLANK_Y.slice(0, SHELF_ROWS).map((y) => y - CRATE_H);
  * "Remember and Collect items" at this size on one line, and the plate does not wrap
  * - see the note on the caption in index.tsx.
  */
-export const CAPTION = { left: 80, top: 104, width: 640, height: 60, fontSize: 30 };
+export const CAPTION = { left: 80, top: 120, width: 640, height: 72, fontSize: 30 };
 
-/** Clear air between the caption plate and whatever the phase puts under it. */
-export const CAPTION_CLEARANCE = 24;
+/**
+ * Clear air between the caption plate and whatever the phase puts under it.
+ *
+ * The Sep-17 review asked for the clipboard and READY to move down and "give space for
+ * the instruction panel", and its follow-up asked for the panel itself to come down
+ * too. The two pull in opposite directions on a canvas with 29px to spare at the
+ * bottom, so the panel took the 16px and this gave most of it back: the clipboard sits
+ * where the first pass left it, and the extra air is above the panel rather than below.
+ */
+export const CAPTION_CLEARANCE = 26;
 
 /**
  * The clipboard sprite, `ui-clipboard.png`, is 465 x 868. Drawn at 430 wide it keeps its
