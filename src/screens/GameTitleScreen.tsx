@@ -90,12 +90,14 @@ const PLAY_RECT: Record<string, Rect> = {
  * carries a translated label, focuses, and responds to a press, none of which a
  * painted rectangle could do.
  *
- * The art is contained inside an aspect-locked box on the deep blue field
- * rather than cover-cropped to the viewport. Cover meant the art box and the
- * screen box were different rectangles, so a percentage position could not
- * address the artwork reliably, and a short viewport could crop the painted
- * button off entirely. Known limitation: every word painted into the art is
- * English, in all three languages.
+ * The art is contained inside an aspect-locked box rather than cover-cropped to
+ * the viewport. Cover meant the art box and the screen box were different
+ * rectangles, so a percentage position could not address the artwork reliably,
+ * and a short viewport could crop the painted button off entirely. What fills
+ * the space that leaves is a blurred, cover-cropped copy of the same art rather
+ * than the deep blue field it used to be - see the note on it below. Known
+ * limitation: every word painted into the art is English, in all three
+ * languages.
  */
 export default function GameTitleScreen() {
   const { t } = useTranslation();
@@ -140,6 +142,35 @@ export default function GameTitleScreen() {
         containerType: 'size',
       }}
     >
+      {/*
+        The letterbox fill.
+
+        The art box below is aspect-locked on purpose - the PLAY button addresses the
+        artwork by percentage, so the art box and the screen box have to be the same
+        rectangle. That is not negotiable, but the flat blue it leaves around the art is.
+        On a 19.5:9 phone the re-cut 0.64 splashes leave a little over 200px of it at the
+        top and the same at the bottom, and it reads as the screen failing to fill rather
+        than as a frame.
+
+        So the same image goes behind, cover-cropped to the whole stage and blurred past
+        legibility. It fills every shape of viewport, it is the right colours by
+        construction because it is the same art, and it costs no second asset and no
+        second decode - the browser has this src already. The scale is there because a
+        blur samples transparent pixels in from the edges and would otherwise leave a
+        pale border around the fill.
+      */}
+      <img
+        src={splash}
+        alt=""
+        aria-hidden="true"
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover',
+          filter: 'blur(34px) saturate(1.15) brightness(0.92)',
+          transform: 'scale(1.15)',
+          pointerEvents: 'none',
+        }}
+      />
       <div
         style={{
           position: 'relative',
