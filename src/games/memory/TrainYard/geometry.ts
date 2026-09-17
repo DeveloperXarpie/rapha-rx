@@ -143,17 +143,24 @@ export const TRAIN_H = Math.round(TRAIN_W * (TRAIN_SPRITES[0].h / TRAIN_SPRITES[
 // ─── Fixed furniture ──────────────────────────────────────────────────────────
 
 export const BANNER = { left: 156, top: 18, width: 488 };
-export const RESET_BTN = { left: 14, top: 760, width: 104, height: 96 };
+export const RESET_BTN = { left: 60, top: 760, width: 104, height: 96 };
 
 /**
  * The band that must stay on screen on any viewport, however narrow. Everything outside
- * it is grass and scenery - trees, the signal box, the water tower - which the fit may
- * crop rather than shrink the board. RESET sits at x14, so that is as far in as the left
- * edge can come; the right is mirrored because the board is centred in its box.
+ * it is grass and scenery - trees, the house, the water tower - which the fit may crop
+ * rather than shrink the board. RESET is the left-most thing a resident has to reach, so
+ * that is as far in as the left edge can come; the right is mirrored because the board is
+ * centred in its box.
  *
- * Widen this band (by moving RESET inward, say) and the board automatically fills more of
- * a tall phone. lib/__tests__/boardFit.test.ts holds the promise that nothing inside it
- * is ever cropped.
+ * RESET sat at x14 until the Sep-17 phone pass, which is all but the whole canvas and left
+ * a phone nothing to crop: the board stayed width-bound and drew short, with a band of
+ * leftover above the HUD and below the yard. At x60 - with the hearts moved to match, they
+ * are the only other thing out here - the board fills the height of any box down to 0.53
+ * wide-to-tall, which covers a phone in a browser. A narrower box still letterboxes, and
+ * the stage paints what is left with the board's own scrimmed art.
+ *
+ * Move RESET further in and more of a tall phone fills. lib/__tests__/boardFit.test.ts
+ * holds the promise that nothing inside this band is ever cropped.
  */
 export const SAFE_X = [RESET_BTN.left, CANVAS_W - RESET_BTN.left] as const;
 

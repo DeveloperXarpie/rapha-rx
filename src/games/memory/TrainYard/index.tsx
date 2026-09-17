@@ -381,6 +381,14 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
   const captionKey = `${phase}-${selected ?? 'none'}-${revealed.size}`;
 
   const showNames = phase === 'encoding' || (phase === 'retention' && !covered);
+  /*
+   * The yard is empty until it is handed over. Through encoding and the hold the task is
+   * the four station colours, and four locomotives parked under them are four more
+   * colours competing with the ones being held in mind. They fade in as dispatch opens -
+   * the barrier lifts, then the trains come in, which is the first moment they mean
+   * anything.
+   */
+  const trainsHidden = phase === 'encoding' || phase === 'retention';
   const card = phase === 'roundEnd' || phase === 'gameOver' ? phase : null;
 
   if (!imagesReady) {
@@ -409,6 +417,40 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
       <TrainYardStyles />
       <InstructionPanelStyles />
       <StageBackdrop src={BOARD_BACKGROUND.src} />
+      {/*
+        Whatever height the board still cannot cover, on a phone too tall for even the
+        cropped board to fill - see geometry's SAFE_X.
+
+        StageBackdrop's blurred plate is the general answer to a letterbox and it is the
+        wrong one here, because neither edge of this board is plate. Above, the canvas
+        begins with the near-white HUD, so anything green over it reads as a bar however
+        well it is blurred; the band wears the HUD's own colour instead and the strip
+        simply looks taller. Below, the board ends in grass that sits inside the train
+        pool, where the mask is fully clear, so the band is the plate's own bottom edge
+        colour at full brightness. Both are painted over the backdrop and under the board.
+      */}
+      {stage.offsetY > 0.5 && (
+        <>
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute', left: 0, top: 0, width: '100%',
+              height: Math.ceil(stage.offsetY),
+              zIndex: 0, pointerEvents: 'none',
+              background: KIT_COLOURS.panel,
+            }}
+          />
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute', left: 0, bottom: 0, width: '100%',
+              top: Math.floor(stage.offsetY + stage.height),
+              zIndex: 0, pointerEvents: 'none',
+              background: GROUND.bottom,
+            }}
+          />
+        </>
+      )}
       <div
         data-board
         style={{
@@ -445,7 +487,9 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
             background: KIT_COLOURS.panel,
             borderBottom: `4px solid ${KIT_COLOURS.navy}`,
             display: 'flex', alignItems: 'center', gap: 10,
-            padding: '0 22px',
+            // Inside SAFE_X along with RESET, so a phone that crops the margins of the
+            // board never takes a bite out of the first heart. See geometry.ts.
+            padding: `0 ${RESET_BTN.left}px`,
           }}
         >
           {/*
@@ -583,6 +627,7 @@ export default function TrainYard({ levelConfig, onLevelComplete, reducedMotion 
               selected={selected === tr.lane}
               nudged={suggested === tr.lane}
               interactive={canAct && tr.status !== 'done'}
+              hidden={trainsHidden}
               reduced={reduced}
               onPick={() => pickTrain(tr.lane)}
             />

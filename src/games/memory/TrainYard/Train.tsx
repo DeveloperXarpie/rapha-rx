@@ -17,6 +17,8 @@ interface TrainProps {
   selected: boolean;
   nudged: boolean;
   interactive: boolean;
+  /** Kept out of sight until the yard is handed to the player. See index.tsx. */
+  hidden: boolean;
   reduced: boolean;
   onPick: () => void;
 }
@@ -32,7 +34,7 @@ interface TrainProps {
  * candidate route shares a start point and the swap on arming is invisible.
  */
 export default function Train({
-  lane, paletteIndex, colour, status, target, selected, nudged, interactive, reduced, onPick,
+  lane, paletteIndex, colour, status, target, selected, nudged, interactive, hidden, reduced, onPick,
 }: TrainProps) {
   const sprite = TRAIN_SPRITES[paletteIndex];
   const routeTo = target ?? lane;
@@ -64,7 +66,10 @@ export default function Train({
         transition:
           (moving ? `offset-distance ${status === 'run' ? RUN_MS : BACK_MS}ms ${status === 'run' ? EASE_TRAVEL : EASE_OUT}, ` : '') +
           'opacity 500ms linear 200ms',
-        opacity: status === 'done' ? 0 : 1,
+        opacity: hidden || status === 'done' ? 0 : 1,
+        // Belt and braces: the tap pad is only rendered when the train is interactive,
+        // which a hidden train never is, but a transparent train must not be tappable.
+        pointerEvents: hidden ? 'none' : undefined,
         zIndex: status === 'lane' || status === 'arm' ? 6 : 1,
         filter: wrapperFilter,
         cursor: interactive ? 'pointer' : 'default',
@@ -146,7 +151,9 @@ export default function Train({
         <div
           style={{
             position: 'absolute',
-            left: -14, top: -14, right: -14, bottom: -14,
+            left: '50%', top: '50%',
+            width: RING_D, height: RING_D,
+            marginLeft: -RING_D / 2, marginTop: -RING_D / 2,
             border: `8px solid ${COLOUR_RING}`,
             borderRadius: '50%',
             opacity: selected ? 1 : nudged ? 0.6 : 0,
@@ -168,3 +175,17 @@ const COLOUR_RING = '#FFFFFF';
 const RING_EDGE = 'rgba(8, 26, 52, .55)';
 /** How much bigger a selected train rides. See the note where it is applied. */
 const SELECTED_SCALE = 1.22;
+
+/**
+ * Breathing room between the train and its ring, and the diameter that follows.
+ *
+ * The ring used to be a fixed inset on all four sides of the train's box, rounded to 50%.
+ * That box is 62 x 137, so what it drew was an oval gripping the locomotive rather than a
+ * circle around it. This is a disc centred on the train and sized off its longest side.
+ *
+ * 161 is about as wide as it can go. The lanes are 140 apart, a selected train rides at
+ * 1.22, so the drawn disc reaches 98px each side of its own lane - against the 109px to the
+ * near edge of the train in the next one.
+ */
+const RING_GAP = 12;
+const RING_D = Math.max(TRAIN_W, TRAIN_H) + RING_GAP * 2;
