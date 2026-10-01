@@ -101,3 +101,12 @@ export function categoryIcon(category: GameCategory): string {
 export function tileArt(game: GameCatalogEntry): string {
   return game.tile ?? CATEGORY_ICONS[game.category];
 }
+
+/**
+ * Where "play this game" lands once any intro is behind it: the title screen for a
+ * game with commissioned art, the board for one without - it has no title screen,
+ * so sending it there would only bounce straight on.
+ */
+export function playRoute(game: GameCatalogEntry): string {
+  return game.splash ? `/app/game/${game.id}/title` : `/app/game/${game.id}`;
+}

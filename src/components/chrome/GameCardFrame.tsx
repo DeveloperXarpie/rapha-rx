@@ -10,8 +10,9 @@ interface Props {
 }
 
 /**
- * The frame the game intro and the score card share: the game's own splash art
- * filling the screen, a close X in the corner, and one tall blue panel.
+ * The score card's frame: the game's own splash art filling the screen, a close X
+ * in the corner, and one tall blue panel. The game intro used to share it; it now
+ * follows its own final mock (docs/info-screen).
  *
  * The art is cover-cropped rather than letterboxed like the title screen, because
  * nothing here addresses the artwork by position - the panel sits over the middle

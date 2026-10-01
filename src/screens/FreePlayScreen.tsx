@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
-import { allByCategory, getGame } from '../lib/gameCatalog';
+import { allByCategory, getGame, playRoute } from '../lib/gameCatalog';
+import { GAME_SKILLS } from '../lib/gameSkills';
 import { UI_UNDO } from '../lib/uiKit';
 import ScreenBlue from '../components/chrome/ScreenBlue';
 import GameTile from '../components/chrome/GameTile';
@@ -39,10 +40,10 @@ export default function FreePlayScreen() {
 
   function handlePlay(gameId: string) {
     track('practice_game_started', { gameId });
-    // Games with commissioned art get their title screen; the rest have none,
-    // so sending them there would only bounce straight back.
-    const hasSplash = Boolean(getGame(gameId)?.splash);
-    navigate(hasSplash ? `/app/game/${gameId}/title` : `/app/game/${gameId}`);
+    const game = getGame(gameId);
+    if (!game) return;
+    // A game with a skill mapping gets its intro first, as it does in a session.
+    navigate(GAME_SKILLS[gameId] ? `/app/game/${gameId}/intro` : playRoute(game));
   }
 
   return (

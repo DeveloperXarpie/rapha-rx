@@ -16,6 +16,7 @@ import { staggerDelay, type TransitionName } from '../../components/chrome/trans
 import { marqueeGames, GAME_CATALOG } from '../../lib/gameCatalog';
 import { Button } from '../../components/ui/Button';
 import { GameIntroView } from '../GameIntro';
+import { GAME_SKILLS } from '../../lib/gameSkills';
 import { ScoreCardView } from '../ScoreCard';
 import { getScoreCard } from '../../lib/scoreCard';
 import { BRAND, CATEGORY_BRAND } from '../../styles/tokens';
@@ -184,8 +185,8 @@ export default function ChromeGallery() {
 
       <Section title="Game intros">
         <div style={{ display: 'flex', gap: 16, overflowX: 'auto' }}>
-          {marqueeGames().map((g) => (
-            <Phone key={g.id}><GameIntroView game={g} onContinue={noop} onClose={noop} /></Phone>
+          {Object.keys(GAME_SKILLS).map((id) => (
+            <Phone key={id}><GameIntroView game={GAME_CATALOG[id]} onContinue={noop} onBack={noop} /></Phone>
           ))}
         </div>
       </Section>

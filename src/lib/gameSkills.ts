@@ -9,7 +9,10 @@ import type { GameCategory } from '../styles/tokens';
  * primary is listed first on the intro, and is the skill the score card's main
  * word will come from once scoring exists.
  *
- * Copy lives behind i18n keys: `skill.<id>.name` and `skill.<id>.line`.
+ * Copy lives behind i18n keys: `skill.<id>.name` and `skill.<id>.line`. Each skill
+ * also has a tile, `public/skills/<id>.webp`, cut from the designer's icon sheet
+ * (docs/info-screen/icon_nameless.png), one colour per skill. The tiles carry no
+ * text, so the name beside each one is the only label and translates.
  */
 export type SkillId =
   // Memory
@@ -25,10 +28,16 @@ export interface Skill {
   category: GameCategory;
   nameKey: string;
   lineKey: string;
+  icon: string;
 }
 
 function skill(id: SkillId, category: GameCategory): Skill {
-  return { category, nameKey: `skill.${id}.name`, lineKey: `skill.${id}.line` };
+  return {
+    category,
+    nameKey: `skill.${id}.name`,
+    lineKey: `skill.${id}.line`,
+    icon: `/skills/${id}.webp`,
+  };
 }
 
 export const SKILLS: Record<SkillId, Skill> = {
@@ -65,7 +74,11 @@ export interface GameSkills {
   secondary: SkillId[];
 }
 
-/** Keyed by gameId. Only the six marquee games - the ones a session plays. */
+/**
+ * Keyed by gameId: the six marquee games a session plays, plus the Free Play games
+ * the Format doc maps. A Free Play game missing here has no intro and goes straight
+ * to play - its skills are for the research team to name, not guessed here.
+ */
 export const GAME_SKILLS: Record<string, GameSkills> = {
   'market-memory': { category: 'memory',    primary: 'recall',             secondary: ['recognition', 'retention', 'association'] },
   'train-yard':    { category: 'memory',    primary: 'sequences',          secondary: ['recall', 'patterns'] },
@@ -73,9 +86,10 @@ export const GAME_SKILLS: Record<string, GameSkills> = {
   'garden-keeper': { category: 'attention', primary: 'selectiveAttention', secondary: ['accuracy'] },
   'serve-guests':  { category: 'executive', primary: 'planning',           secondary: ['decisionMaking', 'sequencing'] },
   'clear-the-way': { category: 'executive', primary: 'problemSolving',     secondary: ['planning', 'cognitiveFlexibility'] },
+  'word-search':   { category: 'attention', primary: 'sustainedAttention', secondary: ['concentration'] },
 };
 
-/** Primary first, then the secondaries. Empty for a game outside the rotation. */
+/** Primary first, then the secondaries. Empty for a game with no mapping. */
 export function skillsFor(gameId: string): SkillId[] {
   const g = GAME_SKILLS[gameId];
   return g ? [g.primary, ...g.secondary] : [];
