@@ -15,6 +15,9 @@ import ScreenTransition from '../../components/chrome/ScreenTransition';
 import { staggerDelay, type TransitionName } from '../../components/chrome/transitions';
 import { marqueeGames, GAME_CATALOG } from '../../lib/gameCatalog';
 import { Button } from '../../components/ui/Button';
+import { GameIntroView } from '../GameIntro';
+import { ScoreCardView } from '../ScoreCard';
+import { getScoreCard } from '../../lib/scoreCard';
 import { BRAND, CATEGORY_BRAND } from '../../styles/tokens';
 import type { GameCategory } from '../../styles/tokens';
 
@@ -30,6 +33,17 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
     </section>
   );
 }
+
+/** A phone-shaped box, so the full-screen cards render at a real size. */
+function Phone({ children }: { children: ReactNode }) {
+  return (
+    <div style={{ width: 390, height: 760, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRadius: 16, overflow: 'hidden' }}>
+      {children}
+    </div>
+  );
+}
+
+const noop = () => {};
 
 const TRANSITION_NAMES: TransitionName[] = [
   'launchToSplash', 'onboardingStep', 'homeToIntro',
@@ -165,6 +179,33 @@ export default function ChromeGallery() {
           {['remember-match', 'word-search', 'recipe-builder'].map((id) => (
             <GameTile key={id} game={GAME_CATALOG[id]} onClick={() => {}} />
           ))}
+        </div>
+      </Section>
+
+      <Section title="Game intros">
+        <div style={{ display: 'flex', gap: 16, overflowX: 'auto' }}>
+          {marqueeGames().map((g) => (
+            <Phone key={g.id}><GameIntroView game={g} onContinue={noop} onClose={noop} /></Phone>
+          ))}
+        </div>
+      </Section>
+
+      {/* The first is what residents see today, from the empty placeholder. The rest
+          use sample values to show the lines scoring will fill in. */}
+      <Section title="Score cards">
+        <div style={{ display: 'flex', gap: 16, overflowX: 'auto' }}>
+          <Phone>
+            <ScoreCardView game={GAME_CATALOG['market-memory']} data={getScoreCard('market-memory')} onContinue={noop} onClose={noop} />
+          </Phone>
+          <Phone>
+            <ScoreCardView game={GAME_CATALOG['market-memory']} data={{ primary: 82, previous: 76, bestSkill: 'recognition' }} onContinue={noop} onClose={noop} />
+          </Phone>
+          <Phone>
+            <ScoreCardView game={GAME_CATALOG['spot-focus']} data={{ primary: 55, previous: null, bestSkill: 'responseTime' }} onContinue={noop} onClose={noop} />
+          </Phone>
+          <Phone>
+            <ScoreCardView game={GAME_CATALOG['clear-the-way']} data={{ primary: 30, previous: 45, bestSkill: 'planning' }} onContinue={noop} onClose={noop} />
+          </Phone>
         </div>
       </Section>
 

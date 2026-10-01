@@ -91,14 +91,21 @@ export default function SessionManager() {
 
     if (session.currentCategory) markCategoryComplete(session.currentCategory);
 
-    if (step.kind === 'summary') {
-      navigate('/app/summary');
-      return true;
+    /*
+     * Every finished game gets its score card before whatever comes next. The
+     * session moves on first, so the card's Continue - and a refresh on the card -
+     * reads the next step from the session rather than from here.
+     */
+    const finished = session.currentGameId;
+    if (step.kind === 'intro') {
+      setCurrentCategory(step.category);
+      setCurrentGame(step.gameId);
     }
-
-    setCurrentCategory(step.category);
-    setCurrentGame(step.gameId);
-    navigate(`/app/intro/${step.category}`);
+    if (finished) {
+      navigate(`/app/game/${finished}/score`);
+    } else {
+      navigate(step.kind === 'summary' ? '/app/summary' : `/app/game/${step.gameId}/intro`);
+    }
     return true;
   }, [
     profile, session, markCategoryComplete, setCurrentCategory,

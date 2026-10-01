@@ -6,7 +6,8 @@ import AppShell from './components/AppShell';
 import HomeScreen from './screens/HomeScreen';
 import EducationScreen from './screens/EducationScreen';
 import GameRouter from './screens/GameRouter';
-import CategoryIntro from './screens/CategoryIntro';
+import GameIntro from './screens/GameIntro';
+import ScoreCard from './screens/ScoreCard';
 import GameTitleScreen from './screens/GameTitleScreen';
 import SessionSummary from './screens/SessionSummary';
 import FreePlayScreen from './screens/FreePlayScreen';
@@ -38,9 +39,10 @@ export default function App() {
             <Route element={<SessionManager />}>
               <Route path="/app/home"                element={<HomeScreen />} />
               <Route path="/app/education"           element={<EducationScreen />} />
-              <Route path="/app/intro/:category"     element={<CategoryIntro />} />
+              <Route path="/app/game/:gameId/intro"  element={<GameIntro />} />
               <Route path="/app/game/:gameId/title"  element={<GameTitleScreen />} />
               <Route path="/app/game/:gameId"        element={<GameRouter />} />
+              <Route path="/app/game/:gameId/score"  element={<ScoreCard />} />
               <Route path="/app/free-play"           element={<FreePlayScreen />} />
               <Route path="/app/summary"             element={<SessionSummary />} />
               <Route path="/app/settings"            element={<SettingsScreen />} />
@@ -53,6 +55,7 @@ export default function App() {
               {/* Bookmarks, and URLs the service worker cached before the redesign. */}
               <Route path="/app/questionnaire"       element={<Navigate to="/app/education" replace />} />
               <Route path="/app/rotation"            element={<Navigate to="/app/home" replace />} />
+              <Route path="/app/intro/:category"     element={<Navigate to="/app/home" replace />} />
               <Route path="/app"                     element={<Navigate to="/app/home" replace />} />
             </Route>
           </Route>

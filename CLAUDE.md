@@ -34,17 +34,18 @@ React 18 + TypeScript, Vite, Tailwind CSS, Zustand, Dexie (IndexedDB), i18next, 
 /signin                  → SignInScreen
 /app/home                → HomeScreen          ─┐
 /app/education           → EducationScreen      │ wrapped in RequireProfile
-/app/intro/:category     → CategoryIntro        │ → AppShell
+/app/game/:gameId/intro  → GameIntro            │ → AppShell
 /app/game/:gameId/title  → GameTitleScreen      │   → SessionManager
 /app/game/:gameId        → GameRouter           │
+/app/game/:gameId/score  → ScoreCard            │
 /app/free-play           → FreePlayScreen       │
 /app/summary             → SessionSummary       │
 /app/settings            → SettingsScreen      ─┘
 ```
 
 `AppBootGate` (in `main.tsx`) holds `LaunchScreen` above the router until i18n and
-Dexie are ready, with a 2000 ms minimum. `/login/:careHomeId`, `/app/questionnaire`
-and `/app/rotation` survive only as redirects for cached URLs.
+Dexie are ready, with a 2000 ms minimum. `/login/:careHomeId`, `/app/questionnaire`,
+`/app/rotation` and `/app/intro/:category` survive only as redirects for cached URLs.
 
 `RequireProfile` redirects unauthenticated users to `/`. `SessionManager` is a layout route that provides `SessionContext` (category timer, rotation logic) to all `/app/*` routes via `useSessionContext()`.
 
@@ -53,16 +54,20 @@ and `/app/rotation` survive only as redirects for cached URLs.
    `plannedGames` via `pickTrio()` — one marquee game per category, never repeating the
    previous session's game for that category. `HomeScreen` calls it on arrival, so the three
    rows it shows are the three games the session will actually play.
-2. Home → Education → `/app/intro/memory`. Each `CategoryIntro` holds 2 s and advances itself
-   to the game's title screen, then the board.
+2. Home → Education → `/app/game/:gameId/intro`. `GameIntro` lists the skills the game
+   trains (from `src/lib/gameSkills.ts`) and waits for Continue, then the title screen,
+   then the board.
 3. `SessionManager` ticks `secondsInCurrentCategory` every second. A level completed under
    `ROTATION_THRESHOLD_SECONDS` (120) starts **another round of the same game**; past it,
    `triggerRotation()` delegates to `nextStep()` in `src/lib/sessionPlan.ts`, which returns
-   the next category intro, the summary, or `stay`. `stay` is the free-play case: the ticker
+   the next game, the summary, or `stay`. `stay` is the free-play case: the ticker
    keeps running after a session completes, and without it a long free-play round would
    bounce the resident into the summary.
+   Rotation shows the finished game's `ScoreCard` first. Its Continue reads the next step
+   from the session (`afterScoreCard()`). The card's data comes from `getScoreCard()` in
+   `src/lib/scoreCard.ts`, an empty placeholder until the scoring system exists.
 4. A partially complete session is resumable via `checkForResumableSession()`; Home offers
-   Continue, returning to `/app/intro/:currentCategory`.
+   Continue, returning to `/app/game/:currentGameId/intro`.
 5. Once all three categories are done, Home offers Free Play (`/app/free-play`) — the
    library that replaced the old inline Practice Mode.
 

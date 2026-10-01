@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pickTrio, nextStep, CATEGORY_ORDER } from '../sessionPlan';
+import { pickTrio, nextStep, afterScoreCard, CATEGORY_ORDER } from '../sessionPlan';
 import { getGame } from '../gameCatalog';
 
 describe('pickTrio', () => {
@@ -86,5 +86,24 @@ describe('nextStep', () => {
   it('does not double-count a category already in categoriesCompleted', () => {
     expect(nextStep({ currentCategory: 'memory', categoriesCompleted: ['memory'], plannedGames: TRIO }))
       .toEqual({ kind: 'intro', category: 'attention', gameId: 'spot-focus' });
+  });
+});
+
+describe('afterScoreCard', () => {
+  it('goes to the next game intro while the session has categories left', () => {
+    expect(afterScoreCard({ categoriesCompleted: ['memory'], currentGameId: 'spot-focus' }))
+      .toBe('/app/game/spot-focus/intro');
+  });
+
+  it('goes to the summary once all three categories are done', () => {
+    expect(afterScoreCard({
+      categoriesCompleted: ['memory', 'attention', 'executive'],
+      currentGameId: 'serve-guests',
+    })).toBe('/app/summary');
+  });
+
+  it('goes home when the session has no game to continue with', () => {
+    expect(afterScoreCard({ categoriesCompleted: ['memory'], currentGameId: null }))
+      .toBe('/app/home');
   });
 });

@@ -61,6 +61,8 @@ export const BRAND = {
   muted:         '#8FB8E8',
   /** Level and success figures. */
   lime:          '#C6F87A',
+  /** Skill names on the game intro's blue panel. */
+  skill:         '#FFF33B',
   /**
    * The category intro's full-width practice band. One blue for all three
    * categories, not the category colour the handoff's table asks for - see the

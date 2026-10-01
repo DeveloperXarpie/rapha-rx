@@ -86,9 +86,8 @@ export default function HomeScreen() {
   }
 
   function handleResumeSession() {
-    // Back into the intro for whichever category was in play. The old rotation
-    // screen this used to target is gone.
-    enterSession(`/app/intro/${session.currentCategory ?? 'memory'}`);
+    // Back into the intro for whichever game was in play.
+    enterSession(session.currentGameId ? `/app/game/${session.currentGameId}/intro` : '/app/education');
   }
 
   // Re-runs the lookups once the Dexie write lands, so the screen reflects the

@@ -66,3 +66,17 @@ export function nextStep(args: {
   const trio = plannedGames.length === 3 ? plannedGames : pickTrio(null);
   return { kind: 'intro', category: next, gameId: trio[CATEGORY_ORDER.indexOf(next)] };
 }
+
+/**
+ * Where the score card's Continue goes. Read from the session rather than handed
+ * over by the rotation, because rotation has already moved the session on by the
+ * time the card shows - so a refresh on the card still continues correctly.
+ */
+export function afterScoreCard(args: {
+  categoriesCompleted: string[];
+  currentGameId: string | null;
+}): string {
+  const { categoriesCompleted, currentGameId } = args;
+  if (CATEGORY_ORDER.every((c) => categoriesCompleted.includes(c))) return '/app/summary';
+  return currentGameId ? `/app/game/${currentGameId}/intro` : '/app/home';
+}

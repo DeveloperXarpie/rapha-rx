@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAppStore } from '../store';
 import ScreenBlue from '../components/chrome/ScreenBlue';
 import { Button } from '../components/ui/Button';
 import { BRAND } from '../styles/tokens';
@@ -15,6 +16,7 @@ import { BRAND } from '../styles/tokens';
 export default function EducationScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const currentGameId = useAppStore((s) => s.currentSession.currentGameId);
 
   return (
     <ScreenBlue>
@@ -58,7 +60,7 @@ export default function EducationScreen() {
         <Button
           variant="green"
           size="md"
-          onClick={() => navigate('/app/intro/memory')}
+          onClick={() => navigate(currentGameId ? `/app/game/${currentGameId}/intro` : '/app/home')}
           style={{ minWidth: 176 }}
         >
           {t('btn.letsBegin', "Let's Begin")}
