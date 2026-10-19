@@ -35,7 +35,7 @@ Each game turns its round metrics into a performance ratio from 0 to 1 (`compute
 | **Spot Focus** (attention) | 2→7 differences. Grid widens from 3 to 4 columns at 0.4. Changes go bold → medium → subtle at 0.3 and 0.7. | Can't fail, no timer. Ends when every difference is found. | None. | "x / y Found", then "You found all n!" |
 | **Garden Keeper** (attention) | 12→24 plants. Wilted-flower distractors 25→55%. Target 8→20 waterings. New sprout every 3→1.2 s. Each sprout can be watered for 6→2.8 s. 1→3 thirsty at once. Always 90 s and 3 hearts. | **Fails** on running out of hearts (tapping a wilted flower or pest costs one) or when the 90 s runs out. | None. Tapping a healthy flower too early gives a "Not ready yet" nudge, with no penalty. | Hearts, a "WATERED x / target" bar, then a summary with how many dried up. |
 | **Serve the Guests** (executive) | **One setting**: up to 1 / 2 / 3 dishes per guest, stepping up at 0.34 and 0.67. Always 8 guests. | Can't fail. Ends after the 8th guest. Waiting guests eventually give up and leave, and a dish burns if left ready for 11 s. | None. | **The only on-screen points score**: 10 per item, +10 per fully served guest, up to +20 for speed. Then "You looked after x of 8". |
-| **Clear the Way** (executive) | **One setting**: a puzzle tier from 1 to 5, one per fifth of the score. Puzzles are hand-picked and checked by a solver, 12 in total. | Can't fail, no timer. Ends when the fish is free. | **"Show me"** is unlocked only after the player has used twice the fewest possible moves. **"Start over"**, and the move counter keeps running. | Move count against the fewest possible moves, then "You did it in n moves. Best possible: m." |
+| **Clear the Way** (executive) | **One setting**: a puzzle tier from 1 to 5, one per fifth of the score. Puzzles are hand-picked and checked by a solver, 10 in total (two per tier). | Can't fail, no timer. Ends when the fish is free. | **"Show me"** is unlocked only after the player has used twice the fewest possible moves. **"Start over"**, and the move counter keeps running. | Move count against the fewest possible moves, then "You did it in n moves. Best possible: m." |
 
 ### Table 2 - Grading (what feeds difficulty)
 
@@ -105,7 +105,7 @@ The most important finding is a plain bug: **progression almost never carries ov
   This contradicts the score card's rule of never framing a result as a drop.
 - **Serve the Guests shows a points score that nothing else uses.**
   It's the only game showing numbers, and it rewards speed that grading ignores.
-- **Clear the Way has only 12 puzzles across 5 tiers, and repeats aren't avoided.**
+- **Clear the Way has only 10 puzzles, two per tier, and repeats aren't avoided.**
   Residents will learn the solutions by heart, so move efficiency will measure memory instead of planning.
 - **Garden Keeper ignores lateness and reaction time.**
   The game says "Too late for this one", but flowers drying up costs nothing.
