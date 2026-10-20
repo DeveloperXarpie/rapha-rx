@@ -20,7 +20,7 @@ const CATEGORY_LABEL_KEY: Record<GameCategory, string> = {
   executive: 'category.planning',
 };
 const CATEGORY_FALLBACK: Record<GameCategory, string> = {
-  memory: 'Memory', attention: 'Attention', executive: 'Planning',
+  memory: 'Cognitive Memory', attention: 'Attention', executive: 'Planning',
 };
 
 export default function SessionSummary() {

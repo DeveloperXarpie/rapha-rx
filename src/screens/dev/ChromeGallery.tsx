@@ -146,7 +146,7 @@ export default function ChromeGallery() {
           </Button>
           <Button variant="blue" size="md">Sign in</Button>
           <Button variant="blue" fullWidth trailing={<span style={{ fontSize: 15 }}>&#9660;</span>}>
-            Prescribed by
+            Recommended by
           </Button>
           <p style={{ color: '#fff', fontSize: 15 }}>The board&apos;s green, as every game&apos;s primary action now wears it:</p>
           <Button variant="kit">Ready</Button>

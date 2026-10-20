@@ -12,7 +12,7 @@ import { BRAND } from '../styles/tokens';
 import type { GameCategory } from '../styles/tokens';
 
 const SECTIONS: { category: GameCategory; labelKey: string; fallback: string }[] = [
-  { category: 'memory',    labelKey: 'category.memory',    fallback: 'Memory' },
+  { category: 'memory',    labelKey: 'category.memory',    fallback: 'Cognitive Memory' },
   { category: 'attention', labelKey: 'category.attention', fallback: 'Attention' },
   { category: 'executive', labelKey: 'category.planning',  fallback: 'Planning' },
 ];

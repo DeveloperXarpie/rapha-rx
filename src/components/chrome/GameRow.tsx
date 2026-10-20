@@ -10,7 +10,7 @@ const CATEGORY_LABEL_KEY: Record<GameCategory, string> = {
 };
 
 const CATEGORY_FALLBACK: Record<GameCategory, string> = {
-  memory: 'MEMORY', attention: 'ATTENTION', executive: 'PLANNING',
+  memory: 'COGNITIVE MEMORY', attention: 'ATTENTION', executive: 'PLANNING',
 };
 
 interface Props {

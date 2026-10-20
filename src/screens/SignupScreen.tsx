@@ -23,7 +23,8 @@ import { BRAND } from '../styles/tokens';
  * is removed", but the prototype it documents keeps the field and captions it
  * "Designed for ages 60-80, but open to all ages" - so "remove the age gate"
  * means the validation, not the input. An earlier pass here read the README
- * alone and dropped both.
+ * alone and dropped both. The Oct-20 amends shortened the caption to "Designed
+ * for ages 60 - 80 years" without asking for the range check back.
  */
 export default function SignupScreen() {
   const { t } = useTranslation();
@@ -154,7 +155,7 @@ export default function SignupScreen() {
                   style={field}
                 />
                 <p className="font-baloo" style={hint}>
-                  {t('signup.ageHint', 'Designed for ages 60-80, but open to all ages.')}
+                  {t('signup.ageHint', 'Designed for ages 60 - 80 years.')}
                 </p>
 
                 <div style={{ width: '100%', maxWidth: 320, marginTop: 18 }}>
@@ -165,7 +166,7 @@ export default function SignupScreen() {
                     onClick={() => setPickerOpen(true)}
                     trailing={<span aria-hidden="true" style={{ fontSize: 15 }}>&#9660;</span>}
                   >
-                    {t('signup.prescribedBy', 'Prescribed by')}
+                    {t('signup.prescribedBy', 'Recommended by')}
                   </Button>
                 </div>
 

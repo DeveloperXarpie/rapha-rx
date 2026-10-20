@@ -175,7 +175,7 @@ export default function SettingsScreen() {
               }}
             >
               <span style={{ display: 'block', fontSize: 13, color: BRAND.cyan }}>
-                {t('settings.prescriber', 'Prescribed by')}
+                {t('settings.prescriber', 'Recommended by')}
               </span>
               <span style={{ fontSize: 19, fontWeight: 700 }}>
                 {prescriberName(profile.careHomeId)}

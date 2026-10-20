@@ -124,7 +124,7 @@ const SEQUENCES = [
         run: async (page) => {
           await page.fill('#signup-name', 'Meera');
           await page.fill('#signup-age', '72');
-          await page.getByRole('button', { name: 'Prescribed by' }).click();
+          await page.getByRole('button', { name: 'Recommended by' }).click();
           await settle(page);
         },
       },

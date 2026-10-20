@@ -55,7 +55,7 @@ export default function PrescriberPicker({ selectedId, onSelect, onClose }: Prop
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-label={t('signup.prescribedBy', 'Prescribed by')}
+        aria-label={t('signup.prescribedBy', 'Recommended by')}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 420, outline: 'none',
@@ -69,7 +69,7 @@ export default function PrescriberPicker({ selectedId, onSelect, onClose }: Prop
           className="font-baloo"
           style={{ fontSize: 21, fontWeight: 700, color: '#FFFFFF', textAlign: 'center', marginBottom: 14 }}
         >
-          {t('signup.prescribedBy', 'Prescribed by')}
+          {t('signup.prescribedBy', 'Recommended by')}
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

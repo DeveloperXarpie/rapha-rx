@@ -13,14 +13,21 @@ export interface Prescriber {
 }
 
 /**
- * PLACEHOLDER DATA. The real prescriber names have not been supplied - the
- * design handoff lists this as an open item. Swapping this array is the whole
- * change; nothing else reads a prescriber name literal.
+ * Shown on screen as "Recommended by" since the Oct-20 amends. Swapping this
+ * array is the whole change; nothing else reads a prescriber name literal.
+ *
+ * The first two are real, from the Oct-20 amends. Anita Rao and Suresh Kumar are
+ * still the handoff's placeholders.
+ *
+ * Pearlstein deliberately keeps the `dr-dominic-benjamin` id of the placeholder
+ * he replaced, so profiles already stored under it read as him and his Amplitude
+ * cohort stays continuous. The id is storage, not a display name.
  */
 export const PRESCRIBERS: Prescriber[] = [
-  { id: 'dr-dominic-benjamin', name: 'Dr. Dominic Benjamin', site: 'BBH' },
-  { id: 'dr-anita-rao',        name: 'Dr. Anita Rao',        site: 'Bangalore' },
-  { id: 'dr-suresh-kumar',     name: 'Dr. Suresh Kumar',     site: 'Bangalore' },
+  { id: 'joshi-mark',          name: 'Joshi Mark',               site: 'Research Investigator' },
+  { id: 'dr-dominic-benjamin', name: 'Dr. Robert J. Pearlstein', site: 'Geriatrics Inc, Bangalore' },
+  { id: 'dr-anita-rao',        name: 'Dr. Anita Rao',            site: 'Bangalore' },
+  { id: 'dr-suresh-kumar',     name: 'Dr. Suresh Kumar',         site: 'Bangalore' },
 ];
 
 /**
