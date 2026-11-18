@@ -1,4 +1,4 @@
-import { BY_ID, GROUPS, ITEMS, type Group } from './items';
+import { BY_ID, GROUPS, ITEMS, type Group, type Item } from './items';
 
 export const CRATE_COUNT = 16;
 
@@ -61,10 +61,13 @@ function poolFor(p: BuildRoundParams, rng: () => number) {
   return ITEMS.filter((it) => it.group === group);
 }
 
-export function buildRound(p: BuildRoundParams, rng: () => number = Math.random): Round {
-  const pool = poolFor(p, rng);
-  const list = shuffled(pool, rng).slice(0, p.listLength).map((it) => it.id);
-
+/**
+ * The shelf for a given list: every listed item, its twin when similarPackaging is on,
+ * then decoys from the round's pool, then from the whole catalogue if the pool ran dry.
+ */
+function fillCrates(
+  list: string[], pool: readonly Item[], p: BuildRoundParams, rng: () => number,
+): string[] {
   const chosen: string[] = [...list];
   const add = (id: string) => {
     if (chosen.length < CRATE_COUNT && !chosen.includes(id)) chosen.push(id);
@@ -78,7 +81,24 @@ export function buildRound(p: BuildRoundParams, rng: () => number = Math.random)
   // Only does work when listCategory narrowed the pool; the full 21 cannot run dry.
   if (chosen.length < CRATE_COUNT) shuffled(ITEMS, rng).forEach((it) => add(it.id));
 
-  return { list, crates: shuffled(chosen, rng) };
+  return shuffled(chosen, rng);
+}
+
+export function buildRound(p: BuildRoundParams, rng: () => number = Math.random): Round {
+  const pool = poolFor(p, rng);
+  const list = shuffled(pool, rng).slice(0, p.listLength).map((it) => it.id);
+  // The same pool for list and decoys: drawing a second one could pick another group.
+  return { list, crates: fillCrates(list, pool, p, rng) };
+}
+
+/** A round for a list chosen earlier: the second trip shelves the visit's first list. */
+export function buildRoundForList(
+  list: string[], p: BuildRoundParams, rng: () => number = Math.random,
+): Round {
+  // A one-group list keeps decoys from its own group(s), as the original round did.
+  const groups = new Set(list.map((id) => BY_ID[id].group));
+  const pool = p.listCategory ? ITEMS.filter((it) => groups.has(it.group)) : ITEMS;
+  return { list: [...list], crates: fillCrates(list, pool, p, rng) };
 }
 
 export interface RoundScore {

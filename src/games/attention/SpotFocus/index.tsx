@@ -12,6 +12,8 @@ import {
 import { COLOURS, DISPLAY_FONT } from './palette';
 import { Grid } from './Grid';
 import { Scene } from './Scene';
+import { completionTone, GIVE_UP_DELAY_S } from './timing';
+import { spotFocusOutcome, type RoundOutcome } from '../../../lib/roundOutcome';
 
 interface Props {
   levelConfig: LevelConfig;
@@ -69,12 +71,28 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
   );
 
   const [found, setFound] = useState<Set<string>>(new Set());
+  const [revealed, setRevealed] = useState<Set<string>>(new Set());
+  const [giveUpShown, setGiveUpShown] = useState(false);
+  // Decided once, when the round ends, from the refs that judged it.
+  const [outcome, setOutcome] = useState<RoundOutcome>('hold');
   const falseTapsRef = useRef(0);
+  /*
+   * Refs, not state, decide the round: a fast double tap and a give-up landing in the
+   * 700 ms before the completion card must each be judged against what has already
+   * happened, not against the last render.
+   */
+  const foundRef = useRef<Set<string>>(new Set());
+  const endedRef = useRef(false);
+  const gaveUpRef = useRef(false);
+  /** ms from the board's mount to each find, for response speed (D22). */
+  const findTimesRef = useRef<number[]>([]);
   // Stamped in an effect rather than at render: reading the clock during render is
   // impure, and the difference between mount and first paint is not worth measuring.
   const startedAt = useRef(0);
   useEffect(() => {
     startedAt.current = Date.now();
+    const id = window.setTimeout(() => setGiveUpShown(true), GIVE_UP_DELAY_S * 1000);
+    return () => window.clearTimeout(id);
   }, []);
 
   const total = scene.differenceCount;
@@ -87,7 +105,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
   // was meant to buy bigger cards, and measured on a 360x640 phone it does the opposite:
   // height is the scarce dimension here, not width. The play box is 578px and this
   // game's own chrome - the 26px drop above the panel, the panel itself at about 105
-  // with both its lines, and the 74px pill slot - takes roughly 205 of it. Split what
+  // with both its lines, and the 52px pill slot - takes roughly 185 of it. Split what
   // is left in two and a 3-row grid gets tiny cards; side by side, sharing the width
   // instead, the same budget roughly doubles them.
   //
@@ -109,6 +127,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
   }, [box, gridRows, gridCols]);
 
   function handleTap(row: number, col: number) {
+    if (endedRef.current) return;
     const key = `${row}-${col}`;
     const cell = scene.modifiedRows[row][col];
 
@@ -116,47 +135,78 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
       falseTapsRef.current++;
       return;
     }
-    if (found.has(key)) return;
+    if (foundRef.current.has(key)) return;
 
-    setFound((prev) => {
-      const next = new Set(prev).add(key);
-      if (next.size === total) setTimeout(advance, 700);
-      return next;
-    });
+    foundRef.current = new Set(foundRef.current).add(key);
+    findTimesRef.current.push(Date.now() - startedAt.current);
+    setFound(foundRef.current);
+    if (foundRef.current.size === total) {
+      endedRef.current = true;
+      setOutcome(spotFocusOutcome({ found: total, total, falseTaps: falseTapsRef.current, gaveUp: false }));
+      window.setTimeout(advance, 700);
+    }
+  }
+
+  /** "I can't find it": show where the rest were, then end the round. */
+  function handleGiveUp() {
+    if (endedRef.current) return;
+    endedRef.current = true;
+    gaveUpRef.current = true;
+    const missing = new Set<string>();
+    scene.modifiedRows.forEach((row, r) => row.forEach((cell, c) => {
+      if (cell.isDifference && !foundRef.current.has(`${r}-${c}`)) missing.add(`${r}-${c}`);
+    }));
+    setRevealed(missing);
+    setOutcome(spotFocusOutcome({
+      found: foundRef.current.size, total, falseTaps: falseTapsRef.current, gaveUp: true,
+    }));
+    window.setTimeout(advance, 1500);
   }
 
   function handleComplete() {
     onLevelComplete({
       levelId: levelConfig.id,
       durationSeconds: Math.floor((Date.now() - startedAt.current) / 1000),
-      completed: true,
+      completed: outcome !== 'fail',
       metrics: {
-        differencesFound: found.size,
+        outcome,
+        differencesFound: foundRef.current.size,
         totalDifferences: total,
         falseTaps: falseTapsRef.current,
+        gaveUp: gaveUpRef.current,
+        findTimesMs: [...findTimesRef.current],
       },
     });
   }
 
   if (currentPhase === 'completion') {
+    const allFound = completionTone({ found: found.size, total, outcome }) === 'celebrate';
     return (
       <Scene
-        heading={t('spot-focus.completion.heading', 'You found all {{count}} differences! Well done!', { count: total })}
-        instruction={t('spot-focus.completion.encouragement', 'Your attention is sharp today!')}
+        heading={allFound
+          ? t('spot-focus.completion.heading', 'You found all {{count}} differences! Well done!', { count: total })
+          : t('spot-focus.completion.partial', 'You found {{found}} of {{total}}.', { found: found.size, total })}
+        instruction={allFound
+          ? t('spot-focus.completion.encouragement', 'Your attention is sharp today!')
+          : t('spot-focus.completion.keepGoing', "Good effort! Let's look again.")}
       >
-        <span className="text-7xl" aria-hidden>
-          &#127881;
-        </span>
+        {allFound && (
+          <span className="text-7xl" aria-hidden>
+            &#127881;
+          </span>
+        )}
         <div className="w-full max-w-xs">
           <Button variant="kit" fullWidth onClick={handleComplete}>
-            {t('spot-focus.btn.continue', 'Continue')}
+            {outcome === 'fail' ? t('btn.replay', 'Replay') : t('spot-focus.btn.continue', 'Continue')}
           </Button>
         </div>
       </Scene>
     );
   }
 
-  const playing = currentPhase === 'find_differences';
+  // The grid stops taking taps once the round has ended, including during the reveal.
+  const playing = currentPhase === 'find_differences' && revealed.size === 0
+    && found.size < total;
 
   return (
     <Scene
@@ -177,20 +227,34 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
         The margin is separation the Sep-17 follow-up asked for: at the column's bare gap
         the pill sat right under the instruction panel and the two read as one stack.
       */}
+      {/*
+        After GIVE_UP_DELAY_S the pill gives its place to "I can't find it" (D22). Same
+        slot, same height, so the board never moves; the found cards still carry their
+        ticks, so the count is not lost. The button is full width to make up for the
+        slot's 52px height.
+      */}
       <div className="flex h-[52px] flex-none items-center justify-center" style={{ marginTop: 12 }}>
-        <p
-          role="status"
-          aria-live="polite"
-          className="rounded-2xl px-8 py-2 text-h3"
-          style={{
-            fontFamily: DISPLAY_FONT,
-            fontWeight: 800,
-            background: COLOURS.pillFill,
-            color: COLOURS.pillText,
-          }}
-        >
-          {t('spot-focus.found', '{{found}} / {{total}} Found', { found: found.size, total })}
-        </p>
+        {giveUpShown && playing ? (
+          <div className="w-full max-w-xs">
+            <Button variant="kit" size="md" fullWidth onClick={handleGiveUp} style={{ height: 52, minHeight: 52 }}>
+              {t('spot-focus.giveUp', "I can't find it")}
+            </Button>
+          </div>
+        ) : (
+          <p
+            role="status"
+            aria-live="polite"
+            className="rounded-2xl px-8 py-2 text-h3"
+            style={{
+              fontFamily: DISPLAY_FONT,
+              fontWeight: 800,
+              background: COLOURS.pillFill,
+              color: COLOURS.pillText,
+            }}
+          >
+            {t('spot-focus.found', '{{found}} / {{total}} Found', { found: found.size, total })}
+          </p>
+        )}
       </div>
 
       {/*
@@ -232,6 +296,7 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
           label={t('spot-focus.label.modified', 'Find differences here')}
           interactive={playing}
           found={found}
+          revealed={revealed}
           onTap={handleTap}
         />
       </div>

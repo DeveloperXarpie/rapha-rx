@@ -87,6 +87,7 @@ Each game has a `DifficultyState` record (score 0.0–1.0) per user per day. `ge
 - **Registry** in `src/screens/GameRouter.tsx` — maps `gameId` strings to React components + category.
 - **Content generation** — most games have a generator in `src/lib/contentGenerators/` that takes difficulty params and returns randomised content. Called once per round (keyed by `gameKey`).
 - **Game interface** — every game component receives `{ levelConfig: LevelConfig, onLevelComplete: (result: LevelResult) => void, generatedContent? }`. Call `onLevelComplete` with `completed`, `durationSeconds`, and a `metrics` object. Metrics must match what `computePerformanceRatio` expects for that `gameId`.
+- **Round outcome** (`src/lib/roundOutcome.ts`, since v1.37.0) — Shopping List, Spot Focus and Tiffin Time judge each round clear / hold / fail on their own measure. A fail shows Replay on the game's round-end card; these three move difficulty only on a clear. Station Master and Garden Keeper keep the old step-down. Shopping List's second trip (`MarketMemory/secondTrip.ts`) runs when Memory completes during a visit of 2+ rounds; `GameRouter` passes each round a `visit` (`{ id, round }`).
 - **GameShell** (`src/components/GameShell.tsx`) — wraps every game; handles the exit confirmation, calls `adjustDifficulty`, fires analytics, runs the board-time ticker, and decides whether the level completes its category or the next round starts.
 
 ### Games by category

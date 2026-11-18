@@ -27,9 +27,9 @@ describe('getMarketMemoryParams', () => {
     expect(getMarketMemoryParams(1).retentionMs).toBe(4000 + 2500);
   });
 
-  it('keeps hints fixed across the whole curve', () => {
+  it("allows one hint across the whole curve (owner, 2026-11-18)", () => {
     for (const s of [0, 0.25, 0.5, 0.75, 1]) {
-      expect(getMarketMemoryParams(s).hints).toBe(2);
+      expect(getMarketMemoryParams(s).hints).toBe(1);
     }
   });
 

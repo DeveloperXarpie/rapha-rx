@@ -452,7 +452,6 @@
   "serveGuests.wasted": "ಹಾಳಾಗಿದೆ",
   "serveGuests.complete.title": "ಚೆನ್ನಾಗಿ ಬಡಿಸಿದಿರಿ!",
   "serveGuests.complete.sub": "{{total}} ಅತಿಥಿಗಳಲ್ಲಿ {{served}} ಜನರನ್ನು ನೀವು ನೋಡಿಕೊಂಡಿರಿ.",
-  "serveGuests.complete.score": "ಅಂಕ: {{score}}",
   "serveGuests.guestOrder": "ಅತಿಥಿ {{order}} ಗಾಗಿ ಕಾಯುತ್ತಿದ್ದಾರೆ",
   "serveGuests.a11y.prepare": "{{dish}} ಸಿದ್ಧಪಡಿಸಿ",
   "serveGuests.a11y.cooking": "{{dish}} ಬೇಯುತ್ತಿದೆ",
@@ -623,5 +622,11 @@
   "scoreCard.unlocked": "{{category}} ಈಗ ತೆರೆದಿದೆ!",
   "summary.subtitleAreas": "ಇಂದು ನೀವು ಮೂರೂ ವಿಭಾಗಗಳನ್ನು ಮುಗಿಸಿದ್ದೀರಿ.",
   "btn.proceed": "ಮುಂದುವರಿಸಿ",
-  "btn.ok": "ಸರಿ"
+  "btn.ok": "ಸರಿ",
+  "btn.replay": "ಮತ್ತೆ ಆಡಿ",
+  "mm.secondTrip": "ನಿಮ್ಮ ಮೊದಲ ಪಟ್ಟಿಯ ವಸ್ತುಗಳನ್ನು ಆರಿಸಿ.",
+  "spot-focus.giveUp": "ನನಗೆ ಸಿಗುತ್ತಿಲ್ಲ",
+  "spot-focus.completion.partial": "ನೀವು {{total}} ರಲ್ಲಿ {{found}} ಕಂಡುಹಿಡಿದಿರಿ.",
+  "spot-focus.completion.keepGoing": "ಒಳ್ಳೆಯ ಪ್ರಯತ್ನ! ಮತ್ತೆ ನೋಡೋಣ.",
+  "serveGuests.complete.titleTry": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸೋಣ."
 }

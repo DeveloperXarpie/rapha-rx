@@ -159,8 +159,10 @@ Fixes the October docs unblocked, none done yet:
 
 ## 6a. Implementation status
 
-- **Plan 1, session engine and Home (Streams A and B)**: implemented in v1.36.0 on `feat/app-flow-redesign`; awaiting the owner's smoke test.
+- **Plan 1, session engine and Home (Streams A and B)**: v1.36.0, pushed and smoke-tested on localhost; the category timer is temporarily 30 s.
   Plan: `docs/superpowers/plans/2026-11-18-redesign-v2-session-engine-home.md` (also lists the later plans and what each waits on).
+- **Plan 2, game changes (Shopping List, Spot Focus, Tiffin Time)**: implemented in v1.37.0; awaiting the owner's smoke test.
+  Plan: `docs/superpowers/plans/2026-11-18-redesign-v2-game-changes.md`.
 
 ## 7. Suggested next steps
 

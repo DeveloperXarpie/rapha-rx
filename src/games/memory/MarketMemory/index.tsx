@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { kitButton } from '../../../styles/kitButton';
 import type { LevelResult } from '../../../components/GameShell';
-import type { LevelConfig } from '../../types';
+import type { GameVisit, LevelConfig } from '../../types';
 import { useReducedMotion } from '../../../lib/useReducedMotion';
 import { useStageScale } from '../../../hooks/useStageFit';
 
@@ -19,7 +19,11 @@ import {
 } from './geometry';
 import { BY_ID, type Item } from './items';
 import { COLOURS } from './palette';
-import { buildRound, resultRows, scoreRound, type RoundScore } from './round';
+import { buildRound, buildRoundForList, resultRows, scoreRound, type RoundScore } from './round';
+import {
+  firstRound, isSecondTripPending, markSecondTripDone, recordFirstRound, retentionScore,
+} from './secondTrip';
+import { marketMemoryOutcome } from '../../../lib/roundOutcome';
 import { BG_HOME, BG_STORE, PRELOAD } from './sprites';
 import { BLIND_MS, MarketMemoryStyles } from './styles';
 import InstructionPanel, { InstructionPanelStyles } from '../../../components/chrome/InstructionPanel';
@@ -59,7 +63,7 @@ const DEFAULT_PARAMS: MarketMemoryParams = {
   similarPackaging: true,
   delayedRetrieval: false,
   listCategory: false,
-  hints: 2,
+  hints: 1,
 };
 
 /**
@@ -77,9 +81,10 @@ type Phase = 'encoding' | 'covering' | 'travel' | 'revealing' | 'shopping' | 'ro
 interface MarketMemoryProps {
   levelConfig: LevelConfig;
   onLevelComplete: (result: LevelResult) => void;
+  visit?: GameVisit;
 }
 
-export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMemoryProps) {
+export default function MarketMemory({ levelConfig, onLevelComplete, visit }: MarketMemoryProps) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
 
@@ -92,19 +97,34 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
    * Frozen in a lazy initialiser. A re-render must never reshuffle the round underneath
    * the player.
    */
-  const [round] = useState(() => buildRound({
-    listLength: params.listLength,
-    similarPackaging: params.similarPackaging,
-    listCategory: params.listCategory,
-  }));
+  /*
+   * The second trip (FINAL_SPEC 7.1a): GameShell asked for it when Memory completed,
+   * so this round shelves the visit's first list and starts straight in the shop with
+   * no list shown. Read once, at mount.
+   */
+  const [trip] = useState(() => {
+    const first = visit && isSecondTripPending(visit.id) ? firstRound(visit.id) : undefined;
+    return first ? { firstCorrect: first.correct, list: first.list } : null;
+  });
 
-  const [phase, setPhase] = useState<Phase>('encoding');
+  const [round] = useState(() => {
+    const p = {
+      listLength: params.listLength,
+      similarPackaging: params.similarPackaging,
+      listCategory: params.listCategory,
+    };
+    return trip ? buildRoundForList(trip.list, p) : buildRound(p);
+  });
+
+  const [phase, setPhase] = useState<Phase>(trip ? 'shopping' : 'encoding');
   const [picked, setPicked] = useState<string[]>([]);
-  const [covered, setCovered] = useState(false);
+  // A second trip starts already in the shop, past the walk: list covered, shelf shown.
+  const [covered, setCovered] = useState(!!trip);
   const [blindDown, setBlindDown] = useState(false);
-  const [inStore, setInStore] = useState(false);
+  const [inStore, setInStore] = useState(!!trip);
   const [retentionPct, setRetentionPct] = useState(0);
-  const [hintsLeft, setHintsLeft] = useState(params.hints);
+  // No hint on the second trip: it would show the very answer being measured.
+  const [hintsLeft, setHintsLeft] = useState(trip ? 0 : params.hints);
   const [peek, setPeek] = useState<string | null>(null);
   const [effects, setEffects] = useState<Effect[]>([]);
   const [result, setResult] = useState<RoundScore | null>(null);
@@ -127,7 +147,10 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
 
   // Stamped in an effect rather than in the useRef initialiser: Date.now() during render
   // is impure and unstable across re-renders. Same pattern as Train Yard.
-  useEffect(() => { mountedAt.current = Date.now(); }, []);
+  useEffect(() => {
+    mountedAt.current = Date.now();
+    if (trip) shoppingAt.current = mountedAt.current;
+  }, [trip]);
 
   // The store backdrop and the DONE button are needed the moment the cover comes down.
   // Warming them during encoding means the change of place is never a blank frame.
@@ -265,20 +288,36 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
   }, [phase, picked, round.list, clearPhaseTimer, pushEffects]);
 
   /*
-   * Always `completed: true`. Without hearts a round cannot be failed, only finished
-   * more or less accurately, and that accuracy already reaches the difficulty curve
-   * through the metrics below - computePerformanceRatio for market-memory reads
-   * correct/wrong/listLength/hintsUsed and never looked at a life count.
+   * A round under half recalled is failed (D20): the button reads Replay and the next
+   * round keeps the level. The second trip is never failed and never moves difficulty.
    */
+  const failed = !trip && !!result && marketMemoryOutcome({
+    correct: result.correct.length, listLength: round.list.length, wrong: result.wrong.length,
+  }) === 'fail';
+
   const commit = useCallback(() => {
     if (committedRef.current) return;
     committedRef.current = true;
     const score = result ?? scoreRound(round.list, picked);
+    if (visit && visit.round === 0 && !trip) {
+      recordFirstRound(visit.id, round.list, score.correct.length);
+    }
+    if (visit && trip) markSecondTripDone(visit.id);
+    // The second trip is not graded: it measures Retention, nothing else.
+    const outcome = trip ? 'hold' : marketMemoryOutcome({
+      correct: score.correct.length, listLength: round.list.length, wrong: score.wrong.length,
+    });
     onLevelComplete({
       levelId: levelConfig.id,
       durationSeconds: Math.round((Date.now() - mountedAt.current) / 1000),
-      completed: true,
+      completed: outcome !== 'fail',
       metrics: {
+        outcome,
+        ...(trip ? {
+          secondTrip: true,
+          firstCorrect: trip.firstCorrect,
+          retention: retentionScore(score.correct.length, trip.firstCorrect),
+        } : {}),
         correct: score.correct.length,
         wrong: score.wrong.length,
         missed: score.missed.length,
@@ -290,7 +329,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
         pickOrder: [...pickOrderRef.current],
       },
     });
-  }, [result, round.list, picked, levelConfig.id, onLevelComplete]);
+  }, [result, round.list, picked, levelConfig.id, onLevelComplete, visit, trip]);
 
   // ─── Presentation ───────────────────────────────────────────────────────────
 
@@ -309,7 +348,8 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
     phase === 'encoding' ? t('mm.caption.encoding', 'Remember the items on the list.')
       : phase === 'covering' || phase === 'travel' ? t('mm.caption.travel', 'Off to the shop!')
         : phase === 'revealing' ? t('mm.caption.revealing', 'The list is gone now.')
-          : t('mm.caption.shopping', 'Remember and Collect items');
+          : trip ? t('mm.secondTrip', 'Pick what was on your first list.')
+            : t('mm.caption.shopping', 'Remember and Collect items');
 
   // The clipboard's exit animation runs inside `revealing`, so unmounting on `shopping`
   // lets it finish rather than cutting it short.
@@ -488,7 +528,7 @@ export default function MarketMemory({ levelConfig, onLevelComplete }: MarketMem
                 title: result.perfect
                   ? t('mm.perfect', 'Whole list, exactly right')
                   : t('mm.checked', 'Cart Checked'),
-                action: t('mm.next', 'Next Round'),
+                action: failed ? t('btn.replay', 'Replay') : t('mm.next', 'Next Round'),
                 // Not rendered - these carry the verdict to a screen reader now that
                 // the tiles show art and a badge rather than a printed name.
                 status: {

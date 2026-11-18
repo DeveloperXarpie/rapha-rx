@@ -452,7 +452,6 @@
   "serveGuests.wasted": "बेकार",
   "serveGuests.complete.title": "बहुत खूब!",
   "serveGuests.complete.sub": "आपने {{total}} में से {{served}} मेहमानों को संभाला।",
-  "serveGuests.complete.score": "अंक: {{score}}",
   "serveGuests.guestOrder": "मेहमान {{order}} का इंतज़ार कर रहे हैं",
   "serveGuests.a11y.prepare": "{{dish}} बनाएँ",
   "serveGuests.a11y.cooking": "{{dish}} पक रहा है",
@@ -623,5 +622,11 @@
   "scoreCard.unlocked": "{{category}} अब खुल गया है!",
   "summary.subtitleAreas": "आज आपने तीनों भाग पूरे कर लिए।",
   "btn.proceed": "आगे बढ़ें",
-  "btn.ok": "ठीक है"
+  "btn.ok": "ठीक है",
+  "btn.replay": "फिर से खेलें",
+  "mm.secondTrip": "अपनी पहली सूची की चीज़ें चुनें।",
+  "spot-focus.giveUp": "मुझे नहीं मिल रहा",
+  "spot-focus.completion.partial": "आपने {{total}} में से {{found}} ढूँढे।",
+  "spot-focus.completion.keepGoing": "अच्छी कोशिश! चलिए फिर से देखें।",
+  "serveGuests.complete.titleTry": "चलिए फिर से कोशिश करें।"
 }

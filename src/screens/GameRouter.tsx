@@ -11,7 +11,7 @@ import {
 } from '../lib/dynamicDifficulty';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import GameShell, { type LevelResult } from '../components/GameShell';
-import type { LevelConfig } from '../games/types';
+import type { GameVisit, LevelConfig } from '../games/types';
 import type { GameCategory } from '../styles/tokens';
 
 // ─── Game imports ─────────────────────────────────────────────────────────────
@@ -47,6 +47,7 @@ type GameEntry = {
     levelConfig: LevelConfig;
     onLevelComplete: (result: LevelResult) => void;
     generatedContent?: any;
+    visit?: GameVisit;
   }>;
   category: GameCategory;
 };
@@ -228,6 +229,12 @@ export default function GameRouter() {
   const [loading, setLoading] = useState(true);
   // Incrementing this key forces a full remount of GameShell + game component between rounds
   const [gameKey, setGameKey] = useState(0);
+  // The visit: a new id per mount (and per game), with gameKey as its round counter.
+  const visitId = useMemo(
+    () => `${gameId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+    [gameId],
+  );
+  const visit = { id: visitId, round: gameKey };
 
   const entry = gameId ? GAME_REGISTRY[gameId] : undefined;
 
@@ -298,12 +305,14 @@ export default function GameRouter() {
       onLevelComplete={handleLevelComplete}
       onExit={() => navigate(debugLevel !== null ? DEBUG_LEVELS_PATH : '/app/home')}
       debug={debugLevel !== null}
+      visit={visit}
     >
       <GameComponent
         key={gameKey}
         levelConfig={levelConfig}
         onLevelComplete={handleLevelComplete}
         generatedContent={generatedContent}
+        visit={visit}
       />
     </GameShell>
   );

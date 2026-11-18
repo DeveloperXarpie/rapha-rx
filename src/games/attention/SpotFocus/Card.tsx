@@ -6,6 +6,8 @@ interface Props {
   ariaLabel: string;
   interactive: boolean;
   found: boolean;
+  /** A difference the resident gave up on, shown after "I can't find it". */
+  revealed?: boolean;
   onTap?: () => void;
 }
 
@@ -20,7 +22,7 @@ interface Props {
  * The tick badge is not decoration. The mockup carries the found state on colour alone,
  * which is invisible to a colour-blind resident, so a second non-colour cue rides along.
  */
-export function Card({ id, ariaLabel, interactive, found, onTap }: Props) {
+export function Card({ id, ariaLabel, interactive, found, revealed = false, onTap }: Props) {
   return (
     <button
       type="button"
@@ -62,6 +64,14 @@ export function Card({ id, ariaLabel, interactive, found, onTap }: Props) {
             &#10003;
           </span>
         </>
+      )}
+
+      {revealed && !found && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-xl"
+          style={{ boxShadow: `inset 0 0 0 4px ${COLOURS.foundEdge}`, opacity: 0.85 }}
+        />
       )}
     </button>
   );

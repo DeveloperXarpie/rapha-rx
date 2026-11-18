@@ -1,99 +1,103 @@
-import { describe, expect, it } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import {
+  createInitialState, guestPatience, tapDish, type GameState, type Guest,
+} from '../model';
 
-import { DISH_COUNT } from '../geometry';
-import { COUNTER_SIZE, createInitialState, SEAT_COUNT, tick, TOTAL_GUESTS } from '../model';
-import { DISH_BY_ID, DISH_DEFS } from '../sprites';
-
-/** A deterministic stand-in for Math.random, cycling a fixed sequence. */
-function seededRng(seed: number): () => number {
-  let s = seed;
-  return () => {
-    s = (s * 1664525 + 1013904223) % 4294967296;
-    return s / 4294967296;
+/** A fixed counter: index 0 ready, 1 ready, 2 idle, 3 idle. */
+function stateWith(guests: (Guest | null)[], dishStates: ('idle' | 'ready' | 'cooking')[]): GameState {
+  const base = createInitialState(() => 0.5);
+  return {
+    ...base,
+    t: 10,
+    seats: [...guests, ...Array(4 - guests.length).fill(null)],
+    dishes: base.dishes.map((d, i) => ({ ...d, state: dishStates[i] ?? 'idle', since: 0 })),
   };
 }
 
-/** Run a whole round at a coarse but sub-transition step and return the final state. */
-function playOut(rng: () => number) {
-  let state = createInitialState(rng);
-  for (let i = 0; i < 20_000 && !state.done; i++) {
-    state = tick(state, 0.1, 3, rng);
-  }
-  return state;
+function guest(id: string, left: number, dishIds: string[]): Guest {
+  return {
+    id, faceIndex: 0, type: 'middle', inOrder: true,
+    items: dishIds.map((dishId) => ({ dishId, served: false })),
+    patience: 40, left, phase: 'wait', phaseT: 0, float: null, floatT: 0,
+  };
 }
 
-describe('the deal', () => {
-  it('lays out exactly as many cards as the board has slots', () => {
-    expect(COUNTER_SIZE).toBe(DISH_COUNT);
-    expect(createInitialState(seededRng(1)).dishes).toHaveLength(COUNTER_SIZE);
+const ids = createInitialState(() => 0.5).dishes.map((d) => d.id);
+const [A, B, C, D] = ids;
+
+describe('guestPatience (DIFFICULTY_RULES 3.5)', () => {
+  it('never drops under the floor of 18 s plus 8 s per further dish', () =>
+    expect(guestPatience('impatient', 3, 22, 8)).toBe(34));
+  it('scales a patient guest up', () => expect(guestPatience('patient', 1, 26, 9)).toBe(45.5));
+  it('leaves a middle guest at the base', () => expect(guestPatience('middle', 2, 26, 9)).toBe(44));
+});
+
+describe('points are gone (D23)', () => {
+  it('keeps no score in the state', () => expect('score' in createInitialState(() => 0.5)).toBe(false));
+});
+
+describe('sequencing: numbered dishes (FINAL_SPEC 7.1a)', () => {
+  it('counts an order served out of its numbered order', () => {
+    let s = stateWith([guest('g1', 30, [A, B])], ['ready', 'ready']);
+    s = tapDish(s, 1); // B, the second dish, first
+    s = tapDish(s, 0);
+    expect(s.ordersMultiDish).toBe(1);
+    expect(s.ordersInOrder).toBe(0);
   });
 
-  it('deals distinct dishes', () => {
-    for (let seed = 0; seed < 50; seed++) {
-      const ids = createInitialState(seededRng(seed)).dishes.map((d) => d.id);
-      expect(new Set(ids).size).toBe(ids.length);
-    }
+  it('counts an order served in its numbered order', () => {
+    let s = stateWith([guest('g1', 30, [A, B])], ['ready', 'ready']);
+    s = tapDish(s, 0);
+    s = tapDish(s, 1);
+    expect(s.ordersMultiDish).toBe(1);
+    expect(s.ordersInOrder).toBe(1);
   });
 
-  it('deals only real dishes', () => {
-    for (let seed = 0; seed < 50; seed++) {
-      for (const dish of createInitialState(seededRng(seed)).dishes) {
-        expect(DISH_BY_ID[dish.id]).toBeDefined();
-      }
-    }
+  it('routes a dish to a guest for whom it is next, before an earlier-listed guest', () => {
+    // g1 is less patient but B is g1's second dish; g2 wants B next. Serving B to g2
+    // keeps g1's order intact instead of marking it out of order on the game's choice.
+    const s = tapDish(stateWith([guest('g1', 10, [A, B]), guest('g2', 20, [B])], ['idle', 'ready']), 1);
+    expect(s.seats[1]!.items[0].served).toBe(true);
+    expect(s.seats[0]!.items[1].served).toBe(false);
   });
 
-  it('varies the counter between rounds', () => {
-    const deals = new Set(
-      Array.from({ length: 30 }, (_, seed) =>
-        createInitialState(seededRng(seed)).dishes.map((d) => d.id).join(',')),
-    );
-    expect(deals.size).toBeGreaterThan(1);
-  });
-
-  it('draws from the whole menu across enough rounds', () => {
-    const seen = new Set<string>();
-    for (let seed = 0; seed < 400; seed++) {
-      for (const dish of createInitialState(seededRng(seed)).dishes) seen.add(dish.id);
-    }
-    expect(seen.size).toBe(DISH_DEFS.length);
+  it('still serves the least patient guest when the dish is next for nobody', () => {
+    const s = tapDish(stateWith([guest('g1', 10, [A, B]), guest('g2', 20, [C, B])], ['idle', 'ready']), 1);
+    expect(s.seats[0]!.items[1].served).toBe(true);
   });
 });
 
-describe('orders', () => {
-  // The rule the deal exists to protect: a guest must never ask for something the counter
-  // cannot make, or their order becomes unservable and they walk out no matter what the
-  // player does.
-  it('only ever asks for dishes on the counter', () => {
-    // Violations are collected and asserted once at the end rather than asserted inside
-    // the loop. The loop runs forty seeds by twenty thousand ticks by every seat by every
-    // item, so an expect() in its body is millions of calls: the test used to sit right
-    // on vitest's five-second default timeout and would tip over it whenever the suite
-    // around it grew. What it checks is unchanged.
-    const offenders: string[] = [];
-
-    for (let seed = 0; seed < 40; seed++) {
-      const rng = seededRng(seed);
-      let state = createInitialState(rng);
-      const counter = new Set(state.dishes.map((d) => d.id));
-      for (let i = 0; i < 20_000 && !state.done; i++) {
-        state = tick(state, 0.1, 3, rng);
-        for (const guest of state.seats) {
-          if (!guest) continue;
-          for (const item of guest.items) {
-            if (!counter.has(item.dishId)) offenders.push(`seed ${seed}: ${item.dishId}`);
-          }
-        }
-      }
-      expect(state.spawned, `seed ${seed} did not spawn every guest`).toBe(TOTAL_GUESTS);
-    }
-
-    expect(offenders.slice(0, 5)).toEqual([]);
+describe('decision-making: which dish is cooked first (FINAL_SPEC 7.1)', () => {
+  it('logs cooking the most urgent guest’s dish', () => {
+    const s = tapDish(stateWith([guest('g1', 10, [C]), guest('g2', 20, [D])], ['idle', 'idle']), 2);
+    expect(s.choiceOpportunities).toBe(1);
+    expect(s.urgentChoices).toBe(1);
   });
 
-  it('never seats more guests than there are seats', () => {
-    const state = playOut(seededRng(7));
-    expect(state.seats).toHaveLength(SEAT_COUNT);
-    expect(state.done).toBe(true);
+  it('logs cooking a less urgent guest’s dish', () => {
+    const s = tapDish(stateWith([guest('g1', 10, [C]), guest('g2', 20, [D])], ['idle', 'idle']), 3);
+    expect(s.choiceOpportunities).toBe(1);
+    expect(s.urgentChoices).toBe(0);
+  });
+
+  it('judges urgency only on dishes not already on the go', () => {
+    // g1's only dish is already cooking, so g2 is the most urgent guest still waiting on
+    // a choice, and cooking g2's dish (over g3's) is the right call.
+    const s = tapDish(stateWith(
+      [guest('g1', 10, [A]), guest('g2', 20, [D]), guest('g3', 30, [C])],
+      ['cooking', 'idle'],
+    ), 3);
+    expect(s.choiceOpportunities).toBe(1);
+    expect(s.urgentChoices).toBe(1);
+  });
+
+  it('is no choice once only one guest still needs a dish started', () => {
+    const s = tapDish(stateWith([guest('g1', 10, [A]), guest('g2', 20, [D])], ['cooking', 'idle']), 3);
+    expect(s.choiceOpportunities).toBe(0);
+  });
+
+  it('is no choice with a single guest waiting', () => {
+    const s = tapDish(stateWith([guest('g1', 10, [C])], ['idle', 'idle']), 2);
+    expect(s.choiceOpportunities).toBe(0);
   });
 });

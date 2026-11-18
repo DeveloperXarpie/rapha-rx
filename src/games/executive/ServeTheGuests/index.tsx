@@ -13,16 +13,16 @@ import {
   CARD_IMG_DY, CARD_IMG_H, CARD_NAME_DY, CARD_NAME_H, CARD_PAD, CARD_W, cardX, cardY,
   COOK_BAR_H, COOK_BAR_W, FACE_BOTTOM_Y, FACE_H, FACE_TOP_Y,
   faceCentreX, GROUND, GUEST_CHIP_H, GUEST_CHIP_Y, GUEST_DIAL, GUEST_FONT,
-  HUD_LEFT_X, HUD_RIGHT_X, HUD_Y, PATIENCE_BAR_H,
-  patienceBarWidth, SCORE_CAPSULE_H, SCORE_COIN, SCORE_FONT, SCORE_FRAME_SCALE,
+  HUD_LEFT_X, PATIENCE_BAR_H, patienceBarWidth,
   SAFE_X, TRAY_H, TRAY_W, TRAY_X, TRAY_Y,
 } from './geometry';
 import {
-  cookProgress, createInitialState, guestsHandled, spoilProgress, tapDish, tick, TOTAL_GUESTS,
-  type GameState, type Guest,
+  ALL_MIDDLE, cookProgress, createInitialState, guestsHandled, spoilProgress, tapDish, tick,
+  TOTAL_GUESTS, type GameState, type Guest, type GuestMix,
 } from './model';
+import { serveGuestsOutcome } from '../../../lib/roundOutcome';
 import {
-  BACKGROUND_SRC, BUBBLE_TAIL, BUTTONS, COIN_SRC, DISH_BY_ID, faceCrop, FRAMES, frameStyle,
+  BACKGROUND_SRC, BUBBLE_TAIL, BUTTONS, DISH_BY_ID, faceCrop, FRAMES, frameStyle,
   PAINTED_BUTTON_LANG, spriteUrls,
 } from './sprites';
 import { Bar, type BarTint } from './Bar';
@@ -34,9 +34,11 @@ import StageBackdrop from '../../../components/chrome/StageBackdrop';
 
 export interface ServeGuestsParams {
   maxItemsPerGuest: number;
+  /** Shares of Impatient and Patient guests (D18); the rest are Middle. */
+  guestMix: GuestMix;
 }
 
-const DEFAULT_PARAMS: ServeGuestsParams = { maxItemsPerGuest: 2 };
+const DEFAULT_PARAMS: ServeGuestsParams = { maxItemsPerGuest: 2, guestMix: ALL_MIDDLE };
 
 /** The loop runs at 10Hz: fast enough for the bars to read as smooth, cheap enough to idle. */
 const TICK_MS = 100;
@@ -90,14 +92,17 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
       const now = performance.now();
       const dt = Math.min(MAX_DT, (now - lastTick.current) / 1000);
       lastTick.current = now;
-      setState((prev) => tick(prev, dt, params.maxItemsPerGuest));
+      setState((prev) => tick(prev, dt, params.maxItemsPerGuest, Math.random, params.guestMix));
     }, TICK_MS);
     return () => window.clearInterval(id);
-  }, [imagesReady, state.done, params.maxItemsPerGuest]);
+  }, [imagesReady, state.done, params.maxItemsPerGuest, params.guestMix]);
 
   const handleDishTap = useCallback((index: number) => {
     setState((prev) => tapDish(prev, index));
   }, []);
+
+  // Clear, hold or fail (D20). A fail turns the overlay's button into Replay.
+  const outcome = serveGuestsOutcome(state);
 
   // Only ever called from the completion overlay's button, so the `state` it closes over is
   // the finished round's.
@@ -106,17 +111,22 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
       levelId: levelConfig.id,
       // The model's own clock, which excludes the sprite preload the loop waits on.
       durationSeconds: Math.round(state.t),
-      completed: true,
+      completed: outcome !== 'fail',
       metrics: {
+        outcome,
         itemsServed: state.itemsServed,
         itemsRequested: state.itemsRequested,
         guestsFullyServed: state.guestsFullyServed,
         dishesBurnt: state.dishesBurnt,
         walkouts: state.walkouts,
-        score: state.score,
+        // Sequencing and Decision-making (FINAL_SPEC 7.1a).
+        ordersMultiDish: state.ordersMultiDish,
+        ordersInOrder: state.ordersInOrder,
+        choiceOpportunities: state.choiceOpportunities,
+        urgentChoices: state.urgentChoices,
       },
     });
-  }, [levelConfig.id, onLevelComplete, state]);
+  }, [levelConfig.id, onLevelComplete, state, outcome]);
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -236,29 +246,6 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
               </span>
             </div>
 
-            <div
-              style={{
-                position: 'absolute', right: HUD_RIGHT_X, top: HUD_Y,
-                display: 'flex', alignItems: 'center', gap: 8,
-                height: SCORE_CAPSULE_H, padding: '0 6px', boxSizing: 'border-box',
-                ...frameStyle(FRAMES.capsule, SCORE_FRAME_SCALE),
-              }}
-            >
-              <img
-                src={COIN_SRC}
-                alt=""
-                style={{ width: SCORE_COIN, height: SCORE_COIN, flex: '0 0 auto' }}
-              />
-              <span
-                style={{
-                  fontSize: SCORE_FONT, fontWeight: 800, color: COLOURS.woodDark,
-                  lineHeight: 1, letterSpacing: 1,
-                }}
-              >
-                {String(Math.min(999, state.score)).padStart(3, '0')}
-              </span>
-            </div>
-
             {state.done && (
               <div
                 style={{
@@ -275,16 +262,15 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
                   }}
                 >
                   <div style={{ fontSize: 72, fontWeight: 800, color: COLOURS.woodDark, lineHeight: 1.1 }}>
-                    {t('serveGuests.complete.title', 'Well served!')}
+                    {outcome === 'fail'
+                      ? t('serveGuests.complete.titleTry', "Let's try that again.")
+                      : t('serveGuests.complete.title', 'Well served!')}
                   </div>
                   <div style={{ fontSize: 34, color: '#6b5334', marginTop: 14, lineHeight: 1.3 }}>
                     {t('serveGuests.complete.sub', 'You looked after {{served}} of {{total}} guests.', {
                       served: state.guestsFullyServed,
                       total: TOTAL_GUESTS,
                     })}
-                  </div>
-                  <div style={{ fontSize: 34, color: '#6b5334', marginTop: 6, lineHeight: 1.3 }}>
-                    {t('serveGuests.complete.score', 'Score: {{score}}', { score: state.score })}
                   </div>
                   <button
                     onClick={finish}
@@ -294,7 +280,7 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
                       margin: '36px auto 0', width: 380, padding: 0, cursor: 'pointer',
                     }}
                   >
-                    {t('btn.continue', 'Continue')}
+                    {outcome === 'fail' ? t('btn.replay', 'Replay') : t('btn.continue', 'Continue')}
                   </button>
                 </div>
               </div>
@@ -375,7 +361,21 @@ function SeatView({ seat, guest, t }: { seat: number; guest: Guest | null; t: Tr
             width: BUBBLE_TAIL.w, height: BUBBLE_TAIL.h,
           }}
         />
-        <div style={{ width: '100%', boxSizing: 'border-box', ...frameStyle(FRAMES.orderBubble) }}>
+        <div style={{ position: 'relative', width: '100%', boxSizing: 'border-box', ...frameStyle(FRAMES.orderBubble) }}>
+        {/* An Impatient guest's cue (D18). A badge until guest-type art exists. */}
+        {guest.type === 'impatient' && (
+          <span
+            aria-hidden
+            style={{
+              position: 'absolute', left: -14, top: -14, width: 46, height: 46,
+              borderRadius: '50%', background: '#d84315', border: '3px solid #fff',
+              boxShadow: '0 3px 6px rgba(0,0,0,.3)', fontSize: 26, lineHeight: 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2,
+            }}
+          >
+            ⏰
+          </span>
+        )}
         <div
           style={{
             display: 'flex', flexWrap: 'wrap', gap: BUBBLE_ITEM_GAP,
@@ -401,6 +401,20 @@ function SeatView({ seat, guest, t }: { seat: number; guest: Guest | null; t: Tr
                     filter: item.served ? 'grayscale(.75) opacity(.45)' : 'none',
                   }}
                 />
+                {/* The tiffin's steps (FINAL_SPEC 7.1a): numbered when there is more than one. */}
+                {guest.items.length > 1 && !item.served && (
+                  <span
+                    aria-hidden
+                    style={{
+                      position: 'absolute', left: -6, top: -6, width: 34, height: 34,
+                      borderRadius: '50%', background: COLOURS.woodDark, color: '#fff',
+                      border: '2px solid #fff', fontSize: 20, fontWeight: 800, lineHeight: 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    {k + 1}
+                  </span>
+                )}
                 {item.served && (
                   <span
                     className="sg-pop"

@@ -452,7 +452,6 @@
   "serveGuests.wasted": "WASTED",
   "serveGuests.complete.title": "Well served!",
   "serveGuests.complete.sub": "You looked after {{served}} of {{total}} guests.",
-  "serveGuests.complete.score": "Score: {{score}}",
   "serveGuests.guestOrder": "Guest waiting for {{order}}",
   "serveGuests.a11y.prepare": "Prepare {{dish}}",
   "serveGuests.a11y.cooking": "{{dish}} is cooking",
@@ -532,7 +531,7 @@
   "game.train-yard.name": "Station Master",
   "game.spot-focus.name": "Spot Focus",
   "game.garden-keeper.name": "Garden Keeper",
-  "game.serve-guests.name": "Tiffen Time",
+  "game.serve-guests.name": "Tiffin Time",
   "game.clear-the-way.name": "Free Me",
   "game.remember-match.name": "Remember Match",
   "game.picture-postcard.name": "Picture Postcard",
@@ -623,5 +622,11 @@
   "scoreCard.unlocked": "{{category}} is now unlocked!",
   "summary.subtitleAreas": "You finished all three areas today.",
   "btn.proceed": "Proceed",
-  "btn.ok": "OK"
+  "btn.ok": "OK",
+  "btn.replay": "Replay",
+  "mm.secondTrip": "Pick what was on your first list.",
+  "spot-focus.giveUp": "I can't find it",
+  "spot-focus.completion.partial": "You found {{found}} of {{total}}.",
+  "spot-focus.completion.keepGoing": "Good effort! Let's look again.",
+  "serveGuests.complete.titleTry": "Let's try that again."
 }

@@ -315,14 +315,22 @@ export function getTrainYardParams(score: number): TrainYardDynamicParams {
 export interface ServeGuestsDynamicParams {
   /**
    * Largest order a guest can arrive with; each guest draws 1..this many distinct dishes.
-   * The only knob for this game, so it steps rather than lerps.
+   * Steps rather than lerps.
    */
   maxItemsPerGuest: number;
+  /**
+   * Shares of Impatient and Patient guests (FINAL_SPEC D18); the rest are Middle. The
+   * DIFFICULTY_RULES 3.5 sample mix mapped onto this 0-1 score until plan 3's ladder.
+   */
+  guestMix: { impatient: number; patient: number };
 }
 
 export function getServeGuestsParams(score: number): ServeGuestsDynamicParams {
   return {
     maxItemsPerGuest: score < 0.34 ? 1 : score < 0.67 ? 2 : 3,
+    guestMix: score < 0.34 ? { impatient: 0, patient: 0 }
+      : score < 0.67 ? { impatient: 0.2, patient: 0.2 }
+        : { impatient: 0.3, patient: 0.3 },
   };
 }
 
@@ -405,7 +413,8 @@ const MM = {
   similarPackagingAt: 0.25,
   delayedRetrievalAt: 0.55,
   listCategoryAt: 0.75,
-  hints: 2,
+  /** One hint, owner 2026-11-18: hints give answers away (DIFFICULTY_RULES 3.1). */
+  hints: 1,
 } as const;
 
 export function getMarketMemoryParams(score: number): MarketMemoryDynamicParams {

@@ -9,11 +9,12 @@ interface Props {
   label: string;
   interactive: boolean;
   found: Set<string>;
+  revealed?: Set<string>;
   onTap?: (row: number, col: number) => void;
 }
 
 /** One labelled panel of cards: the ribbon, the blue frame, and the grid inside it. */
-export function Grid({ rows, tone, label, interactive, found, onTap }: Props) {
+export function Grid({ rows, tone, label, interactive, found, revealed, onTap }: Props) {
   const { t } = useTranslation();
   const cols = rows[0]?.length ?? 0;
 
@@ -54,6 +55,7 @@ export function Grid({ rows, tone, label, interactive, found, onTap }: Props) {
                 })}
                 interactive={interactive}
                 found={found.has(`${r}-${c}`)}
+                revealed={revealed?.has(`${r}-${c}`)}
                 onTap={onTap ? () => onTap(r, c) : undefined}
               />
             )),

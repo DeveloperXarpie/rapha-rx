@@ -22,8 +22,31 @@ export const READY_WINDOW = 11;
 export const SPOIL_RAMP = 3;
 
 /** Patience is scaled by order size so a three-dish order is not impossible. */
-const PATIENCE_BASE = 26;
-const PATIENCE_PER_ITEM = 9;
+export const PATIENCE_BASE = 26;
+export const PATIENCE_PER_ITEM = 9;
+
+/**
+ * Guest types (FINAL_SPEC D18): an urgency that does not depend on order size, which is
+ * what makes "which dish first?" a real decision. Multipliers are proposals to playtest.
+ */
+export type GuestType = 'impatient' | 'middle' | 'patient';
+export const PATIENCE_MULTIPLIER: Record<GuestType, number> = { impatient: 0.7, middle: 1, patient: 1.3 };
+
+/** Shares of Impatient and Patient guests; the rest are Middle. */
+export interface GuestMix { impatient: number; patient: number }
+export const ALL_MIDDLE: GuestMix = { impatient: 0, patient: 0 };
+
+/**
+ * A guest's patience: the type's share of the order's patience, never under the
+ * floor of 18 s for one dish plus 8 s per further dish, so a resident always has time
+ * to notice, cook and serve (DIFFICULTY_RULES 3.5, proposal).
+ */
+export function guestPatience(
+  type: GuestType, items: number, base = PATIENCE_BASE, perItem = PATIENCE_PER_ITEM,
+): number {
+  const floor = 18 + 8 * (items - 1);
+  return Math.max(floor, (base + items * perItem) * PATIENCE_MULTIPLIER[type]);
+}
 
 /** Seat arrival stagger for the opening four guests. */
 const OPENING_SPAWNS = [0, 1.6, 3.4, 5.2];
@@ -35,10 +58,6 @@ const ARRIVE_SECONDS = 0.45;
 const DEPART_SECONDS = 1.1;
 const FLOAT_SECONDS = 1.2;
 const NUDGE_SECONDS = 0.45;
-
-const POINTS_PER_ITEM = 10;
-const COMPLETION_BONUS = 10;
-const SPEED_BONUS_MAX = 20;
 
 export type Rng = () => number;
 
@@ -65,14 +84,18 @@ export interface OrderItem {
 export interface Guest {
   id: string;
   faceIndex: number;
+  type: GuestType;
+  /** Dishes in the bubble's numbered order (1, 2, 3). */
   items: OrderItem[];
+  /** False once a dish was served while an earlier-numbered one was still unserved. */
+  inOrder: boolean;
   /** Total patience for this order, in seconds. */
   patience: number;
   /** Patience remaining, in seconds. */
   left: number;
   phase: GuestPhase;
   phaseT: number;
-  /** Score popper text, or null when nothing is floating. */
+  /** Popper text (a walkout's face), or null when nothing is floating. */
   float: string | null;
   floatT: number;
 }
@@ -80,7 +103,6 @@ export interface Guest {
 export interface GameState {
   /** Elapsed game time in seconds. */
   t: number;
-  score: number;
   spawned: number;
   seats: (Guest | null)[];
   nextSpawn: number[];
@@ -91,6 +113,12 @@ export interface GameState {
   guestsFullyServed: number;
   dishesBurnt: number;
   walkouts: number;
+  /** Multi-dish orders fully served, and how many of them in their numbered order (Sequencing). */
+  ordersMultiDish: number;
+  ordersInOrder: number;
+  /** Cooks started with 2+ guests waiting, and how many were for the most urgent one (Decision-making). */
+  choiceOpportunities: number;
+  urgentChoices: number;
 }
 
 // ─── Setup ────────────────────────────────────────────────────────────────────
@@ -125,7 +153,6 @@ function dealCounter(rng: Rng): DishRuntime[] {
 export function createInitialState(rng: Rng = Math.random): GameState {
   return {
     t: 0,
-    score: 0,
     spawned: 0,
     seats: Array.from({ length: SEAT_COUNT }, () => null),
     nextSpawn: OPENING_SPAWNS.slice(0, SEAT_COUNT),
@@ -136,10 +163,22 @@ export function createInitialState(rng: Rng = Math.random): GameState {
     guestsFullyServed: 0,
     dishesBurnt: 0,
     walkouts: 0,
+    ordersMultiDish: 0,
+    ordersInOrder: 0,
+    choiceOpportunities: 0,
+    urgentChoices: 0,
   };
 }
 
-function makeGuest(index: number, maxItemsPerGuest: number, counter: DishRuntime[], rng: Rng): Guest {
+function pickType(mix: GuestMix, rng: Rng): GuestType {
+  const r = rng();
+  if (r < mix.impatient) return 'impatient';
+  return r < mix.impatient + mix.patient ? 'patient' : 'middle';
+}
+
+function makeGuest(
+  index: number, maxItemsPerGuest: number, counter: DishRuntime[], rng: Rng, mix: GuestMix,
+): Guest {
   const count = Math.max(1, Math.min(maxItemsPerGuest, 1 + Math.floor(rng() * maxItemsPerGuest)));
   // Orders come off the dealt counter, not the whole menu, so every item is servable.
   const pool = counter.map((d) => d.id);
@@ -148,11 +187,14 @@ function makeGuest(index: number, maxItemsPerGuest: number, counter: DishRuntime
     const [picked] = pool.splice(Math.floor(rng() * pool.length), 1);
     items.push({ dishId: picked, served: false });
   }
-  const patience = PATIENCE_BASE + items.length * PATIENCE_PER_ITEM;
+  const type = pickType(mix, rng);
+  const patience = guestPatience(type, items.length);
   return {
     id: `g${index}`,
     faceIndex: Math.floor(rng() * FACE_COUNT),
+    type,
     items,
+    inOrder: true,
     patience,
     left: patience,
     phase: 'in',
@@ -164,7 +206,10 @@ function makeGuest(index: number, maxItemsPerGuest: number, counter: DishRuntime
 
 // ─── Tick ─────────────────────────────────────────────────────────────────────
 
-export function tick(state: GameState, dt: number, maxItemsPerGuest: number, rng: Rng = Math.random): GameState {
+export function tick(
+  state: GameState, dt: number, maxItemsPerGuest: number, rng: Rng = Math.random,
+  mix: GuestMix = ALL_MIDDLE,
+): GameState {
   if (state.done) return state;
 
   const t = state.t + dt;
@@ -177,7 +222,7 @@ export function tick(state: GameState, dt: number, maxItemsPerGuest: number, rng
 
     if (!current) {
       if (spawned < TOTAL_GUESTS && t >= nextSpawn[i]) {
-        const guest = makeGuest(spawned, maxItemsPerGuest, state.dishes, rng);
+        const guest = makeGuest(spawned, maxItemsPerGuest, state.dishes, rng, mix);
         seats[i] = guest;
         itemsRequested += guest.items.length;
         spawned++;
@@ -270,20 +315,33 @@ export function tapDish(state: GameState, index: number): GameState {
       state: dish.state === 'idle' ? 'cooking' : 'idle',
       since: state.t,
     };
-    return { ...state, dishes };
+    const choice = dish.state === 'idle' ? cookChoice(state, dish.id) : null;
+    return {
+      ...state,
+      dishes,
+      choiceOpportunities: state.choiceOpportunities + (choice ? 1 : 0),
+      urgentChoices: state.urgentChoices + (choice === 'urgent' ? 1 : 0),
+    };
   }
 
-  // ready: find the neediest guest who still wants this dish.
+  /*
+   * ready: the neediest guest who still wants this dish. A guest for whom it is the
+   * next numbered dish comes first, so the game's own routing never marks an order out
+   * of sequence on the resident's behalf; among equals, the least patient wins.
+   */
   let bestSeat = -1;
   let bestItem = -1;
-  let bestLeft = Infinity;
+  let bestKey = [Infinity, Infinity];
   state.seats.forEach((guest, seat) => {
     if (!guest || guest.phase === 'out' || guest.phase === 'happy') return;
     const item = guest.items.findIndex((it) => it.dishId === dish.id && !it.served);
-    if (item >= 0 && guest.left < bestLeft) {
+    if (item < 0) return;
+    const isNext = guest.items.findIndex((it) => !it.served) === item;
+    const key = [isNext ? 0 : 1, guest.left];
+    if (key[0] < bestKey[0] || (key[0] === bestKey[0] && key[1] < bestKey[1])) {
       bestSeat = seat;
       bestItem = item;
-      bestLeft = guest.left;
+      bestKey = key;
     }
   });
 
@@ -298,23 +356,21 @@ export function tapDish(state: GameState, index: number): GameState {
 
   const seats = state.seats.slice();
   const source = seats[bestSeat] as Guest;
+  const earlierUnserved = source.items.slice(0, bestItem).some((it) => !it.served);
   const items = source.items.slice();
   items[bestItem] = { ...items[bestItem], served: true };
-  const guest: Guest = { ...source, items, floatT: 0 };
+  const guest: Guest = { ...source, items, inOrder: source.inOrder && !earlierUnserved };
 
-  let score = state.score + POINTS_PER_ITEM;
-  let guestsFullyServed = state.guestsFullyServed;
+  let { guestsFullyServed, ordersMultiDish, ordersInOrder } = state;
 
   if (items.every((it) => it.served)) {
-    const speedBonus = Math.round(SPEED_BONUS_MAX * (guest.left / guest.patience));
-    const bonus = speedBonus + COMPLETION_BONUS;
-    score += bonus;
     guestsFullyServed++;
+    if (items.length > 1) {
+      ordersMultiDish++;
+      if (guest.inOrder) ordersInOrder++;
+    }
     guest.phase = 'happy';
     guest.phaseT = 0;
-    guest.float = `+${POINTS_PER_ITEM + bonus}`;
-  } else {
-    guest.float = `+${POINTS_PER_ITEM}`;
   }
 
   seats[bestSeat] = guest;
@@ -324,10 +380,28 @@ export function tapDish(state: GameState, index: number): GameState {
     ...state,
     seats,
     dishes,
-    score,
     guestsFullyServed,
+    ordersMultiDish,
+    ordersInOrder,
     itemsServed: state.itemsServed + 1,
   };
+}
+
+/**
+ * Whether starting this cook was a choice between guests, and if so whether it served
+ * the most urgent one. Only guests still waiting on a dish that is not already cooking
+ * or ready count: a guest whose dishes are all on the go needs no decision.
+ */
+function cookChoice(state: GameState, dishId: string): 'urgent' | 'other' | null {
+  const onTheGo = new Set(state.dishes
+    .filter((d) => d.state === 'cooking' || d.state === 'ready').map((d) => d.id));
+  const needy = state.seats
+    .filter((g): g is Guest => !!g && g.phase === 'wait')
+    .map((g) => ({ g, wants: g.items.filter((it) => !it.served && !onTheGo.has(it.dishId)) }))
+    .filter((x) => x.wants.length > 0);
+  if (needy.length < 2) return null;
+  const urgent = needy.reduce((a, b) => (b.g.left < a.g.left ? b : a));
+  return urgent.wants.some((it) => it.dishId === dishId) ? 'urgent' : 'other';
 }
 
 // ─── Derived helpers for the view ─────────────────────────────────────────────

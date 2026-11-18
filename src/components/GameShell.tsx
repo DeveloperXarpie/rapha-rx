@@ -9,9 +9,13 @@ import { getGame } from '../lib/gameCatalog';
 import { UI_CLOSE_X } from '../lib/uiKit';
 import { useAppStore } from '../store';
 import { shouldCompleteCategory } from '../lib/sessionLedger';
+import { shouldAdjustDifficulty, type RoundOutcome } from '../lib/roundOutcome';
 import { Button } from './ui/Button';
-import type { LevelConfig } from '../games/types';
+import type { GameVisit, LevelConfig } from '../games/types';
+import { needsSecondTrip, requestSecondTrip } from '../games/memory/MarketMemory/secondTrip';
 import { gardenKeeperPerformance } from '../games/attention/GardenKeeper/model';
+import { marketMemoryPerformance } from '../games/memory/MarketMemory/performance';
+import { spotFocusPerformance } from '../games/attention/SpotFocus/timing';
 
 export interface LevelResult {
   levelId: string;
@@ -36,6 +40,8 @@ interface GameShellProps {
    * jumper can be used to check instrumentation rather than hiding it.
    */
   debug?: boolean;
+  /** This round's place in the visit (GameRouter). */
+  visit?: GameVisit;
 }
 
 interface Anchor { top: number; left: number; right: number }
@@ -117,6 +123,7 @@ export default function GameShell({
   onExit,
   children,
   debug = false,
+  visit,
 }: GameShellProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -191,7 +198,15 @@ export default function GameShell({
     // the score would both corrupt the resident's progression and mean the next
     // jump started from wherever the last probe pushed it rather than from the
     // level asked for.
-    if (userId && gameId !== 'picture-postcard' && !debug) {
+    // A plan-2 game moves its level only on a clear (a hold or a fail repeats it), and
+    // Shopping List's second trip never moves it (roundOutcome.ts).
+    const adjust = shouldAdjustDifficulty({
+      gameId,
+      completed: result.completed,
+      outcome: result.metrics.outcome as RoundOutcome | undefined,
+      secondTrip: result.metrics.secondTrip === true,
+    });
+    if (userId && gameId !== 'picture-postcard' && !debug && adjust) {
       // Calculate performance ratio from metrics
       const performanceRatio = computePerformanceRatio(gameId, result);
       const updated = await adjustDifficulty(userId, gameId, {
@@ -242,7 +257,18 @@ export default function GameShell({
     const crossed = !debug && shouldCompleteCategory({
       gameCategory, completed: categoriesCompleted, seconds: secondsInCurrentCategory,
     });
-    if (crossed) {
+    /*
+     * Shopping List's second trip (FINAL_SPEC 7.1a): when Memory completes during a
+     * visit of two or more rounds, one extra round asks for the first list again before
+     * the score card. That round crosses again with `secondTrip` set and completes.
+     */
+    const secondTripFirst = crossed && gameId === 'market-memory' && !!visit
+      && result.metrics.secondTrip !== true
+      && needsSecondTrip({ visitId: visit.id, round: visit.round, secondTripDone: false });
+    if (secondTripFirst) {
+      requestSecondTrip(visit.id);
+      onLevelComplete(result);
+    } else if (crossed) {
       completeActiveCategory(gameCategory);
       navigate(`/app/game/${gameId}/score`);
     } else {
@@ -404,9 +430,11 @@ function computePerformanceRatio(gameId: string, result: LevelResult): number {
   }
 
   if (gameId === 'spot-focus') {
-    const falseTaps = (m.falseTaps as number) ?? 0;
-    // Fewer false taps = higher performance
-    return Math.max(0, 1 - falseTaps * 0.15);
+    return spotFocusPerformance({
+      found: (m.differencesFound as number) ?? 0,
+      total: (m.totalDifferences as number) ?? 1,
+      falseTaps: (m.falseTaps as number) ?? 0,
+    });
   }
 
   if (gameId === 'morning-routine-quest') {
@@ -479,8 +507,8 @@ function computePerformanceRatio(gameId: string, result: LevelResult): number {
   }
 
   if (gameId === 'serve-guests') {
-    // Items rather than guests: the round has no fail state, so the ratio has to be
-    // granular enough to move the score on its own.
+    // Items rather than guests, so the ratio is granular enough to grade a clear; the
+    // fail/hold decision itself is serveGuestsOutcome's (roundOutcome.ts).
     const itemsServed    = (m.itemsServed    as number) ?? 0;
     const itemsRequested = (m.itemsRequested as number) ?? 1;
     const dishesBurnt    = (m.dishesBurnt    as number) ?? 0;
@@ -518,8 +546,7 @@ function computePerformanceRatio(gameId: string, result: LevelResult): number {
     const wrong      = (m.wrong      as number) ?? 0;
     const listLength = (m.listLength as number) ?? 4;
     const hintsUsed  = (m.hintsUsed  as number) ?? 0;
-    const ratio = correct / Math.max(1, listLength) - wrong * 0.15 - hintsUsed * 0.05;
-    return Math.max(0, Math.min(1, ratio));
+    return marketMemoryPerformance({ correct, listLength, wrong, hintsUsed });
   }
 
   // Default for non-dynamic games

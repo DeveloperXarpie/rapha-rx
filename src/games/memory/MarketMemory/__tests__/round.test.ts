@@ -74,6 +74,18 @@ describe('buildRound', () => {
     }
   });
 
+  it("takes decoys from the list's own group, not a second random one", () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const r = buildRound({ listLength: 6, similarPackaging: true, listCategory: true }, seededRng(seed));
+      const group = BY_ID[r.list[0]].group;
+      const available = ITEMS.filter((i) => i.group === group).length;
+      const outsideTwins = new Set(r.list.map((id) => BY_ID[id].twin)
+        .filter((id) => BY_ID[id].group !== group)).size;
+      const sameGroup = r.crates.filter((id) => BY_ID[id].group === group).length;
+      expect(sameGroup, `seed ${seed}`).toBe(Math.min(available, CRATE_COUNT - outsideTwins));
+    }
+  });
+
   it('never returns an id that is not in the catalogue', () => {
     const known = new Set(ITEMS.map((i) => i.id));
     const r = buildRound({ listLength: 6, similarPackaging: true, listCategory: true }, seededRng(11));
