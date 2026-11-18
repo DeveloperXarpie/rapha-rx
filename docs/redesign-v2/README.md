@@ -22,8 +22,10 @@ The six games in scope, two per category:
 | Category | Games (player name, code id) |
 |---|---|
 | Memory | Shopping List (`market-memory`), Station Master (`train-yard`) |
-| Attention | Spot Focus (`spot-focus`), Garden Keeper (`garden-keeper`) |
-| Planning | Tiffen Time (`serve-guests`), Free Me (`clear-the-way`) |
+| Attention | Spot Focus (`spot-focus`), Baggage Sort (new, not yet designed) |
+| Planning | Tiffin Time (`serve-guests`), Free Me (`clear-the-way`) |
+
+Garden Keeper (`garden-keeper`) left the core six on 2026-11-18 and gets no changes; Baggage Sort replaces it (`DIFFICULTY_RULES.md` section 3.4).
 
 ### The core changes
 
@@ -56,8 +58,8 @@ All paths are relative to the repo root.
 
 | File | What it is | Status |
 |---|---|---|
-| `docs/redesign-v2/FINAL_SPEC.md` | The spec. Holds only confirmed decisions (D1-D14), each tagged with its source. Conflicts and open questions are in section 13. | Draft, partly _TBD_ |
-| `docs/redesign-v2/DIFFICULTY_RULES.md` | How the level ladders work: shared rules S1-S9, shared decisions X1-X6, per-game parameters, curation rules, clear and fail rules, measurement gaps. | Draft, nothing approved |
+| `docs/redesign-v2/FINAL_SPEC.md` | The spec. Holds only confirmed decisions (D1-D24), each tagged with its source. Conflicts and open questions are in section 13. | Draft, partly _TBD_ |
+| `docs/redesign-v2/DIFFICULTY_RULES.md` | How the level ladders work: shared rules S1-S9, shared decisions X1-X6, per-game parameters, curation rules, clear and fail rules, measurement gaps. | Draft; owner answers of 2026-11-18 folded in, decision log in section 6 |
 | `docs/redesign-v2/DIFFICULTY_LADDERS.xlsx` | The level sheet, one tab per game. Yellow cells are input. The owner fills the anchor levels, and Claude fills the levels in between. | Waiting on anchor levels |
 | `docs/redesign-v2/research/2026-11-11_difficulty-studies.md` | Six code studies, one per game, with file and line references. The engineering detail behind the rules doc. | Reference |
 | `docs/redesign-v2/research/2026-11-12_difficulty-design-notes.md` | A game-designer rewrite of the studies: what the player feels at each step. Written for presenting in a meeting. | Reference |
@@ -93,6 +95,8 @@ These are working rules agreed in earlier sessions:
 
 D1-D14 cover: 10-minute category sessions (tunable), daily reset, no credit for play in a completed category, finishing the level before unlocking, Free Play kept, fixed unlock order, pre-Home screens unchanged, two skills per game, median response speed, messages in Kannada, Hindi and English under 10 words, "prescription" removed, numeric scores and red down arrows in the summary, and the summary showing only the skills of games played (2 or 4 rings).
 
+D15-D23 (owner, 2026-11-18) cover: Garden Keeper replaced by Baggage Sort, no new Retention, Sequence or Sequencing mechanics, Tiffin guest types, the "Tiffin" spelling, Replay on a failed round, phone and tablet, the Spot Focus "I can't find it" button and response speed, and no Tiffin points. D24 keeps every skill and measure as drafted and adds small game changes to capture the ones the games cannot produce today (FINAL_SPEC 7.1a): Shopping List second trip, Station Master staggered arrival, Tiffin Time numbered dishes.
+
 ### Open: scoring (stream C)
 
 The draft's 10-band summary scoring (0-19 ... 100) was agreed to be flawed.
@@ -116,14 +120,15 @@ With a ladder, d would become level / max level (X6).
 
 ### Open: spec (FINAL_SPEC section 13)
 
-C5-C9, C12, C14-C16, Q2-Q4.
-Deferred by the owner: C3, C4, C10, C11.
+C5-C8, C14-C16, C18, C20, Q3, Q4. (Q2 answered: only board time counts.)
+C17 (games left with one skill) was resolved by D24: skills unchanged, captured by small game changes.
+Deferred by the owner: C3, C4.
 
 ## 5. Problems noticed, not yet fixed or ticketed
 
 From the game-screens screenshots:
 
-- Garden Keeper: the "Level N" pill covers the watering progress label in the top bar.
+- Garden Keeper: the "Level N" pill covers the watering progress label in the top bar. (Low priority now that the game has left the core six.)
 - Free Me: Reset and Hint buttons render as faint blank shapes. Whether they are disabled or still fading in has not been checked.
 - Spot Focus: "Find differences here" runs off the right edge at 360 px.
 - Code smell: `screenshot-games.mjs` duplicates the seed and console-noise filter from `screenshot-flow.mjs`.
@@ -151,6 +156,11 @@ Fixes the October docs unblocked, none done yet:
     It was kept in `%TEMP%\claude-ladders\build.py` and may be gone; the workbook can be rebuilt from the rules doc.
   - Mark the research questions v2 answers in `docs/2026-10-12_open-questions-for-research.md`.
   - Add an npm script for `screenshot-games.mjs`.
+
+## 6a. Implementation status
+
+- **Plan 1, session engine and Home (Streams A and B)**: implemented in v1.36.0 on `feat/app-flow-redesign`; awaiting the owner's smoke test.
+  Plan: `docs/superpowers/plans/2026-11-18-redesign-v2-session-engine-home.md` (also lists the later plans and what each waits on).
 
 ## 7. Suggested next steps
 

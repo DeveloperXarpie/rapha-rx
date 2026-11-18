@@ -1,11 +1,16 @@
 # Rapha Rx Redesign v2: Dynamic Difficulty Rules
 
-**Status**: Draft for review. Nothing here is approved yet.
+**Status**: Draft. Owner answers of 2026-11-18 are folded in and tagged **[Owner 2026-11-18]**; everything untagged is still a proposal.
 **Date**: 2026-11-11
+**Updated**: 2026-11-18
+**Content Type**: Design rules
 **Companion**: `docs/redesign-v2/DIFFICULTY_LADDERS.xlsx`, the level sheet (one tab per game).
 **Parent spec**: `docs/redesign-v2/FINAL_SPEC.md`, workstream D (section 10).
 
 **Sources**
+
+- Owner answers and notes of 2026-11-18, written on the design notes: `docs/redesign-v2/2026-11-12_difficulty-design-notes.md.pdf`.
+  Section 6 logs every decision taken from them.
 
 - Six code studies, one per game, run 2026-11-11 against `feat/app-flow-redesign` at v1.35.5.
   The full reports, with every file and line reference, are in `docs/redesign-v2/research/2026-11-11_difficulty-studies.md`.
@@ -22,6 +27,9 @@ Every limit is marked **hard** or **soft**:
   The product owner can move it, ideally after a playtest.
 
 No value in this doc has been play-tested with residents.
+
+**Games in scope** [Owner 2026-11-18]: Shopping List, Station Master, Spot Focus, Tiffin Time, Free Me, plus **Baggage Sort**, a new Attention game still to be designed.
+Garden Keeper leaves the core six (section 3.4).
 
 ## 1. How the ladder works
 
@@ -57,8 +65,9 @@ These apply to every game unless the game's own section overrides them.
 | S2 | **Monotonic.** Moving up one level never makes any parameter easier, except where a game's section allows a "sawtooth" (one knob relaxes on the step another gets harder). |
 | S3 | **One axis per step.** Each level changes one primary knob (or one coupled pair the game names). Boolean features switch on one at a time. |
 | S4 | **New element, easy settings.** When a level introduces something new (a station, a seat, a tier), every other knob in that step stays at its easiest value for the current band. |
-| S5 | **Variety.** Every level can produce at least 4 distinct rounds, and the same round never repeats back to back for a resident. |
-| S6 | **Every game can fail.** Each game has an explicit clear rule and fail rule (per-game sections). No game hard-codes `completed: true`. |
+| S5 | **Variety.** Every level can produce at least 4 distinct rounds, and the same round never repeats back to back for a resident. Generator games build a fresh round from the level's parameters on every play; Free Me picks at random from the level's puzzle pool [Owner 2026-11-18]. |
+| S6 | **Every game can fail.** Each game has an explicit clear rule and fail rule (per-game sections). No game hard-codes `completed: true`. When a round fails, the scorecard's **Continue** button becomes **Replay** and the resident replays the same level [Owner 2026-11-18]. |
+| S6a | **Clear and fail use the game's own measure, not the skill score.** The proposed skill score already includes difficulty, so a fixed score threshold would trigger Replay more often on easy levels than hard ones. Each game compares its raw measure (share recalled, share found, share served) with a threshold that means the same at every level [Owner 2026-11-18]. Thresholds are starting values to balance in playtest. |
 | S7 | **Hints and lives must not hide the measure.** Where a hint reveals an answer or lives cut a round short, the game section says how that round is scored. |
 | S8 | **Log the level.** Every round logs its game, level number, and the full parameter set it ran with, so a retune can be traced. |
 | S9 | **Version the ladder.** The sheet carries a version number. Changing any value bumps it, and every round logs the version (research question 20). |
@@ -71,9 +80,9 @@ These affect every game, so they are decided once.
 |---|---|---|
 | X1 | **How does a resident move on the ladder?** Proposal: up one level on a clear; down one level after 2 fails in a row; otherwise repeat. | Today's score moves every round. A ladder needs explicit rules. |
 | X2 | **What happens to levels overnight?** D2 resets category unlocks daily, but levels could persist, decay, or warm up as today (80% of yesterday's peak). | A visible level that drops overnight conflicts with encouraging feedback. |
-| X3 | **Phone or tablet?** Several hard maximums depend on it (Spot Focus columns, Free Me board size, Garden Keeper plant count). | Phone limits are much tighter. |
-| X4 | **Hints.** Keep, cap, or remove? If kept, hinted answers count as misses. | Hints contaminate Recall and Problem-solving today. |
-| X5 | **Lives.** Keep 3 hearts everywhere, or use them only as feedback without ending the round? | Lives cap error counts and cut rounds short, which distorts Self-control and Sustained attention. |
+| X3 | **Phone or tablet?** **Decided: both** [Owner 2026-11-18]. Every level must work on a 360 px phone and a tablet, so the phone sets the hard maximums (Spot Focus columns, Free Me board size). | Phone limits are much tighter. |
+| X4 | **Hints.** Partly decided per game: Shopping List keeps hints, heavily limited, and a hinted round scores half; Free Me's hint unlock point varies by level [Owner 2026-11-18]. | Hints contaminate Recall and Problem-solving today. |
+| X5 | **Lives.** Partly decided: Station Master shows hearts as one heart icon with a number, so more than 3 can be shown, and a level may go as low as 1 heart [Owner 2026-11-18]. | Lives cap error counts and cut rounds short. |
 | X6 | **How does the ladder interact with the scoring proposal?** The proposed skill score uses difficulty d (0-1). With a ladder, d becomes level / max level. | Keeps the scoring formula working (FINAL_SPEC, scoring proposal pending). |
 
 ## 3. Per-game rules
@@ -85,8 +94,10 @@ Measurement gaps (what the game does not log for its two skills) are in section 
 
 ### 3.1 Shopping List (`market-memory`), Memory
 
-**Skills**: Recall, Retention.
+**Skills**: Recall, Retention (unchanged; FINAL_SPEC 7.1). Retention is captured by the second-trip round below (FINAL_SPEC D24, 7.1a).
 **Suggested ladder**: 20 levels (capacity doc estimate 15-25).
+
+**Owner decisions [Owner 2026-11-18]**: no separate end-of-session question screen; Retention is captured inside the game by a small change (second trip); 6 items stays the cap until a bigger cart is drawn; item names must be simple and translated before the hardest levels ship.
 
 **Corrections to earlier docs**: the code has 16 crates and 62 items, an untimed list (READY ends the study phase) and no lives.
 The 2026-08-17 design spec still says 12 crates, 21 items, a list timer and 3 lives.
@@ -96,11 +107,11 @@ The 2026-08-17 design spec still says 12 crates, 21 items, a list timer and 3 li
 
 | Parameter | Unit | Today | Min | Max | Kind and reason |
 |---|---|---|---|---|---|
-| `listLength` | items | 3-6 | 2 | 6 | Max **hard (layout)**: the cart tray fits 6 slots (`games/memory/MarketMemory/geometry.ts:320-324`). 7 needs a cart redraw. Min soft. |
+| `listLength` | items | 3-6 | 2 | 6 | Max **hard (layout)**: the cart tray fits 6 slots (`games/memory/MarketMemory/geometry.ts:320-324`). New cart art is planned; 6 stays the cap until it lands [Owner 2026-11-18]. Min soft. |
 | `holdMs` (rename of `retentionMs`) | ms | 1500-6500 | 1000 | 8000 | **Soft**. Under 1 s the cover reads as a flicker; past 8 s it is dead time. Renamed because it is a short hold, unrelated to the Retention skill. |
 | `similarPackaging` (twins) | on/off | on from 0.25 | - | - | **Hard rule**: needs `listLength x 2 <= crateCount`. |
 | `listCategory` | on/off | on from 0.75 | - | - | **Hard (assets)**: only produce and staples have enough items (`round.ts:14,45-53`). |
-| `hints` | count | 2 fixed | 0 | 2 | **Soft**. Each hint shows one remaining item for 3 s. |
+| `hints` | count | 2 fixed | 0 | 1 | **Soft**. Each hint shows one remaining item for 3 s. Limit heavily [Owner 2026-11-18]; max lowered to 1. |
 | `crateCount` (new) | crates | 16 fixed | `listLength` x (twins ? 2 : 1) | 16 | Max **hard (layout)**: 4x4 grid. Fewer crates needs an art decision for empty compartments. |
 | `twinCloseness` (new) | tier 1-3 | none | 1 | 3 | **Soft**. Needs a closeness tag per item. |
 | `studyLimitMs` (new) | ms | untimed | 3000 | untimed | **Soft**. Re-adding a study timer is a small change. |
@@ -117,11 +128,12 @@ The 2026-08-17 design spec still says 12 crates, 21 items, a list timer and 3 li
 
 #### Clear and fail (proposal)
 
-- **Clear**: at most one item missed and no wrong picks; for `listLength <= 3`, perfect only.
-- **Fail**: Recall under 50%.
+Misses are allowed; the level is decided by the Recall measure against a threshold (S6a) [Owner 2026-11-18].
+
+- **Clear**: Recall of at least 80% with no wrong picks (proposed starting value).
+- **Fail (Replay)**: Recall under 50%.
 - In between: repeat the level.
-- Hinted items count as not recalled.
-- Retention cannot gate a level, because it is asked once per session after the rounds.
+- A round where a hint was used scores **half** [Owner 2026-11-18]. Whether a hinted round can still clear is open (question 6).
 
 #### Sample levels (proposal)
 
@@ -137,23 +149,40 @@ Hints are shown as 1 at the low levels so they respect the `hints < listLength -
 
 #### Required game changes
 
-- An end-of-session Retention question does not exist anywhere in the app.
-- The list itself is not logged, so there is nothing to ask about later.
+- A Recall-based clear and fail with the Replay button (S6, S6a).
+- Half score for hinted rounds.
+- Simple, translatable item names in Kannada, Hindi and English before the top levels ship.
+- **Second trip** (small change for Retention, proposed): the last round of a Shopping List visit shows no list. It reuses the shelf and cart and asks for the items on the visit's first list. Score = correct picks on the second trip / correct picks when that list was first shopped x 100. The rounds in between are the delay (FINAL_SPEC C20).
+- Log the list of every round, so the second trip knows what to ask.
+- Not built, by owner decision: a separate end-of-session question screen.
+
+#### Decided [Owner 2026-11-18]
+
+- Clear threshold: misses allowed, decided by the measure (was question 1).
+- No separate end-of-session question screen; Retention comes from the second trip (was question 2).
+- 6 items until new cart art (was question 3).
+- Top levels wait on translated, simple item names (was question 4).
+- Keep the skill names; no free-recall step (was question 5).
 
 #### Open questions
 
-1. Clear threshold: perfect only, or at most one miss?
-2. Which list does the Retention question use when several rounds were played (first, last, all)?
-3. Is 6 items the permanent cap, or is a cart redraw for 7 wanted?
-4. Item names are English only and the pulse twins are told apart by reading. Do the hardest levels wait on translated names?
-5. The task is recognition (picking from a shelf), not free recall. Relabel the skill, or add a free-recall step?
+1. Confirm the starting thresholds: clear at 80% Recall, fail under 50%.
+2. Can a round where a hint was used still clear the level?
 
 ---
 
 ### 3.2 Station Master (`train-yard`), Memory
 
-**Skills**: Association, Sequence (Sequence deferred, C10).
+**Skills**: Association, Sequence (unchanged; FINAL_SPEC 7.1). No new mechanic [Owner 2026-11-18]; Sequence is captured by staggered arrival, a small change (FINAL_SPEC D24, 7.1a).
 **Suggested ladder**: 24 levels with two small changes; about 12 with today's knobs only; 30+ needs a fifth colour or the Sequence mechanic.
+
+**Owner decisions [Owner 2026-11-18]**:
+
+- No new Sequence mechanic. Sequence is captured by staggered arrival (FINAL_SPEC 7.1a).
+- Up to **8 stations**: 4 more drawn behind today's row. The owner is adding new colours, including more close-hue sets for `similarColours`.
+- **Work on this game starts only after the art style and designs are in place.** The ladder below is provisional until then.
+- Hearts become one heart icon with a number, so more than 3 can be shown; a level may drop to 1 heart.
+- Move up at 75% first-try Association in 2 of the last 3 rounds; step back after 2 lost rounds in a row.
 
 **Corrections to earlier docs**: only 24 of the "576 rounds" are distinct memory problems; the rest only change lanes.
 A station whose train has arrived stays coloured and cannot be tapped again, so the 4th train is always right and the 3rd is a 50/50.
@@ -163,21 +192,24 @@ That inflates Association today.
 
 | Parameter | Unit | Today | Min | Max | Kind and reason |
 |---|---|---|---|---|---|
-| `stationCount` | stations | 4 fixed | 3 | 4 | **Hard (code and assets)**: 4 is hard-coded in several files and only 4 colours have art. 5 needs new art. With 2 the second pick is forced. |
+| `stationCount` | stations | 4 fixed | 3 | 8 | Max raised to 8 [Owner 2026-11-18]. **Hard (code and assets) until the new art lands**: 4 is hard-coded in several files and only 4 colours exist. With 2 the second pick is forced. 8 pairings is about twice the typical working-memory span of older adults, so the top of this range needs a playtest. |
 | `signMsPerStation` | ms per station | 2000-750 (from 8000-3000 total) | 750 | 3000 | **Soft**. Below 750 ms per station is too fast to encode. Written per station so adding a station keeps the time fair. |
 | `retentionHoldMs` | ms | 1500-4000 | 1000 | 6000 | **Soft**. Under 1 s the blind's lamps flicker; over 6 s is dead time. |
 | `revealHomeStations` (new) | on/off | always on | - | - | Small change. Turning it off removes the giveaway above. |
-| `similarColours` | on/off | on from 0.6 | - | - | **Hard (assets)**: close warm hues are filters over the same 4 sprites. Perceptual, not memory: see open question 2. |
-| `lives` | hearts | 3 fixed | 1 | 3 | Max **hard (layout)**: the HUD always draws 3 hearts. |
+| `similarColours` | on/off | on from 0.6 | - | - | **Hard (assets)**: today close warm hues are filters over the same 4 sprites. The owner's new close-hue colour sets replace this. |
+| `lives` | hearts | 3 fixed | 1 | _TBD_ | Min 1 allowed [Owner 2026-11-18]. Max is no longer capped by layout once the heart-with-number HUD is built; the value is open (question 2). |
 
-Sequence parameters (only if the C10 game change is made): `sequenceLength` (2 to `stationCount`), `arrivalIntervalMs` (1500-4000, soft), `orderEnforced` (on/off).
+Staggered arrival (small change for Sequence, FINAL_SPEC 7.1a): `arrivalIntervalMs`, the gap between trains pulling in during study, 1500-4000 ms, **soft**. Arrival order is scored, never enforced: a wrong order costs no heart.
+The study time `signMsPerStation` must cover the staggered arrivals.
 
 #### Curation rules
 
 - One knob per step, except `signMs` rises with `stationCount` so time per station stays the same.
 - Max step: `signMsPerStation` -125 to -250 ms; `retentionHoldMs` +500 ms; `stationCount` +1; `lives` -1, at most once every 6 levels.
-- Feature order: `revealHomeStations` off first, then `orderEnforced` (if built), then `similarColours` last.
-- Forbidden: `similarColours` with more than 4 stations; `lives` 1 with `similarColours`; `sequenceLength > stationCount`.
+- At 8 stations the 750 ms per-station floor means at least 6 s of study time.
+- Feature order: `revealHomeStations` off first, then `similarColours` last.
+- Forbidden: `lives` 1 with `similarColours`.
+  The old rule "`similarColours` with no more than 4 stations" existed because only 4 sprites exist; it is to be revisited once the new colour sets exist.
 - No repeat of the previous round's station assignment.
 
 #### Clear and fail (proposal)
@@ -198,15 +230,25 @@ Sequence parameters (only if the C10 game change is made): `sequenceLength` (2 t
 
 #### Required game changes
 
+Blocked on art: none of this starts until the art style and designs are in place [Owner 2026-11-18].
+
+- Art: new station colours (up to 8), close-hue sets for `similarColours`, a layout that fits 8 stations with 4 behind today's row, and a heart-with-number HUD.
 - Grey stations leak their colour and width (they are the coloured sprite greyed out). A neutral station asset fixes this.
-- `GameShell.tsx:447` divides by a hard-coded 4 stations.
+- `GameShell.tsx:447` divides by a hard-coded 4 stations; the station count is hard-coded in several other files too.
+- No back-to-back repeat of a station assignment.
+- **Staggered arrival** (proposed): trains pull into their stations one at a time during study, with an instruction to send them home in the same order. Log arrival order and dispatch order; Sequence = % of trains sent in the right order.
+
+#### Decided [Owner 2026-11-18]
+
+- No new Sequence mechanic; Sequence comes from staggered arrival (was question 1).
+- New colours rather than relying on filtered hues (was questions 2 and 3).
+- A level may drop to 1 heart (was question 4).
 
 #### Open questions
 
-1. Sequence: build arrival-order encoding now, or keep an Association-only ladder while C10 is deferred?
-2. Keep `similarColours` as the top knob despite age-related colour-vision decline, or commission more distinct colours?
-3. Commission a fifth colour and a neutral station asset?
-4. May any level drop to 1 heart?
+1. Whether a neutral grey station asset is part of the new art.
+2. The most hearts any level gives, now that the number HUD allows more than 3.
+3. Rebuild the sample ladder for 8 stations once the art exists.
 
 ---
 
@@ -215,54 +257,96 @@ Sequence parameters (only if the C10 game change is made): `sequenceLength` (2 t
 **Skills**: Selective attention, Response speed.
 **Suggested ladder**: about 24 levels. Content is plentiful; the limit is the number of knobs and the screen.
 
+**Owner decisions [Owner 2026-11-18]**:
+
+- Runs on **phone and tablet**.
+- Board up to **6 x 3** (18 cells).
+- Differences from **1** up to **40% of cells**, which is 7 on the largest board.
+- No time cap. An **"I can't find it" button** appears after a set delay and ends the round.
+- Response speed is the median gap between finds.
+- More twin pairs will be commissioned.
+- The Mahjong idea is an art change only and does not affect this ladder.
+
+Grids below are written **columns x rows**.
+_Assumption to confirm_: 6 x 3 means 3 columns and 6 rows. Six columns would make cards far too small on a 360 px phone (4 columns already gives cards about 31 px wide), which the phone-and-tablet decision rules out.
+
 #### Parameters
 
 | Parameter | Unit | Today | Min | Max | Kind and reason |
 |---|---|---|---|---|---|
-| `differenceCount` | count | 2-7 | 1 | 40% of cells | Max **soft but important**: today's top setting is 7 of 12 cells (58%), so random tapping finds targets. |
-| `gridCols` | count | 3-4 | 3 | 4 | Max **hard (layout)**. On a phone, 4 columns gives cards about 31 px wide; see X3. |
-| `gridRows` | count | 3 fixed | 3 | 4 | **Soft**, small change. The layout already reads rows from the scene. |
-| `boldCount` / `mediumCount` / `subtleCount` | per board | one tier per board | 0 | subtle 8 (soft), 15 (hard, assets) | 15 twin families exist, at most one difference per family. Mixing tiers on one board is a small generator change. |
-| `timeCapS` (new) | s | no timer | 60 | none | **Soft**. Without it, "% found" is always 100%. |
+| `differenceCount` | count | 2-7 | 1 | floor(40% of cells) | **Hard rule** [Owner 2026-11-18]. Above 40% random tapping finds targets (today's top setting is 7 of 12, 58%). By grid: 3x3 = 3, 3x4 = 4, 3x5 = 6, 3x6 = 7, 4x4 = 6. |
+| `gridCols` | count | 3-4 | 3 | 4 on tablet; 3 on phone at subtle levels | **Hard (layout)**. On a phone, 4 columns gives cards about 31 px wide. |
+| `gridRows` | count | 3 fixed | 3 | 6 | Max raised [Owner 2026-11-18]. Small change: the layout already reads rows from the scene. Needs a check that 6 rows fit a phone in the portrait column. |
+| `boldCount` / `mediumCount` / `subtleCount` | per board | one tier per board | 0 | subtle 7 (soft), 15 (hard, assets) | 15 twin families exist, at most one difference per family; more twin pairs are being commissioned. Mixing tiers on one board is a small generator change. |
+| `giveUpDelayS` (new) | s | no button | 30 | _TBD_ | **Soft**. How long the board is up before "I can't find it" appears. Replaces the time cap [Owner 2026-11-18]. Lets "% found" vary. |
 | `wrongTapLimit` (new) | count | penalty only | 0 | - | **Soft**. Used by the clear rule. |
 
 #### Curation rules
 
-- One knob harder per step. Max step: differences +1; one row or one column; at most 2 differences move up a tier; time cap -15 s.
+- One knob harder per step. Max step: differences +1; one row or one column; at most 2 differences move up a tier; `giveUpDelayS` +15 s.
 - Exception: when the grid grows, the subtle count may drop by 1 in that step.
-- Coupled: differences at most 40% of cells; time cap at least 15 s per difference.
-- Tier order: bold only; medium mixed with bold; all medium; 1 subtle per board; majority subtle; then tighten the time cap.
-- Forbidden: subtle with 4 columns on a phone; grid growth and a new tier in the same step; a time cap introduced at the level where subtle first appears.
+- Coupled: differences at most 40% of cells.
+- Tier order: bold only; medium mixed with bold; all medium; 1 subtle per board; majority subtle.
+- Forbidden: subtle with 4 columns on a phone; grid growth and a new tier in the same step.
 
 #### Clear and fail (proposal)
 
-- **Clear**: all differences found within the time cap, with wrong taps no more than `differenceCount`.
-- **Fail**: time cap runs out, or wrong taps exceed 2 x `differenceCount`.
-- When the cap runs out, the remaining differences are revealed.
+The measure is the share of differences found (S6a).
 
-#### Sample levels (proposal, tablet)
+- **Clear**: every difference found without pressing "I can't find it", with wrong taps no more than `differenceCount`.
+- **Fail (Replay)**: gave up with under 50% found, or wrong taps over 2 x `differenceCount`.
+- In between: repeat the level.
+- On give-up, the remaining differences are revealed, so the round ends with the answer, not frustration.
 
-| Level | Grid | Differences | Bold/Med/Subtle | % of cells | Time cap | Max wrong taps |
-|---|---|---|---|---|---|---|
-| 1 | 3x3 | 2 | 2/0/0 | 22% | none or 180 s | 2 |
-| 6 | 3x3 | 3 | 1/2/0 | 33% | 150 s | 3 |
-| 12 | 3x4 | 4 | 0/3/1 | 33% | 120 s | 4 |
-| 18 | 4x4 | 5 | 0/2/3 | 31% | 120 s | 5 |
-| 24 | 4x4 | 6 | 0/0/6 | 38% | 90 s | 6 |
+#### Sample levels (proposal, phone-safe)
 
-Levels 18 and 24 break the "no subtle at 4 columns" rule on a phone.
+| Level | Grid (cols x rows) | Differences | Bold/Med/Subtle | % of cells | Max wrong taps |
+|---|---|---|---|---|---|
+| 1 | 3x3 | 1 | 1/0/0 | 11% | 1 |
+| 6 | 3x3 | 3 | 1/2/0 | 33% | 3 |
+| 12 | 3x4 | 4 | 0/3/1 | 33% | 4 |
+| 18 | 3x5 | 5 | 0/2/3 | 33% | 5 |
+| 24 | 3x6 | 7 | 0/1/6 | 39% | 7 |
+
+The previous sample used 4 x 4 at levels 18 and 24, which broke the "no subtle at 4 columns" rule on a phone.
+
+#### Decided [Owner 2026-11-18]
+
+- Phone and tablet (was question 1).
+- "I can't find it" button after a delay, no time cap (was question 2).
+- Response speed as the median gap between finds (was question 3).
+- Mahjong is art only (was question 4).
+- Commission more twin pairs (was question 5).
 
 #### Open questions
 
-1. Phone or tablet (X3)?
-2. How does a round end without every difference found: time cap, an "I can't find it" button, or both?
-3. Response speed as the median gap between finds, starting when the board is shown? (C11 deferred.)
-4. Is the Mahjong idea in the capacity doc still alive? It would replace this ladder.
-5. Commission more twin pairs to raise the subtle ceiling and reduce repetition?
+1. Confirm 6 x 3 means 3 columns by 6 rows.
+2. The delay before "I can't find it" appears: one value, or growing with board size?
+3. Response speed start point: when the board is first painted (not the mount effect, see section 4).
 
 ---
 
-### 3.4 Garden Keeper (`garden-keeper`), Attention
+### 3.4 Garden Keeper (`garden-keeper`): removed from the core six
+
+**Decision [Owner 2026-11-18]**: Garden Keeper leaves the six-game list and will not be part of the core prescription.
+It gets **no changes**: no ladder, no clear or fail rule, no measurement work.
+Whether it stays reachable from Free Play as it is today is not stated (open question below).
+
+Its Attention slot goes to **Baggage Sort**, a new game to be designed and built later.
+This also answers FINAL_SPEC C9 ("Garden Keeper / Baggage Sort"): Baggage Sort is the replacement.
+
+**Carry into the Baggage Sort design**: Baggage Sort takes over Sustained attention and Self-control with their draft measures (FINAL_SPEC 7.1, D24), so it must avoid the problems found in Garden Keeper below:
+
+- Real "leave it alone" trials: tempting items that appear and leave on a timer.
+- A fixed-length round, so the first and last thirds can be compared.
+- Enough targets in every third to measure.
+- Errors that are not capped by hearts.
+
+**Open question**: does Garden Keeper stay in Free Play unchanged, or leave the app?
+
+The analysis below is kept for reference only. None of it will be built.
+
+#### Archived analysis (2026-11-11)
 
 **Skills**: Sustained attention, Self-control.
 **Suggested ladder**: 24 levels, interleaving load steps and speed steps; about 13 without raising caps.
@@ -274,7 +358,7 @@ Levels 18 and 24 break the "no subtle at 4 columns" rule on a phone.
 - **"Wide before fast" is in a comment but not in the code.** All knobs move together.
 - **The capacity doc's 35-object ceiling looks too high.** Even 24 may overlap tap areas; needs a device check.
 
-#### Parameters
+##### Parameters
 
 | Parameter | Unit | Today | Min | Max | Kind and reason |
 |---|---|---|---|---|---|
@@ -290,7 +374,7 @@ Levels 18 and 24 break the "no subtle at 4 columns" rule on a phone.
 
 Possible new knobs (small changes): wilted vs pest split; same-species lures; **pests that appear and leave on a timer** (needed for real Self-control trials); ring colour cue on/off.
 
-#### Curation rules
+##### Curation rules
 
 - One pressure axis per step: alternate load steps (plants, ratio) and speed steps (interval, window).
   Load first; speed steps start from about 30% of the ladder.
@@ -302,13 +386,13 @@ Possible new knobs (small changes): wilted vs pest split; same-species lures; **
   - flowers >= (`bloomHoldMs` + 2600) / `spawnIntervalMs` + `maxConcurrentThirsty`
   - at least 10 targets presented in each 30 s third, and at least 3 don't-tap events per third once they exist.
 
-#### Clear and fail (proposal)
+##### Clear and fail (proposal)
 
 - The round always runs the full 90 s.
 - **Clear**: hearts left and a hit rate (watered / targets shown) of at least 70%.
 - **Fail**: hearts gone, or time up below the threshold.
 
-#### Sample levels (proposal)
+##### Sample levels (proposal)
 
 | Level | Plants | Ratio (wilted/pest) | Interval | Window | Concurrency | Bloom | Target | Lives |
 |---|---|---|---|---|---|---|---|---|
@@ -320,7 +404,7 @@ Possible new knobs (small changes): wilted vs pest split; same-species lures; **
 
 Level 1 uses a 3 s window, half of today's 6 s, so each third has enough targets to measure. See open question 5.
 
-#### Open questions
+##### Open questions
 
 1. Self-control: build pests that appear on a timer (real trials), or redefine it as wrong taps per minute?
 2. Drop the early finish so the round always runs 90 s?
@@ -330,13 +414,23 @@ Level 1 uses a 3 s window, half of today's 6 s, so each third has enough targets
 
 ---
 
-### 3.5 Tiffen Time (`serve-guests`), Planning
+### 3.5 Tiffin Time (`serve-guests`), Planning
 
-**Skills**: Sequencing, Decision-making.
+**Skills**: Sequencing, Decision-making (unchanged; FINAL_SPEC 7.1). No new mechanic such as multi-step cooking [Owner 2026-11-18]; Sequencing is captured by numbered dishes, a small change (FINAL_SPEC D24, 7.1a).
 **Suggested ladder**: 30 levels. Today's hardest setting sits around level 23; levels beyond need a timing playtest.
 
+**Owner decisions [Owner 2026-11-18]**:
+
+- Spelled **Tiffin**.
+- No new Sequencing mechanic; Sequencing comes from numbered dishes (FINAL_SPEC 7.1a).
+- The game keeps choosing which guest gets a served dish.
+- **Guest types**, Impatient, Middle and Patient, give each guest an urgency that does not depend on order size. That makes "which dish do I cook first?" a real decision, which is how Decision-making is measured.
+- Guests per round up to 18.
+- On-screen points removed.
+- The clear threshold and the tightest patience are Claude's proposals below, to be balanced later.
+
 **Corrections to earlier docs**: the game, not the player, picks which guest gets a served dish (the least patient one).
-Guest patience comes only from order size, so there is no separate urgency signal.
+Guest patience comes only from order size today, so there is no separate urgency signal; guest types add one.
 The 2026-08-11 design spec says 8 dishes and 3-6 s cooks; the code has 6 dishes and 3-7.5 s cooks.
 
 #### Parameters
@@ -346,25 +440,31 @@ The 2026-08-11 design spec says 8 dishes and 3-6 s cooks; the code has 6 dishes 
 | `seats` | guests at once | 4 fixed | 2 | 4 | Max **hard (layout)**: at 4 the guests already touch. Min soft: 1 seat makes Decision-making unmeasurable. |
 | `counterSize` | dishes on counter | 6 fixed | `maxItems` + 1 | 6 | Max **hard (layout)**: a third row of cards does not fit. |
 | `minItems` / `maxItems` | dishes per order | 1 / 1-3 | 1 | 3 | **Soft** (design rule). 4 might fit as a 2x2 bubble; unchecked. |
-| `guestsPerRound` | guests | 8 fixed | 2 x `seats` | 12 | **Soft (timing)**: more guests make longer rounds. |
-| `patienceBaseS` / `patiencePerItemS` | s | 26 / 9 | longest cook + 2 taps per item | 45 / 12 | **Soft**. Too low turns it into a speed test. Needs research input. |
-| `patienceSpread` (new) | +/- share | 0 | 0 | 0.3 | **Soft**. Gives urgency independent of order size; needed for Decision-making. |
+| `guestsPerRound` | guests | 8 fixed | 2 x `seats` | 18 | Max raised to 18 [Owner 2026-11-18]. **Soft (timing)**: more guests make longer rounds; 18 guests is roughly a 4-5 minute service at the top levels. |
+| `patienceBaseS` / `patiencePerItemS` | s | 26 / 9 | see floor | 45 / 12 | **Soft**. Patience of a Middle guest. Too low turns it into a speed test. |
+| `guestMix` (new, replaces `patienceSpread`) | share Impatient / Middle / Patient | all one type | all Middle | 40 / 30 / 30 | **Soft**. Each guest's patience is the level's patience x their type: Impatient x 0.7, Middle x 1.0, Patient x 1.3 (proposed). Needs a visible type cue on each guest (art). |
 | `readyWindowS` | s | 11 | 8 (hard floor: > 3) | 20 | **Hard** floor from the spoil ramp. |
 | `cookBand` (new) | which dishes | all 22 | - | - | short (<= 4.5 s), all, long-weighted. Each band needs at least `counterSize` dishes. |
 | `respawnGapS` | s | 0.9-2.3 | 0.9 | 5 | **Soft**. |
-| `orderSteps` (new) | steps | none | - | - | No mechanic exists. See open question 1. |
+
+**Tightest patience (proposal)**: no guest, of any type, ever gets less than **18 s for a one-dish order plus 8 s for each further dish** (18 / 26 / 34 s for 1 / 2 / 3 dishes).
+Reasoning: the longest cook is 7.5 s, and the rest leaves an older player about 10 s per dish to notice the order, find the card, and tap twice.
+This floor overrides the type multiplier.
 
 #### Curation rules
 
-- One axis per step. Max step: seats +1; counter +1; maxItems +1; patience -3 s base or -2 s per item; ready window -1 s; guests +1.
-- Coupled: `counterSize >= maxItems + 1`; patience floor at least the longest cook plus 2 taps per item; moving to a longer cook band raises patience by the same amount; `guestsPerRound >= 2 x seats`.
-- Feature order: seats 2 > 3 > 4; counter 3 > 6; items 1 > 2 > 3; cook bands; patience spread; then shorter patience and ready window. Sequencing steps last, once they exist.
-- Forbidden: 1 seat at any scored level; `readyWindowS <= 3`; max items, minimum patience and long cooks all together without a playtest.
+- One axis per step. Max step: seats +1; counter +1; maxItems +1; patience -3 s base or -2 s per item; ready window -1 s; guests +1; Impatient share +10 points.
+- Coupled: `counterSize >= maxItems + 1`; no guest below the tightest-patience floor; moving to a longer cook band raises patience by the same amount; `guestsPerRound >= 2 x seats`.
+- Feature order: seats 2 > 3 > 4; counter 3 > 6; items 1 > 2 > 3; cook bands; guest types; then shorter patience and ready window.
+- Forbidden: 1 seat at any scored level; `readyWindowS <= 3`; guest types at a 1-seat level (there is no choice to make); max items, minimum patience and long cooks all together without a playtest.
 
-#### Clear and fail (proposal)
+#### Clear and fail (proposal, to be balanced later [Owner 2026-11-18])
+
+The measure is the share of dishes served (S6a).
 
 - **Clear**: at least 80% of dishes served and at most 1 guest walks out.
-- **Fail**: under 60% served, or 3 or more walkouts.
+- **Fail (Replay)**: under 60% served, or 3 or more walkouts.
+- In between: repeat the level.
 
 #### Sample levels (proposal)
 
@@ -374,20 +474,27 @@ The 2026-08-11 design spec says 8 dishes and 3-6 s cooks; the code has 6 dishes 
 | counterSize | 3 | 4 | 5 | 6 | 6 |
 | items (min-max) | 1-1 | 1-2 | 1-2 | 1-3 | 2-3 |
 | guestsPerRound | 6 | 8 | 8 | 10 | 12 |
-| patience base / per item (s) | 40 / 10 | 34 / 9 | 30 / 9 | 26 / 9 | 22 / 8 |
-| patienceSpread | 0.15 | 0.15 | 0.2 | 0.25 | 0.3 |
+| patience base / per item (s), Middle guest | 40 / 10 | 34 / 9 | 30 / 9 | 26 / 9 | 22 / 8 |
+| guestMix (Impatient / Middle / Patient %) | 0 / 100 / 0 | 0 / 100 / 0 | 20 / 60 / 20 | 30 / 40 / 30 | 40 / 30 / 30 |
 | readyWindowS | 16 | 14 | 12 | 11 | 9 |
 | cookBand | short | short + mid | all | all | long-weighted |
 | respawnGapS | 2.5-4 | 1.5-3 | 1.2-2.6 | 0.9-2.3 | 0.9-2.3 |
 
+At L30 an Impatient guest with a 3-dish order would get 0.7 x 46 = 32 s, under the 34 s floor, so the floor applies.
+The 18-guest cap leaves room to lengthen service above L30 if the playtest shows the ladder ends too early.
+
+#### Decided [Owner 2026-11-18]
+
+- No new Sequencing mechanic; numbered dishes capture it (was question 1).
+- No player choice of guest; guest types carry Decision-making (was question 2).
+- Claude proposes the clear rule and the tightest patience; to be balanced later (were questions 3 and 4).
+- Remove on-screen points (was question 5).
+- "Tiffin" (was question 6).
+
 #### Open questions
 
-1. **Sequencing**: no mechanic trains it. Add multi-step dishes or a required serving order, or drop the skill for this game?
-2. Should the player choose which guest to serve? Otherwise Decision-making is measured by which dish they cook first.
-3. Clear rule: what % served and how many walkouts?
-4. What is the shortest patience we may ever ask of a resident?
-5. On-screen points: keep, remove, or replace with the level number? The speed bonus rewards motor speed, not planning.
-6. Spelling: "Tiffen" or "Tiffin"?
+1. Confirm the type multipliers (0.7 / 1.0 / 1.3) and the patience floor at playtest.
+2. Art: how a guest shows their type (face, colour, a small badge).
 
 ---
 
@@ -395,6 +502,18 @@ The 2026-08-11 design spec says 8 dishes and 3-6 s cooks; the code has 6 dishes 
 
 **Skills**: Planning, Problem-solving.
 **Suggested ladder**: 30 levels (optimal moves 2-16, about two levels per value).
+
+**Owner decisions [Owner 2026-11-18]**:
+
+- **This game is worked on last** of the six.
+- Each round picks at random from the level's puzzle pool.
+- A restart counts as not cleared.
+- No move ceiling.
+- Planning counts moves since the last restart.
+- The hint unlock point varies by level.
+- 6 x 6 stays the largest board for now.
+- Freshness also comes from visual variety: new block types and background types.
+- Generate more puzzles, so a level can be built from every descriptor, especially `depth`, `density` and `singleCellPieces`.
 
 Puzzles are hand-made content, so the "parameters" are descriptors a level selects puzzles by.
 The study ran the game's own solver over all 10 shipped puzzles; figures marked "measured" come from that run.
@@ -412,7 +531,7 @@ The study ran the game's own solver over all 10 shipped puzzles; figures marked 
 | `mustMove` | pieces | 1-10 (measured) | 1 | = obstacles | Derived; not stored today. |
 | `depth` | moves before the fish moves | 1-10 | 1 | `minMoves` - 1 | Stored and solver-checked. |
 | `exitSide` | side | right only | - | 4 sides | Model supports all four; others unverified visually. |
-| `hintUnlockRatio` | x `minMoves` | 2 | - | - | **Soft**. Global today, could be per level. |
+| `hintUnlockRatio` | x `minMoves` | 2 | _TBD_ | _TBD_ | **Soft**. Global today; becomes a per-level value [Owner 2026-11-18]. |
 | `solverStates` | states | - | - | 200,000 | **Hard (code)**: the live hint solver's budget. |
 
 #### Curation rules
@@ -426,8 +545,9 @@ The study ran the game's own solver over all 10 shipped puzzles; figures marked 
 #### Clear and fail (proposal)
 
 - **Clear**: solved with no hint and no restart.
-- **Fail**: any hint, any restart, or leaving mid-puzzle.
-- Planning efficiency (`minMoves / moves used`) is reported but does not gate.
+- **Fail (Replay)**: any hint, any restart [Owner 2026-11-18], or leaving mid-puzzle.
+- No move ceiling: a round only ends solved or abandoned [Owner 2026-11-18].
+- Planning efficiency (`minMoves / moves since the last restart`) is reported but does not gate [Owner 2026-11-18].
 
 #### Sample levels (proposal)
 
@@ -448,44 +568,104 @@ Level 30 has no existing puzzle to anchor it.
 - Planning scores are not comparable across levels: one wasted move scores 67 on a 2-move puzzle and 93 on a 13-move puzzle.
   Compare within a level, or normalise.
 
+- **Visual variety** [Owner 2026-11-18]: new block types and background types, so a level's pool feels fresh. This helps against recognising a board, but not against a remembered solution, so it adds to the puzzle count rather than replacing it.
+- **Generator coverage** [Owner 2026-11-18]: generate enough puzzles to test whether every descriptor can drive a level, especially `depth`, `density` and `singleCellPieces`. Today's 10 puzzles do not cover them.
+
+#### Decided [Owner 2026-11-18]
+
+- Random pick from the level's pool (was question 1).
+- A restart counts as not cleared (was question 2).
+- No move ceiling (was question 3).
+- Planning counts moves since the last restart (was question 4).
+- The hint unlock varies by level (was question 5).
+- 6 x 6 is fine for now (was question 6).
+
 #### Open questions
 
-1. Same puzzle for everyone at a given level (best for research), or a random one from the level's pool?
-2. Should a restart count as a fail?
-3. Add a move ceiling (for example 3x optimal) that ends the round as unsolved?
-4. Planning on a restarted round: count moves since the last restart, or all moves?
-5. Should the hint unlock ratio stay at 2x, or vary per level?
-6. Is it acceptable that the board stops at 6x6 and later difficulty comes only from density and move count?
+1. The hint unlock ratio per level. Suggested start: 3 x `minMoves` at the bottom, falling to 1.5 x at the top.
+   A fixed 2 x unlocks a hint after only 4 moves on a 2-move puzzle, but makes a player wait 26 moves on a 13-move one.
+2. Random pools make results less comparable between residents at the same level.
+   The curation rules already hold `boardSize` and `minMoves` equal within a level, and `depth` within 1.
+   Is that close enough for research?
 
 ## 4. Measurement gaps
 
-What each game does not log today that its two skill measures need.
+What each game does not log today that its skill measures need.
 These are engineering tasks for workstream C, listed here because the ladder is useless for research without them.
 
 | Game | Gaps |
 |---|---|
-| Shopping List | List items not logged; no per-tap timestamps; twin picks not separated from other wrong picks; hinted items not logged; `pickOrder` keeps removed items; no end-of-session Retention question. |
-| Station Master | Only totals; no per-dispatch event (colour, station, attempt, time); no arrival or dispatch order; untried trains on a lost round not counted; settings other than `signMs` not logged; train switches not logged. |
-| Spot Focus | No per-find timestamps; start point is the mount effect, not first paint; `durationSeconds` includes the completion screen; wrong taps are a bare count; level parameters not logged. |
-| Garden Keeper | Only totals and a mean reaction time (D9 needs the median); no per-target or per-false-tap events; no round start for splitting into thirds; taps on not-ready flowers unlogged; no don't-tap trials. |
-| Tiffen Time | Cook and serve taps not logged with time or guest patience; wasted cooks silent; no per-guest records; no step log (no steps exist). |
-| Free Me | Leaving mid-puzzle unlogged, so Problem-solving reads too high; move count carries across restarts; depth, level and must-move not logged; no record of whether a resident has seen a puzzle before. |
+| Shopping List | List items not logged; no per-tap timestamps; twin picks not separated from other wrong picks; hinted items not logged; `pickOrder` keeps removed items. Second-trip picks must be logged apart from normal rounds. |
+| Station Master | Only totals; no per-dispatch event (colour, station, attempt, time); untried trains on a lost round not counted; settings other than `signMs` not logged; train switches not logged. |
+| Spot Focus | No per-find timestamps; start point is the mount effect, not first paint; `durationSeconds` includes the completion screen; wrong taps are a bare count; level parameters not logged; give-up not logged (new). |
+| Tiffin Time | Cook and serve taps not logged with time, guest patience or guest type; wasted cooks silent; no per-guest records. |
+| Free Me | Leaving mid-puzzle unlogged, so Problem-solving reads too high; move count carries across restarts (to be counted from the last restart [Owner 2026-11-18]); depth, level and must-move not logged; no record of whether a resident has seen a puzzle before. |
+| Garden Keeper | Removed from the core six; no work [Owner 2026-11-18]. |
 
 ## 5. Summary of game changes the ladders need
 
+Order of work [Owner 2026-11-18]: Station Master waits for the art style and designs; Free Me comes last; Garden Keeper gets nothing; Baggage Sort is a new design.
+
 Small (parameterise or tweak existing code):
 
-- Make every game able to fail (S6): Shopping List, Spot Focus, Tiffen Time hard-code success.
-- Shopping List: rename `retentionMs`, drop `delayedRetrieval`, variable crate count.
-- Station Master: 3-station mode, `revealHomeStations` off, no back-to-back repeats.
-- Spot Focus: mixed tiers per board, 4th row, time cap.
-- Garden Keeper: always run 90 s; implement the interleaved load/speed ladder.
-- Tiffen Time: turn constants (seats, counter, guests, patience) into parameters; patience spread.
+- Make every game able to fail (S6), with Continue becoming Replay on a failed round: Shopping List, Spot Focus, Tiffin Time hard-code success.
+- Shopping List: rename `retentionMs`, drop `delayedRetrieval`, variable crate count, half score for hinted rounds, at most 1 hint.
+- Station Master (after art): 3-station mode, `revealHomeStations` off, no back-to-back repeats.
+- Spot Focus: mixed tiers per board, up to 6 rows, "I can't find it" button after a delay.
+- Tiffin Time: turn constants (seats, counter, guests, patience) into parameters; guest types; remove on-screen points; rename "Tiffen" to "Tiffin" in player-facing copy.
+- Free Me (last): count moves from the last restart; per-level hint unlock; log leaving mid-puzzle.
 
 Larger (new mechanics, content or art):
 
-- Shopping List: end-of-session Retention question.
-- Station Master: Sequence mechanic (C10, deferred); fifth colour; neutral station art.
-- Garden Keeper: pests that appear on a timer (real Self-control trials).
-- Tiffen Time: a Sequencing mechanic; possibly player choice of guest.
-- Free Me: offline puzzle generator for 120-300 puzzles.
+- Shopping List: simple, translated item names (Kannada, Hindi, English); new cart art for more than 6 items.
+- Station Master: up to 8 station colours, close-hue colour sets, 8-station layout, heart-with-number HUD, neutral station art.
+- Spot Focus: more twin pairs.
+- Tiffin Time: art for the three guest types.
+- Free Me: offline puzzle generator for 120-300 puzzles covering every descriptor; new block and background types.
+- Baggage Sort: new Attention game, replacing Garden Keeper (section 3.4).
+
+Small changes that capture skills (FINAL_SPEC 7.1a): Shopping List second trip, Station Master staggered arrival, Tiffin Time numbered dishes.
+
+Not built, by owner decision: a separate end-of-session question screen, a new Station Master Sequence mechanic, multi-step cooking in Tiffin Time, player choice of guest, any Garden Keeper change.
+
+## 6. Decision log
+
+Every owner answer from `2026-11-12_difficulty-design-notes.md.pdf` and the follow-up of 2026-11-18, in one place.
+
+| # | Game | Decision |
+|---|---|---|
+| O1 | All | A failed round turns Continue into Replay; the resident replays the level. |
+| O2 | All | Clear and fail compare each game's own measure with a threshold, not the difficulty-weighted skill score (S6a). |
+| O3 | All | Generator games build a fresh round from the level's settings each play. |
+| O4 | All | Phone and tablet both supported (X3). |
+| O5 | Shopping List | Misses allowed; clear decided by the Recall threshold. |
+| O6 | Shopping List | No separate end-of-session question screen; Retention captured by the second trip (O30). |
+| O7 | Shopping List | Hints limited heavily; a hinted round scores half. |
+| O8 | Shopping List | 6 items until new cart art. |
+| O9 | Shopping List | Simple, translatable item names before the top levels. |
+| O10 | Shopping List | Skill names unchanged; no free-recall step. |
+| O11 | Station Master | No new Sequence mechanic; Sequence captured by staggered arrival (O30). |
+| O12 | Station Master | Up to 8 stations; new colours and close-hue sets from the owner. |
+| O13 | Station Master | Game work starts only after the art style and designs are in place. |
+| O14 | Station Master | Hearts shown as a heart with a number; levels may go down to 1 heart. |
+| O15 | Station Master | Up at 75% in 2 of the last 3 rounds; down after 2 lost rounds in a row. |
+| O16 | Spot Focus | Board up to 6 x 3; differences from 1 to 40% of cells. |
+| O17 | Spot Focus | "I can't find it" button after a delay; no time cap. |
+| O18 | Spot Focus | Response speed = median gap between finds. |
+| O19 | Spot Focus | More twin pairs; Mahjong is art only. |
+| O20 | Garden Keeper | Removed from the core six; no changes. Baggage Sort replaces it later. |
+| O21 | Tiffin Time | No new Sequencing mechanic; Sequencing captured by numbered dishes (O30). |
+| O22 | Tiffin Time | Game keeps choosing the guest; guest types (Impatient, Middle, Patient) carry Decision-making. |
+| O23 | Tiffin Time | Guests per round up to 18. |
+| O24 | Tiffin Time | Claude proposes clear rule and tightest patience; balance later. |
+| O25 | Tiffin Time | On-screen points removed; spelled "Tiffin". |
+| O26 | Free Me | Worked on last. |
+| O27 | Free Me | Random pick from the level's pool; restart = not cleared; no move ceiling. |
+| O28 | Free Me | Planning counts moves since the last restart; hint unlock varies by level; 6 x 6 cap for now. |
+| O29 | Free Me | More visual variety; generate puzzles that exercise every descriptor. |
+| O30 | All | Skill names and measures stay as in FINAL_SPEC 7.1. Where a game cannot produce a measure, a small change captures it: second trip (Retention), staggered arrival (Sequence), numbered dishes (Sequencing). Baggage Sort keeps Garden Keeper's two skills. |
+
+### Applied to FINAL_SPEC (2026-11-18)
+
+O1-O30 are in FINAL_SPEC as D15-D24.
+C9, C10, C11, C12 and C17 are resolved there; C18 (Garden Keeper in Free Play) and C20 (Retention delay for the second trip) are open.
