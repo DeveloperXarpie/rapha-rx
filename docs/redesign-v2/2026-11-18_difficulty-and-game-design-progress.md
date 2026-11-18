@@ -98,11 +98,11 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 | Plan | What | Version, commit | State |
 |---|---|---|---|
 | 1 | Session engine and Home: Memory opens daily, 10 minutes of **board time** completes a category, free choice of game, locked and completed popups, unlock animation, Garden Keeper out of the daily session | v1.36.0, `f95759c` | Pushed; smoke-tested on localhost |
-| 2 | Game changes: Shopping List, Spot Focus, Tiffin Time graded clear / hold / fail with Replay; Shopping List one hint, half score when hinted, second trip for Retention; Spot Focus "I can't find it" and find timing; Tiffin guest types, numbered dishes, decision logging, no points, "Tiffin" spelling | v1.37.0, `c6613ed` | Committed, not pushed |
-| 3a | Difficulty ladders for the same three games: daily restart at level 1, up on a clear, down after two fails; anchors from the rules doc's samples; Tiffin round settings per level | v1.38.0, `d809334` | Committed, not pushed |
-| 4 | Scoring: round log (Dexie v4), skill scores per FINAL_SPEC 7.1 (measure only), Mock 2 scorecard (band words and bars, no numbers), Mock 3 10-minute summary (rings, change since last session, ten-band headline); scorecard, summary, Home | v1.39.0, `e9c8f14` | Committed, not pushed |
+| 2 | Game changes: Shopping List, Spot Focus, Tiffin Time graded clear / hold / fail with Replay; Shopping List one hint, half score when hinted, second trip for Retention; Spot Focus "I can't find it" and find timing; Tiffin guest types, numbered dishes, decision logging, no points, "Tiffin" spelling | v1.37.0, `c6613ed` | Pushed 2026-11-19; Preview only, not promoted |
+| 3a | Difficulty ladders for the same three games: daily restart at level 1, up on a clear, down after two fails; anchors from the rules doc's samples; Tiffin round settings per level | v1.38.0, `d809334` | Pushed 2026-11-19; Preview only, not promoted |
+| 4 | Scoring: round log (Dexie v4), skill scores per FINAL_SPEC 7.1 (measure only), Mock 2 scorecard (band words and bars, no numbers), Mock 3 10-minute summary (rings, change since last session, ten-band headline); scorecard, summary, Home | v1.39.0, `e9c8f14` | Pushed 2026-11-19; Preview only, not promoted |
 
-**Temporary:** `CATEGORY_SESSION_SECONDS` is 30 s instead of 600 for owner testing. Two sessionLedger tests fail until it is reverted, and no build with it may be promoted to Production.
+**Temporary:** `CATEGORY_SESSION_SECONDS` is 30 s instead of 600 for owner testing; it is in the pushed builds, so **do not promote any of them to Production** until it is reverted. Two sessionLedger tests fail until it is reverted, and no build with it may be promoted to Production.
 
 ### Decisions taken during implementation (owner)
 
