@@ -1,10 +1,10 @@
 # Redesign v2: Difficulty and Game Design Progress
 
 **Date**: 2026-11-18
-**Updated**: 2026-11-19 (implementation progress, plans 1-3a)
+**Updated**: 2026-11-19 (implementation progress, plans 1-4)
 **Content Type**: Progress report (discussion record)
-**Branch**: `feat/app-flow-redesign` (v1.35.7 at the start; v1.38.0 now)
-**Covers**: the 2026-11-18 session that folded the owner's answers on the difficulty design notes into the v2 docs, and the implementation that followed (plans 1, 2 and 3a).
+**Branch**: `feat/app-flow-redesign` (v1.35.7 at the start; v1.39.0 now)
+**Covers**: the 2026-11-18 session that folded the owner's answers on the difficulty design notes into the v2 docs, and the implementation that followed (plans 1, 2, 3a and 4).
 
 This file records how the discussion went and where it ended.
 The decisions themselves live in the docs below; if this file and they ever disagree, they win.
@@ -88,7 +88,8 @@ Per game:
 | Q3 | Should Free Play rounds move difficulty? Today they move the ladder. | FINAL_SPEC 13 |
 | X6 | How the ladder level feeds the skill score: deferred to the scoring plan. | DIFFICULTY_RULES 2.1 |
 | - | Anchor levels: the samples are provisional; the spreadsheet importer is plan 3b. | README |
-| - | Scoring: personal-trend headline vs bands; per-game bar on the same score; C3-C6. | Plan 4 |
+| - | Free Me Planning counts moves across a restart (7.1a says from the last restart); one restart costs both skills. | Plan 4 final review |
+| - | Spot Focus response-speed range 2 s = 100 to 20 s = 0 is provisional. | Plan 4 |
 
 ## 3. Implementation progress (2026-11-18 to 2026-11-19)
 
@@ -99,6 +100,7 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 | 1 | Session engine and Home: Memory opens daily, 10 minutes of **board time** completes a category, free choice of game, locked and completed popups, unlock animation, Garden Keeper out of the daily session | v1.36.0, `f95759c` | Pushed; smoke-tested on localhost |
 | 2 | Game changes: Shopping List, Spot Focus, Tiffin Time graded clear / hold / fail with Replay; Shopping List one hint, half score when hinted, second trip for Retention; Spot Focus "I can't find it" and find timing; Tiffin guest types, numbered dishes, decision logging, no points, "Tiffin" spelling | v1.37.0, `c6613ed` | Committed, not pushed |
 | 3a | Difficulty ladders for the same three games: daily restart at level 1, up on a clear, down after two fails; anchors from the rules doc's samples; Tiffin round settings per level | v1.38.0, `d809334` | Committed, not pushed |
+| 4 | Scoring: round log (Dexie v4), skill scores per FINAL_SPEC 7.1 (measure only), Mock 2 scorecard (band words and bars, no numbers), Mock 3 10-minute summary (rings, change since last session, ten-band headline); scorecard, summary, Home | v1.39.0, `e9c8f14` | Committed, not pushed |
 
 **Temporary:** `CATEGORY_SESSION_SECONDS` is 30 s instead of 600 for owner testing. Two sessionLedger tests fail until it is reverted, and no build with it may be promoted to Production.
 
@@ -107,6 +109,7 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 - Plan 1: stay on `feat/app-flow-redesign`; only board time counts toward the 10 minutes (Q2); Garden Keeper leaves the daily session now.
 - Plan 2: scope is Shopping List, Spot Focus, Tiffin Time; Replay sits on the game's own round-end card; a failed round keeps the level; the second trip is the last round of a visit; starting thresholds accepted.
 - Plan 3a: X1 up on a clear, down after two fails; X2 every game restarts at level 1 each day; anchors from the samples for now; X6 deferred to scoring.
+- Plan 4: scores from the measure only (no difficulty weight); absolute bands for the summary headline (7.2's ten bands); the scorecard only at category completion; scorecard, then summary, then Home.
 
 ### Notable findings along the way
 
@@ -117,7 +120,6 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 
 ## 4. Next steps
 
-1. **Plan 4, scoring**: the scorecard skill cards (Mock 2) and the 10-minute summary (Mock 3). Needs the scoring decisions first.
-2. Plan 3b: the spreadsheet importer and the layout-dependent ladder knobs (Tiffin seats and counter, mixed Spot Focus tiers, Shopping List crates and closeness).
+1. Plan 3b: the spreadsheet importer and the layout-dependent ladder knobs (Tiffin seats and counter, mixed Spot Focus tiers, Shopping List crates and closeness).
 3. Revert the 30 s timer, then push and promote once the owner has smoke-tested plans 2 and 3a.
 4. Later: Station Master (after art), Free Me (last), Baggage Sort (design), research data.
