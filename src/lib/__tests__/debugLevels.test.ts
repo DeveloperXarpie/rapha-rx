@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { levelToScore, parseDebugLevel, DEBUG_LEVEL_PARAM, MAX_DEBUG_LEVEL } from '../debugLevels';
+import {
+  levelToScore, parseDebugLevel, debugLevelFor, DEBUG_LEVEL_PARAM, MAX_DEBUG_LEVEL, MAX_SCORE_LEVEL,
+} from '../debugLevels';
 import { scoreToLevel } from '../dynamicDifficulty';
 
 /**
@@ -15,13 +17,13 @@ import { scoreToLevel } from '../dynamicDifficulty';
 
 describe('levelToScore', () => {
   it('round-trips through scoreToLevel for every level', () => {
-    for (let level = 1; level <= MAX_DEBUG_LEVEL; level++) {
+    for (let level = 1; level <= MAX_SCORE_LEVEL; level++) {
       expect(scoreToLevel(levelToScore(level))).toBe(level);
     }
   });
 
   it('stays inside the 0..1 range the difficulty system expects', () => {
-    for (let level = 1; level <= MAX_DEBUG_LEVEL; level++) {
+    for (let level = 1; level <= MAX_SCORE_LEVEL; level++) {
       const score = levelToScore(level);
       expect(score).toBeGreaterThan(0);
       expect(score).toBeLessThan(1);
@@ -55,7 +57,7 @@ describe('parseDebugLevel', () => {
     ['whitespace', '   '],
     ['zero', '0'],
     ['negative', '-1'],
-    ['above the ceiling', '11'],
+    ['above the ceiling', '31'],
     ['fractional', '3.5'],
     ['not a number', 'abc'],
     ['number with suffix', '7abc'],
@@ -68,5 +70,18 @@ describe('parseDebugLevel', () => {
 describe('DEBUG_LEVEL_PARAM', () => {
   it('is the query key the router and the picker both agree on', () => {
     expect(DEBUG_LEVEL_PARAM).toBe('debugLevel');
+  });
+});
+
+describe('ladder games in the jumper (plan 3a)', () => {
+  it('reaches the top of the longest ladder', () => {
+    expect(MAX_DEBUG_LEVEL).toBe(30);
+    expect(parseDebugLevel('24')).toBe(24);
+  });
+  it('clamps a level to the game: its ladder, or the ten score bands', () => {
+    expect(debugLevelFor('spot-focus', 30)).toBe(24);
+    expect(debugLevelFor('serve-guests', 30)).toBe(30);
+    expect(debugLevelFor('train-yard', 24)).toBe(10);
+    expect(debugLevelFor('train-yard', 4)).toBe(4);
   });
 });

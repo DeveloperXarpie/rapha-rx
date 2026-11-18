@@ -10,6 +10,9 @@ import { UI_CLOSE_X } from '../lib/uiKit';
 import { useAppStore } from '../store';
 import { shouldCompleteCategory } from '../lib/sessionLedger';
 import { shouldAdjustDifficulty, type RoundOutcome } from '../lib/roundOutcome';
+import { isLadderGame, ladderLength, LADDER_VERSION } from '../lib/ladders';
+import { shouldMoveLadder } from '../lib/ladders/movement';
+import { advanceLadder } from '../lib/ladders/store';
 import { Button } from './ui/Button';
 import type { GameVisit, LevelConfig } from '../games/types';
 import { needsSecondTrip, requestSecondTrip } from '../games/memory/MarketMemory/secondTrip';
@@ -23,6 +26,8 @@ export interface LevelResult {
   completed: boolean;
   metrics: Record<string, unknown>;
   newDifficultyScore?: number;
+  /** A ladder game's level after this round (plan 3a). */
+  newLevel?: number;
 }
 
 interface GameShellProps {
@@ -42,6 +47,8 @@ interface GameShellProps {
   debug?: boolean;
   /** This round's place in the visit (GameRouter). */
   visit?: GameVisit;
+  /** A ladder game's level (plan 3a); the plate shows it instead of the score's band. */
+  ladderLevel?: number;
 }
 
 interface Anchor { top: number; left: number; right: number }
@@ -124,6 +131,7 @@ export default function GameShell({
   children,
   debug = false,
   visit,
+  ladderLevel,
 }: GameShellProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -133,6 +141,7 @@ export default function GameShell({
   const completeActiveCategory = useAppStore((s) => s.completeActiveCategory);
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const completedRef = useRef(false);
 
   /*
    * The category clock. Only board time counts toward a category's ten minutes
@@ -161,16 +170,20 @@ export default function GameShell({
   const isRotationGame = getGame(gameId)?.marquee === true;
   const [playBoxRef, anchor] = useBoardAnchor(isRotationGame, gameId);
 
-  const levelLabel = difficultyScore !== undefined
-    ? scoreLevelLabel(difficultyScore)
-    : t(`level.${levelConfig.id}`);
+  const levelLabel = ladderLevel !== undefined
+    ? `Level ${ladderLevel}`
+    : difficultyScore !== undefined
+      ? scoreLevelLabel(difficultyScore)
+      : t(`level.${levelConfig.id}`);
 
   useEffect(() => {
     track('game_started', {
       gameId,
       gameCategory,
       levelId: levelConfig.id,
-      difficultyScore,
+      difficultyScore: ladderLevel !== undefined ? undefined : difficultyScore,
+      ladderLevel,
+      ladderVersion: ladderLevel !== undefined ? LADDER_VERSION : undefined,
       debug,
     });
 
@@ -185,9 +198,16 @@ export default function GameShell({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     // The seconds are read at unload time, never a dependency: as one, they made
     // game_started fire every second.
-  }, [gameId, gameCategory, levelConfig.id, difficultyScore, debug]);
+  }, [gameId, gameCategory, levelConfig.id, difficultyScore, ladderLevel, debug]);
 
   async function handleLevelComplete(result: LevelResult) {
+    /*
+     * Once per round. Not every game guards its own end button, and a double tap would
+     * otherwise run two ladder or score steps for one round. GameShell remounts each
+     * round, so the guard resets with it.
+     */
+    if (completedRef.current) return;
+    completedRef.current = true;
     const userId = profile?.userId;
     let newDifficultyScore: number | undefined;
 
@@ -198,9 +218,27 @@ export default function GameShell({
     // the score would both corrupt the resident's progression and mean the next
     // jump started from wherever the last probe pushed it rather than from the
     // level asked for.
+    let newLevel: number | undefined;
+    const secondTrip = result.metrics.secondTrip === true;
+    const outcome = result.metrics.outcome as RoundOutcome | undefined;
+
+    /*
+     * A ladder game (plan 3a) moves on its ladder instead: up on a clear, down after two
+     * fails in a row (ladders/movement.ts). Branching here, before the score path, is
+     * what lets a fail or a hold reach the ladder at all - the score path below moves
+     * these games only on a clear.
+     */
+    if (ladderLevel !== undefined && isLadderGame(gameId)) {
+      if (userId && outcome && shouldMoveLadder({ debug, secondTrip })) {
+        newLevel = await advanceLadder(userId, gameId, outcome, ladderLength(gameId));
+        // The level just played, which is what "Level n reached" should mean.
+        void recordLastLevel(userId, gameId, ladderLevel);
+      }
+    }
+
     // A plan-2 game moves its level only on a clear (a hold or a fail repeats it), and
     // Shopping List's second trip never moves it (roundOutcome.ts).
-    const adjust = shouldAdjustDifficulty({
+    const adjust = !isLadderGame(gameId) && shouldAdjustDifficulty({
       gameId,
       completed: result.completed,
       outcome: result.metrics.outcome as RoundOutcome | undefined,
@@ -235,12 +273,16 @@ export default function GameShell({
       levelId: result.levelId,
       durationSeconds: result.durationSeconds,
       completed: result.completed,
-      metrics: result.metrics,
-      difficultyScore,
+      // Every round logs its ladder level and version (DIFFICULTY_RULES S8, S9).
+      metrics: ladderLevel !== undefined
+        ? { ...result.metrics, ladderLevel, ladderVersion: LADDER_VERSION }
+        : result.metrics,
+      difficultyScore: ladderLevel !== undefined ? undefined : difficultyScore,
+      ladderLevel,
       debug,
     });
 
-    finishLevel({ ...result, newDifficultyScore });
+    finishLevel({ ...result, newDifficultyScore, newLevel });
   }
 
   function finishLevel(result: LevelResult) {

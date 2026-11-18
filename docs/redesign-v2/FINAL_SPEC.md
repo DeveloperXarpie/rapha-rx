@@ -328,6 +328,7 @@ Both are drafts. The rules doc has the owner's answers of 2026-11-18 folded in; 
 - Every scored game can be lost; a failed round offers Replay (D20).
 - Generator games build a fresh round from the level's settings on every play; Free Me picks at random from the level's puzzle pool. **[Owner]**
 - Every level must fit a 360 px phone as well as a tablet (D21).
+- Ladders are live for Shopping List, Spot Focus and Tiffin Time (v1.38.0): every game restarts at level 1 each day; up one level on a clear, down one after two fails in a row. **[Owner]** (2026-11-18, X1 and X2)
 - Everything else: see `DIFFICULTY_RULES.md` section 2.
 
 ### 10.2 Per game

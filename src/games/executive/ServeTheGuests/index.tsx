@@ -18,7 +18,7 @@ import {
 } from './geometry';
 import {
   ALL_MIDDLE, cookProgress, createInitialState, guestsHandled, spoilProgress, tapDish, tick,
-  TOTAL_GUESTS, type GameState, type Guest, type GuestMix,
+  DEFAULT_CONFIG, type GameState, type Guest, type GuestMix,
 } from './model';
 import { serveGuestsOutcome } from '../../../lib/roundOutcome';
 import {
@@ -36,9 +36,20 @@ export interface ServeGuestsParams {
   maxItemsPerGuest: number;
   /** Shares of Impatient and Patient guests (D18); the rest are Middle. */
   guestMix: GuestMix;
+  guestsPerRound: number;
+  patienceBaseS: number;
+  patiencePerItemS: number;
+  readyWindowS: number;
 }
 
-const DEFAULT_PARAMS: ServeGuestsParams = { maxItemsPerGuest: 2, guestMix: ALL_MIDDLE };
+const DEFAULT_PARAMS: ServeGuestsParams = {
+  maxItemsPerGuest: 2,
+  guestMix: ALL_MIDDLE,
+  guestsPerRound: DEFAULT_CONFIG.totalGuests,
+  patienceBaseS: DEFAULT_CONFIG.patienceBase,
+  patiencePerItemS: DEFAULT_CONFIG.patiencePerItem,
+  readyWindowS: DEFAULT_CONFIG.readyWindow,
+};
 
 /** The loop runs at 10Hz: fast enough for the bars to read as smooth, cheap enough to idle. */
 const TICK_MS = 100;
@@ -60,7 +71,13 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
     [levelConfig.params],
   );
 
-  const [state, setState] = useState<GameState>(createInitialState);
+  // The round's settings come from the level (plan 3a), frozen for the round.
+  const [state, setState] = useState<GameState>(() => createInitialState(Math.random, {
+    totalGuests: params.guestsPerRound,
+    readyWindow: params.readyWindowS,
+    patienceBase: params.patienceBaseS,
+    patiencePerItem: params.patiencePerItemS,
+  }));
 
   // The counter is dealt once per round and never changes, so this list is stable for the
   // life of the board even though it is derived from state.
@@ -131,7 +148,7 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
   // ── Render ──────────────────────────────────────────────────────────────────
 
   const handled = guestsHandled(state);
-  const guestsLeft = TOTAL_GUESTS - handled;
+  const guestsLeft = state.config.totalGuests - handled;
 
   if (!imagesReady) {
     return (
@@ -269,7 +286,7 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
                   <div style={{ fontSize: 34, color: '#6b5334', marginTop: 14, lineHeight: 1.3 }}>
                     {t('serveGuests.complete.sub', 'You looked after {{served}} of {{total}} guests.', {
                       served: state.guestsFullyServed,
-                      total: TOTAL_GUESTS,
+                      total: state.config.totalGuests,
                     })}
                   </div>
                   <button

@@ -1,6 +1,10 @@
 import { useParams, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '../store';
-import { DEBUG_LEVEL_PARAM, DEBUG_LEVELS_PATH, levelToScore, parseDebugLevel } from '../lib/debugLevels';
+import {
+  DEBUG_LEVEL_PARAM, DEBUG_LEVELS_PATH, debugLevelFor, levelToScore, parseDebugLevel,
+} from '../lib/debugLevels';
+import { isLadderGame, ladderParams } from '../lib/ladders';
+import { getTodayLevel } from '../lib/ladders/store';
 import {
   getTodayDifficulty, scoreToLevel,
   getRememberMatchParams, getSpotFocusParams, getMorningRoutineParams, getWordSearchParams,
@@ -72,8 +76,13 @@ const GAME_REGISTRY: Record<string, GameEntry> = {
 
 // ─── Dynamic content generation ───────────────────────────────────────────────
 
-function generateContentForGame(gameId: string, score: number): { levelConfig: LevelConfig; generatedContent: unknown } {
-  const level = scoreToLevel(score);
+function generateContentForGame(
+  gameId: string, score: number, ladderLevel?: number,
+): { levelConfig: LevelConfig; generatedContent: unknown } {
+  // A ladder game (plan 3a) reads its round from a ladder row; the rest still map the
+  // 0-1 score through their get*Params curve.
+  const onLadder = ladderLevel !== undefined && isLadderGame(gameId);
+  const level = onLadder ? ladderLevel : scoreToLevel(score);
   const levelId = `level_${Math.min(level, 5)}` as LevelConfig['id'];
 
   if (gameId === 'picture-postcard') {
@@ -97,7 +106,9 @@ function generateContentForGame(gameId: string, score: number): { levelConfig: L
   }
 
   if (gameId === 'spot-focus') {
-    const params = getSpotFocusParams(score);
+    const params = onLadder
+      ? ladderParams(gameId, level) as ReturnType<typeof getSpotFocusParams>
+      : getSpotFocusParams(score);
     const content = generateSpotFocusContent(params);
     return {
       levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
@@ -164,7 +175,9 @@ function generateContentForGame(gameId: string, score: number): { levelConfig: L
   }
 
   if (gameId === 'market-memory') {
-    const params = getMarketMemoryParams(score);
+    const params = onLadder
+      ? ladderParams(gameId, level) as ReturnType<typeof getMarketMemoryParams>
+      : getMarketMemoryParams(score);
     return {
       levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
       generatedContent: undefined,
@@ -180,7 +193,9 @@ function generateContentForGame(gameId: string, score: number): { levelConfig: L
   }
 
   if (gameId === 'serve-guests') {
-    const params = getServeGuestsParams(score);
+    const params = onLadder
+      ? ladderParams(gameId, level) as ReturnType<typeof getServeGuestsParams>
+      : getServeGuestsParams(score);
     return {
       levelConfig: { id: levelId, labelKey: `level.${level}`, params: params as unknown as Record<string, unknown> },
       generatedContent: undefined,
@@ -226,6 +241,9 @@ export default function GameRouter() {
     : parseDebugLevel(searchParams.get(DEBUG_LEVEL_PARAM));
 
   const [difficultyScore, setDifficultyScore] = useState(0);
+  // The ladder level for a ladder game (plan 3a); undefined for every other game.
+  const [ladderLevel, setLadderLevel] = useState<number | undefined>(undefined);
+  const onLadder = !!gameId && isLadderGame(gameId);
   const [loading, setLoading] = useState(true);
   // Incrementing this key forces a full remount of GameShell + game component between rounds
   const [gameKey, setGameKey] = useState(0);
@@ -248,13 +266,19 @@ export default function GameRouter() {
      * level between rounds.
      */
     if (debugLevel !== null) {
-      setDifficultyScore(levelToScore(debugLevel));
+      const level = gameId ? debugLevelFor(gameId, debugLevel) : debugLevel;
+      if (onLadder) setLadderLevel(level);
+      else setDifficultyScore(levelToScore(level));
       return;
     }
     if (!gameId || !profile) return;
+    if (onLadder) {
+      setLadderLevel(await getTodayLevel(profile.userId, gameId));
+      return;
+    }
     const state = await getTodayDifficulty(profile.userId, gameId);
     setDifficultyScore(state.score);
-  }, [gameId, profile, debugLevel]);
+  }, [gameId, profile, debugLevel, onLadder]);
 
   useEffect(() => {
     refreshDifficulty().then(() => setLoading(false));
@@ -273,9 +297,9 @@ export default function GameRouter() {
   // Generate content for this round (regenerated each time gameKey changes)
   const { levelConfig, generatedContent } = useMemo(() => {
     if (!entry || !gameId) return { levelConfig: { id: 'level_1' as const, labelKey: 'level.1', params: {} }, generatedContent: undefined };
-    return generateContentForGame(gameId, difficultyScore);
+    return generateContentForGame(gameId, difficultyScore, onLadder ? ladderLevel : undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameKey, difficultyScore, gameId]);
+  }, [gameKey, difficultyScore, ladderLevel, gameId]);
 
   if (!entry) return <Navigate to="/app/home" replace />;
   if (loading) return (
@@ -287,7 +311,9 @@ export default function GameRouter() {
   const GameComponent = entry.component;
 
   async function handleLevelComplete(result: LevelResult) {
-    if (result.newDifficultyScore !== undefined) {
+    if (result.newLevel !== undefined) {
+      setLadderLevel(result.newLevel);
+    } else if (result.newDifficultyScore !== undefined) {
       setDifficultyScore(result.newDifficultyScore);
     } else {
       await refreshDifficulty();
@@ -302,6 +328,7 @@ export default function GameRouter() {
       gameCategory={entry.category}
       levelConfig={levelConfig}
       difficultyScore={difficultyScore}
+      ladderLevel={onLadder ? ladderLevel : undefined}
       onLevelComplete={handleLevelComplete}
       onExit={() => navigate(debugLevel !== null ? DEBUG_LEVELS_PATH : '/app/home')}
       debug={debugLevel !== null}

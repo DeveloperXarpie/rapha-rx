@@ -59,6 +59,25 @@ const DEPART_SECONDS = 1.1;
 const FLOAT_SECONDS = 1.2;
 const NUDGE_SECONDS = 0.45;
 
+/**
+ * The round's tunable settings, set per level by the ladder (plan 3a). The constants
+ * above are today's values and the defaults.
+ */
+export interface RoundConfig {
+  totalGuests: number;
+  /** Seconds a finished dish sits READY before it burns. */
+  readyWindow: number;
+  patienceBase: number;
+  patiencePerItem: number;
+}
+
+export const DEFAULT_CONFIG: RoundConfig = {
+  totalGuests: TOTAL_GUESTS,
+  readyWindow: READY_WINDOW,
+  patienceBase: PATIENCE_BASE,
+  patiencePerItem: PATIENCE_PER_ITEM,
+};
+
 export type Rng = () => number;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -101,6 +120,7 @@ export interface Guest {
 }
 
 export interface GameState {
+  config: RoundConfig;
   /** Elapsed game time in seconds. */
   t: number;
   spawned: number;
@@ -150,8 +170,9 @@ function dealCounter(rng: Rng): DishRuntime[] {
  * Guests are built lazily as seats open, so the only randomness here is the deal - the
  * opening stagger is fixed and the first guest is created by the first `tick`.
  */
-export function createInitialState(rng: Rng = Math.random): GameState {
+export function createInitialState(rng: Rng = Math.random, config: RoundConfig = DEFAULT_CONFIG): GameState {
   return {
+    config,
     t: 0,
     spawned: 0,
     seats: Array.from({ length: SEAT_COUNT }, () => null),
@@ -178,6 +199,7 @@ function pickType(mix: GuestMix, rng: Rng): GuestType {
 
 function makeGuest(
   index: number, maxItemsPerGuest: number, counter: DishRuntime[], rng: Rng, mix: GuestMix,
+  config: RoundConfig,
 ): Guest {
   const count = Math.max(1, Math.min(maxItemsPerGuest, 1 + Math.floor(rng() * maxItemsPerGuest)));
   // Orders come off the dealt counter, not the whole menu, so every item is servable.
@@ -188,7 +210,7 @@ function makeGuest(
     items.push({ dishId: picked, served: false });
   }
   const type = pickType(mix, rng);
-  const patience = guestPatience(type, items.length);
+  const patience = guestPatience(type, items.length, config.patienceBase, config.patiencePerItem);
   return {
     id: `g${index}`,
     faceIndex: Math.floor(rng() * FACE_COUNT),
@@ -221,8 +243,8 @@ export function tick(
     const current = seats[i];
 
     if (!current) {
-      if (spawned < TOTAL_GUESTS && t >= nextSpawn[i]) {
-        const guest = makeGuest(spawned, maxItemsPerGuest, state.dishes, rng, mix);
+      if (spawned < state.config.totalGuests && t >= nextSpawn[i]) {
+        const guest = makeGuest(spawned, maxItemsPerGuest, state.dishes, rng, mix, state.config);
         seats[i] = guest;
         itemsRequested += guest.items.length;
         spawned++;
@@ -268,14 +290,14 @@ export function tick(
     if (d.state === 'cooking' && t - d.since >= def.cookSeconds) {
       return { ...d, state: 'ready' as const, since: t };
     }
-    if (d.state === 'ready' && t - d.since >= READY_WINDOW) {
+    if (d.state === 'ready' && t - d.since >= state.config.readyWindow) {
       dishesBurnt++;
       return { ...d, state: 'burnt' as const, since: t };
     }
     return d;
   });
 
-  const done = spawned >= TOTAL_GUESTS && seats.every((s) => s === null);
+  const done = spawned >= state.config.totalGuests && seats.every((s) => s === null);
 
   return {
     ...state,
@@ -421,7 +443,7 @@ export function spoilProgress(state: GameState, dish: DishRuntime): number {
   if (dish.state === 'burnt') return 1;
   if (dish.state !== 'ready') return 0;
   const elapsed = state.t - dish.since;
-  return Math.max(0, Math.min(1, (elapsed - (READY_WINDOW - SPOIL_RAMP)) / SPOIL_RAMP));
+  return Math.max(0, Math.min(1, (elapsed - (state.config.readyWindow - SPOIL_RAMP)) / SPOIL_RAMP));
 }
 
 /** Guests who have arrived and left, i.e. how many of the round's eight are behind us. */

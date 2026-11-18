@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  createInitialState, guestPatience, tapDish, type GameState, type Guest,
+  createInitialState, DEFAULT_CONFIG, guestPatience, tapDish, tick, type GameState, type Guest,
 } from '../model';
 
 /** A fixed counter: index 0 ready, 1 ready, 2 idle, 3 idle. */
@@ -99,5 +99,27 @@ describe('decision-making: which dish is cooked first (FINAL_SPEC 7.1)', () => {
   it('is no choice with a single guest waiting', () => {
     const s = tapDish(stateWith([guest('g1', 10, [C])], ['idle', 'idle']), 2);
     expect(s.choiceOpportunities).toBe(0);
+  });
+});
+
+describe('round config from the ladder (plan 3a)', () => {
+  it('ends the round after the configured number of guests', () => {
+    let s = createInitialState(() => 0.5, { ...DEFAULT_CONFIG, totalGuests: 1 });
+    for (let i = 0; i < 2000 && !s.done; i++) s = tick(s, 0.5, 1, () => 0.5);
+    expect(s.done).toBe(true);
+    expect(s.spawned).toBe(1);
+  });
+
+  it('burns a ready dish after the configured ready window', () => {
+    const base = createInitialState(() => 0.5, { ...DEFAULT_CONFIG, readyWindow: 5 });
+    const s = { ...base, t: 0, dishes: base.dishes.map((d, i) => (i === 0 ? { ...d, state: 'ready' as const, since: 0 } : d)) };
+    expect(tick(s, 4.9, 1, () => 0.5).dishes[0].state).toBe('ready');
+    expect(tick(s, 5.1, 1, () => 0.5).dishes[0].state).toBe('burnt');
+  });
+
+  it('gives guests the configured patience', () => {
+    const s = tick(createInitialState(() => 0.5, { ...DEFAULT_CONFIG, patienceBase: 40, patiencePerItem: 10 }), 0.1, 1, () => 0.5);
+    const g = s.seats.find(Boolean)!;
+    expect(g.patience).toBe(guestPatience('middle', g.items.length, 40, 10));
   });
 });

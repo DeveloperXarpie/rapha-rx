@@ -78,8 +78,8 @@ These affect every game, so they are decided once.
 
 | # | Question | Why it matters |
 |---|---|---|
-| X1 | **How does a resident move on the ladder?** Proposal: up one level on a clear; down one level after 2 fails in a row; otherwise repeat. | Today's score moves every round. A ladder needs explicit rules. |
-| X2 | **What happens to levels overnight?** D2 resets category unlocks daily, but levels could persist, decay, or warm up as today (80% of yesterday's peak). | A visible level that drops overnight conflicts with encouraging feedback. |
+| X1 | **How does a resident move on the ladder?** **Decided** [Owner 2026-11-18]: up one level on a clear; down one level after 2 fails in a row; otherwise repeat. Live in v1.38.0. | Today's score moves every round. A ladder needs explicit rules. |
+| X2 | **What happens to levels overnight?** **Decided** [Owner 2026-11-18]: every game restarts at level 1 each day. D2 resets category unlocks daily, but levels could persist, decay, or warm up as today (80% of yesterday's peak). | A visible level that drops overnight conflicts with encouraging feedback. |
 | X3 | **Phone or tablet?** **Decided: both** [Owner 2026-11-18]. Every level must work on a 360 px phone and a tablet, so the phone sets the hard maximums (Spot Focus columns, Free Me board size). | Phone limits are much tighter. |
 | X4 | **Hints.** Partly decided per game: Shopping List keeps hints, heavily limited, and a hinted round scores half; Free Me's hint unlock point varies by level [Owner 2026-11-18]. | Hints contaminate Recall and Problem-solving today. |
 | X5 | **Lives.** Partly decided: Station Master shows hearts as one heart icon with a number, so more than 3 can be shown, and a level may go as low as 1 heart [Owner 2026-11-18]. | Lives cap error counts and cut rounds short. |

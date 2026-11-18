@@ -323,6 +323,11 @@ export interface ServeGuestsDynamicParams {
    * DIFFICULTY_RULES 3.5 sample mix mapped onto this 0-1 score until plan 3's ladder.
    */
   guestMix: { impatient: number; patient: number };
+  /** Round settings the ladder sets per level (plan 3a); today's constants by default. */
+  guestsPerRound: number;
+  patienceBaseS: number;
+  patiencePerItemS: number;
+  readyWindowS: number;
 }
 
 export function getServeGuestsParams(score: number): ServeGuestsDynamicParams {
@@ -331,6 +336,10 @@ export function getServeGuestsParams(score: number): ServeGuestsDynamicParams {
     guestMix: score < 0.34 ? { impatient: 0, patient: 0 }
       : score < 0.67 ? { impatient: 0.2, patient: 0.2 }
         : { impatient: 0.3, patient: 0.3 },
+    guestsPerRound: 8,
+    patienceBaseS: 26,
+    patiencePerItemS: 9,
+    readyWindowS: 11,
   };
 }
 

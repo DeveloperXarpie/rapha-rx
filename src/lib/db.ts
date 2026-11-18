@@ -71,6 +71,13 @@ export interface DifficultyState {
   score: number;             // 0.0 → 1.0
   peakScore: number;         // highest score reached this day
   roundsPlayed: number;
+  /*
+   * Ladder games (src/lib/ladders) keep their numbered level here instead of `score`.
+   * Not indexed, so no Dexie version bump. A row per day is what makes every game
+   * restart at level 1 each day (DIFFICULTY_RULES X2).
+   */
+  level?: number;
+  failStreak?: number;
 }
 
 export interface PendingEvent {

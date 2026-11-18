@@ -80,6 +80,16 @@ Single Zustand store with `persist` middleware (localStorage key `brain-training
 ### Persistence (`src/lib/db.ts`)
 Dexie (IndexedDB) database `BrainTrainingDB` with tables: `userProfile`, `sessionState`, `gameProgress`, `difficultyState`, `pendingEvents`. Schema versioning is in the `BrainTrainingDB` constructor — always add a new `.version()` block when changing the schema; never mutate existing versions.
 
+### Difficulty ladders (`src/lib/ladders/`, since v1.38.0)
+Shopping List, Spot Focus and Tiffin Time play from a numbered ladder instead of the 0-1
+score (DIFFICULTY_RULES). Each game file holds anchor levels; `fillLadder` fills the rest
+and `ladders.test.ts` holds every guardrail - a broken rule is fixed with another anchor,
+never a clamp. A resident starts every game at level 1 each day (the UTC date, so 05:30
+IST), goes up one on a clear and down one after two fails in a row (`movement.ts`). The
+level lives on today's `difficultyState` row (`level`, `failStreak`). Bump
+`LADDER_VERSION` whenever a value changes; rounds log it. Station Master and Free Me get
+ladders later; the other games keep the score below.
+
 ### Dynamic difficulty (`src/lib/dynamicDifficulty.ts`)
 Each game has a `DifficultyState` record (score 0.0–1.0) per user per day. `getTodayDifficulty()` seeds from yesterday's peak × 0.8 warmup factor. `adjustDifficulty()` promotes (+0.05 × performance multiplier) or demotes (−0.08) after each round. `GameShell` calls this on every `onLevelComplete`. Game-specific `computePerformanceRatio()` is in `src/components/GameShell.tsx` — add a case there whenever a new game is added.
 
