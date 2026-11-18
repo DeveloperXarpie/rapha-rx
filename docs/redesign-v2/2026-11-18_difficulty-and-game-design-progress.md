@@ -1,9 +1,10 @@
 # Redesign v2: Difficulty and Game Design Progress
 
 **Date**: 2026-11-18
+**Updated**: 2026-11-19 (implementation progress, plans 1-3a)
 **Content Type**: Progress report (discussion record)
-**Branch**: `feat/app-flow-redesign` (v1.35.7)
-**Covers**: the 2026-11-18 session that folded the owner's answers on the difficulty design notes into the v2 docs.
+**Branch**: `feat/app-flow-redesign` (v1.35.7 at the start; v1.38.0 now)
+**Covers**: the 2026-11-18 session that folded the owner's answers on the difficulty design notes into the v2 docs, and the implementation that followed (plans 1, 2 and 3a).
 
 This file records how the discussion went and where it ended.
 The decisions themselves live in the docs below; if this file and they ever disagree, they win.
@@ -64,7 +65,7 @@ Per game:
 | Tiffin Time | Spelled "Tiffin". Guest types (Impatient, Middle, Patient). Guests per round up to 18. The game keeps choosing the guest. On-screen points removed. Clear rule and tightest patience are Claude's proposals, to balance later. |
 | Free Me | **Worked on last.** Random pick from the level pool. Restart = not cleared. No move ceiling. Planning counts moves since the last restart. Hint unlock varies by level. 6 x 6 cap for now. More puzzles and visual variety. |
 
-### Small changes that capture skills (FINAL_SPEC 7.1a, proposed)
+### Small changes that capture skills (FINAL_SPEC 7.1a; built in plan 2 except Station Master)
 
 | Skill | Small change |
 |---|---|
@@ -80,16 +81,43 @@ Per game:
 | # | Question | Where |
 |---|---|---|
 | C18 | Does Garden Keeper stay in Free Play unchanged, or leave the app? | FINAL_SPEC 13 |
-| C20 | Second trip asks at the end of the visit, not the session: is a few rounds' delay acceptable? What about a one-round visit? | FINAL_SPEC 13 |
-| - | Confirm the three small changes in 7.1a. | FINAL_SPEC 7.1a |
-| - | Spot Focus "6 x 3": assumed 3 columns by 6 rows. | DIFFICULTY_RULES 3.3 |
-| - | Starting thresholds, heart maximum, give-up delay, patience multipliers, hint ratios. | DIFFICULTY_RULES 3.x open questions |
-| X1, X2, X6 | Ladder movement rule, overnight behaviour, ladder-to-score mapping. | DIFFICULTY_RULES 2.1 |
-| - | Anchor levels in `DIFFICULTY_LADDERS.xlsx` (the sheet predates these answers and needs regenerating). | README |
-| - | Scoring: personal-trend headline vs bands; per-game bar on the same score. | README 4 |
+| C20 | Second trip asks at the end of the visit, not the session. Built that way (plan 2); confirm a few rounds' delay is acceptable. | FINAL_SPEC 13 |
+| - | Spot Focus "6 x 3": built as 3 columns by 6 rows. At 6 rows a 360 px phone gives about 35x47 px cards, far under 80 px. Confirm, or cap at 5 rows. | DIFFICULTY_RULES 3.3 |
+| - | After a second fail in a row, the Replay button plays the level below (X1 drops it). Keep the label, change it, or show a "stepping down" cue? | Plan 3a final review |
+| - | The give-up button is 52 px tall (under the 80 px minimum, full width). | Plan 2 rulings |
+| Q3 | Should Free Play rounds move difficulty? Today they move the ladder. | FINAL_SPEC 13 |
+| X6 | How the ladder level feeds the skill score: deferred to the scoring plan. | DIFFICULTY_RULES 2.1 |
+| - | Anchor levels: the samples are provisional; the spreadsheet importer is plan 3b. | README |
+| - | Scoring: personal-trend headline vs bands; per-game bar on the same score; C3-C6. | Plan 4 |
 
-## 3. Next steps
+## 3. Implementation progress (2026-11-18 to 2026-11-19)
 
-1. Write the v2 implementation plan (`docs/superpowers/plans/2026-11-18-redesign-v2.md`), sequenced so that work blocked on owner input or art comes last.
-2. Start with what is unblocked and independent of the open questions: the difficulty carry-over bug, the session engine (Stream A) and the copy changes (Stream F).
-3. Regenerate `DIFFICULTY_LADDERS.xlsx` from the updated rules once the anchors arrive.
+All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review before building, and a fresh whole-branch review after. Rulings and deferred minors for each are in its git-ignored ledger under `.superpowers/sdd/<plan>/progress.md`.
+
+| Plan | What | Version, commit | State |
+|---|---|---|---|
+| 1 | Session engine and Home: Memory opens daily, 10 minutes of **board time** completes a category, free choice of game, locked and completed popups, unlock animation, Garden Keeper out of the daily session | v1.36.0, `f95759c` | Pushed; smoke-tested on localhost |
+| 2 | Game changes: Shopping List, Spot Focus, Tiffin Time graded clear / hold / fail with Replay; Shopping List one hint, half score when hinted, second trip for Retention; Spot Focus "I can't find it" and find timing; Tiffin guest types, numbered dishes, decision logging, no points, "Tiffin" spelling | v1.37.0, `c6613ed` | Committed, not pushed |
+| 3a | Difficulty ladders for the same three games: daily restart at level 1, up on a clear, down after two fails; anchors from the rules doc's samples; Tiffin round settings per level | v1.38.0, `d809334` | Committed, not pushed |
+
+**Temporary:** `CATEGORY_SESSION_SECONDS` is 30 s instead of 600 for owner testing. Two sessionLedger tests fail until it is reverted, and no build with it may be promoted to Production.
+
+### Decisions taken during implementation (owner)
+
+- Plan 1: stay on `feat/app-flow-redesign`; only board time counts toward the 10 minutes (Q2); Garden Keeper leaves the daily session now.
+- Plan 2: scope is Shopping List, Spot Focus, Tiffin Time; Replay sits on the game's own round-end card; a failed round keeps the level; the second trip is the last round of a visit; starting thresholds accepted.
+- Plan 3a: X1 up on a clear, down after two fails; X2 every game restarts at level 1 each day; anchors from the samples for now; X6 deferred to scoring.
+
+### Notable findings along the way
+
+- Old saved sessions would have crashed Home after the upgrade (fixed: normalised on load from localStorage and Dexie).
+- `game_started` was firing every second through a dependency bug (fixed).
+- One-aisle Shopping List rounds could draw decoys from a second aisle after a refactor (caught by a new test, fixed).
+- Without its middle outcome, every in-between round would have counted as a clear (fixed: clear / hold / fail).
+
+## 4. Next steps
+
+1. **Plan 4, scoring**: the scorecard skill cards (Mock 2) and the 10-minute summary (Mock 3). Needs the scoring decisions first.
+2. Plan 3b: the spreadsheet importer and the layout-dependent ladder knobs (Tiffin seats and counter, mixed Spot Focus tiers, Shopping List crates and closeness).
+3. Revert the 30 s timer, then push and promote once the owner has smoke-tested plans 2 and 3a.
+4. Later: Station Master (after art), Free Me (last), Baggage Sort (design), research data.
