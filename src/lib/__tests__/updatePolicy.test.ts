@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { isSafeToUpdate } from '../updatePolicy';
 
 describe('isSafeToUpdate', () => {
-  it.each(['/', '/app/home', '/app/summary', '/app/free-play', '/app/home/'])(
+  it.each(['/', '/app/home', '/app/summary', '/app/free-play', '/app/home/',
+    '/app/category-summary/memory', '/app/category-summary/executive/'])(
     'lets an update take over on %s',
     (path) => expect(isSafeToUpdate(path)).toBe(true),
   );

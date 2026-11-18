@@ -165,6 +165,8 @@ Fixes the October docs unblocked, none done yet:
   Plan: `docs/superpowers/plans/2026-11-18-redesign-v2-game-changes.md`.
 - **Plan 3a, difficulty ladders (Shopping List, Spot Focus, Tiffin Time)**: implemented in v1.38.0; anchors are the rules doc's samples, provisional. Plan 3b: the spreadsheet importer and the layout-dependent knobs.
   Plan: `docs/superpowers/plans/2026-11-18-redesign-v2-ladders.md`.
+- **Plan 4, scoring**: implemented in v1.39.0: round log, skill scores, the Mock 2 scorecard and the Mock 3 10-minute summary.
+  Plan: `docs/superpowers/plans/2026-11-19-redesign-v2-scoring.md`.
 
 ## 7. Suggested next steps
 

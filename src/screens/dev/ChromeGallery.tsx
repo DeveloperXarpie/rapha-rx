@@ -20,7 +20,6 @@ import { Button } from '../../components/ui/Button';
 import { GameIntroView } from '../GameIntro';
 import { GAME_SKILLS } from '../../lib/gameSkills';
 import { ScoreCardView } from '../ScoreCard';
-import { getScoreCard } from '../../lib/scoreCard';
 import { BRAND, CATEGORY_BRAND } from '../../styles/tokens';
 import type { GameCategory } from '../../styles/tokens';
 
@@ -227,19 +226,28 @@ export default function ChromeGallery() {
       <Section title="Score cards">
         <div style={{ display: 'flex', gap: 16, overflowX: 'auto' }}>
           <Phone>
-            <ScoreCardView game={GAME_CATALOG['market-memory']} data={getScoreCard('market-memory')} onContinue={noop} onClose={noop} />
+            <ScoreCardView game={GAME_CATALOG['market-memory']} data={{ cards: [], improved: false }} onContinue={noop} onClose={noop} />
           </Phone>
           <Phone>
-            <ScoreCardView game={GAME_CATALOG['train-yard']} data={getScoreCard('train-yard')} unlocked="attention" onContinue={noop} onClose={noop} />
+            <ScoreCardView
+              game={GAME_CATALOG['market-memory']}
+              data={{ cards: [{ skill: 'recall', score: 80, band: 4 }, { skill: 'retention', score: 50, band: 2 }], improved: false }}
+              unlocked="attention" onContinue={noop} onClose={noop}
+            />
           </Phone>
           <Phone>
-            <ScoreCardView game={GAME_CATALOG['market-memory']} data={{ primary: 82, previous: 76, bestSkill: 'recognition' }} onContinue={noop} onClose={noop} />
+            <ScoreCardView
+              game={GAME_CATALOG['market-memory']}
+              data={{ cards: [{ skill: 'recall', score: 80, band: 4 }, { skill: 'retention', score: 50, band: 2 }], improved: true }}
+              onContinue={noop} onClose={noop}
+            />
           </Phone>
           <Phone>
-            <ScoreCardView game={GAME_CATALOG['spot-focus']} data={{ primary: 55, previous: null, bestSkill: 'responseTime' }} onContinue={noop} onClose={noop} />
-          </Phone>
-          <Phone>
-            <ScoreCardView game={GAME_CATALOG['clear-the-way']} data={{ primary: 30, previous: 45, bestSkill: 'planning' }} onContinue={noop} onClose={noop} />
+            <ScoreCardView
+              game={GAME_CATALOG['serve-guests']}
+              data={{ cards: [{ skill: 'sequencing', score: 35, band: 1 }, { skill: 'decisionMaking', score: 92, band: 5 }], improved: false }}
+              onContinue={noop} onClose={noop}
+            />
           </Phone>
         </div>
       </Section>

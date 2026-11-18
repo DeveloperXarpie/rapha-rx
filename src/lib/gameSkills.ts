@@ -79,13 +79,34 @@ export interface GameSkills {
  * the Format doc maps. A Free Play game missing here has no intro and goes straight
  * to play - its skills are for the research team to name, not guessed here.
  */
+/**
+ * The two skills each session game is scored on, in display order (FINAL_SPEC 7.1;
+ * D24: the owner fixed these, and games capture them with small changes, never by
+ * swapping a skill). The scorecard and the 10-minute summary read this.
+ */
+export const SCORED_SKILLS: Record<string, [SkillId, SkillId]> = {
+  'market-memory': ['recall', 'retention'],
+  'train-yard':    ['sequences', 'association'],
+  'spot-focus':    ['selectiveAttention', 'responseTime'],
+  'serve-guests':  ['sequencing', 'decisionMaking'],
+  'clear-the-way': ['planning', 'problemSolving'],
+};
+
+const scored = (id: string, category: GameCategory): GameSkills => ({
+  category, primary: SCORED_SKILLS[id][0], secondary: [SCORED_SKILLS[id][1]],
+});
+
+/*
+ * The game intro lists these. The session games follow SCORED_SKILLS, so the intro
+ * and the scorecard name the same skills; the others keep the Format doc's mapping.
+ */
 export const GAME_SKILLS: Record<string, GameSkills> = {
-  'market-memory': { category: 'memory',    primary: 'recall',             secondary: ['recognition', 'retention', 'association'] },
-  'train-yard':    { category: 'memory',    primary: 'sequences',          secondary: ['recall', 'patterns'] },
-  'spot-focus':    { category: 'attention', primary: 'selectiveAttention', secondary: ['responseTime'] },
+  'market-memory': scored('market-memory', 'memory'),
+  'train-yard':    scored('train-yard', 'memory'),
+  'spot-focus':    scored('spot-focus', 'attention'),
   'garden-keeper': { category: 'attention', primary: 'selectiveAttention', secondary: ['accuracy'] },
-  'serve-guests':  { category: 'executive', primary: 'planning',           secondary: ['decisionMaking', 'sequencing'] },
-  'clear-the-way': { category: 'executive', primary: 'problemSolving',     secondary: ['planning', 'cognitiveFlexibility'] },
+  'serve-guests':  scored('serve-guests', 'executive'),
+  'clear-the-way': scored('clear-the-way', 'executive'),
   'word-search':   { category: 'attention', primary: 'sustainedAttention', secondary: ['concentration'] },
 };
 

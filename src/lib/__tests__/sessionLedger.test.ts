@@ -59,10 +59,12 @@ describe('pendingUnlock', () => {
     expect(pendingUnlock(['memory', 'attention', 'executive'], ['memory'])).toBeNull());
 });
 
-describe('afterScoreCard', () => {
-  it('goes home mid-day', () => expect(afterScoreCard(['memory'])).toBe('/app/home'));
-  it('goes to the summary after the third', () =>
-    expect(afterScoreCard(['memory', 'attention', 'executive'])).toBe('/app/summary'));
+describe('afterScoreCard (C4: scorecard, summary, Home)', () => {
+  it('goes to the summary of the category just completed', () => {
+    expect(afterScoreCard(['memory'])).toBe('/app/category-summary/memory');
+    expect(afterScoreCard(['memory', 'attention', 'executive'])).toBe('/app/category-summary/executive');
+  });
+  it('goes home when nothing is complete', () => expect(afterScoreCard([])).toBe('/app/home'));
 });
 
 describe('normalizeSession', () => {

@@ -15,8 +15,11 @@ const SAFE_PATHS: ReadonlySet<string> = new Set([
 /** How often an open app asks the server for a new build. */
 export const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
 
+/** Screens with a parameter: the 10-minute summary of any category (plan 4). */
+const SAFE_PREFIXES: readonly string[] = ['/app/category-summary/'];
+
 export function isSafeToUpdate(pathname: string): boolean {
   // A trailing slash is the same screen to the router, so it is to us too.
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
-  return SAFE_PATHS.has(path);
+  return SAFE_PATHS.has(path) || SAFE_PREFIXES.some((p) => path.startsWith(p));
 }

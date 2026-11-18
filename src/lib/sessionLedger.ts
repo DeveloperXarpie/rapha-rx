@@ -67,9 +67,13 @@ export function pendingUnlock(completed: string[], unlocksSeen: string[]): GameC
   return active && !unlocksSeen.includes(active) ? active : null;
 }
 
-/** Where the score card's Continue goes. */
-export function afterScoreCard(completed: string[]): '/app/summary' | '/app/home' {
-  return isDayComplete(completed) ? '/app/summary' : '/app/home';
+/**
+ * Where the score card's Continue goes: the 10-minute summary of the category just
+ * completed (C4: scorecard, summary, Home; owner 2026-11-19).
+ */
+export function afterScoreCard(completed: string[]): string {
+  const last = completed[completed.length - 1];
+  return last ? `/app/category-summary/${last}` : '/app/home';
 }
 
 export interface LedgerSession {

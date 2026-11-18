@@ -9,7 +9,7 @@ import GameRouter from './screens/GameRouter';
 import GameIntro from './screens/GameIntro';
 import ScoreCard from './screens/ScoreCard';
 import GameTitleScreen from './screens/GameTitleScreen';
-import SessionSummary from './screens/SessionSummary';
+import CategorySummary from './screens/CategorySummary';
 import FreePlayScreen from './screens/FreePlayScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import RequireProfile from './components/RequireProfile';
@@ -44,7 +44,9 @@ export default function App() {
               <Route path="/app/game/:gameId"        element={<GameRouter />} />
               <Route path="/app/game/:gameId/score"  element={<ScoreCard />} />
               <Route path="/app/free-play"           element={<FreePlayScreen />} />
-              <Route path="/app/summary"             element={<SessionSummary />} />
+              <Route path="/app/category-summary/:category" element={<CategorySummary />} />
+              {/* The interim day summary is retired (plan 4); old links land on Home. */}
+              <Route path="/app/summary"             element={<Navigate to="/app/home" replace />} />
               <Route path="/app/settings"            element={<SettingsScreen />} />
 
               {/* Debug level jumper. Unlike /dev/chrome this ships, so the levels

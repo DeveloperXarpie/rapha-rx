@@ -80,6 +80,21 @@ export interface DifficultyState {
   failStreak?: number;
 }
 
+/**
+ * One round that counted for a category session (plan 4), kept so skill scores can be
+ * computed for today and for the previous session. `metrics` is the game's own
+ * LevelResult.metrics, unchanged.
+ */
+export interface RoundRecord {
+  id?: number;
+  userId: string;
+  date: string;
+  category: 'memory' | 'attention' | 'executive';
+  gameId: string;
+  at: number;
+  metrics: Record<string, unknown>;
+}
+
 export interface PendingEvent {
   id?: number;
   eventName: string;
@@ -131,6 +146,7 @@ class BrainTrainingDB extends Dexie {
   gameProgress!: Table<GameProgress, number>;
   difficultyState!: Table<DifficultyState, number>;
   pendingEvents!: Table<PendingEvent, number>;
+  roundLog!: Table<RoundRecord, number>;
   ppEngine!: Table<PpEngineRow, string>;
   ppPairHistory!: Table<PpPairHistoryRow, string>;
 
@@ -157,6 +173,17 @@ class BrainTrainingDB extends Dexie {
       pendingEvents:'++id, queuedAt',
       ppEngine: 'userId',
       ppPairHistory: 'key, userId',
+    });
+    // Plan 4: the round log behind skill scores.
+    this.version(4).stores({
+      userProfile:  'userId, careHomeId, createdAt',
+      sessionState: '++id, userId, date, [userId+date]',
+      gameProgress: '++id, userId, gameId, [userId+gameId]',
+      difficultyState: '++id, userId, gameId, date, [userId+gameId], [userId+gameId+date]',
+      pendingEvents:'++id, queuedAt',
+      ppEngine: 'userId',
+      ppPairHistory: 'key, userId',
+      roundLog: '++id, userId, [userId+date+category], [userId+category+date]',
     });
   }
 }
@@ -257,4 +284,29 @@ export async function putPpPair(userId: string, sceneId: string, changeClass: nu
 
 export async function getPpPairsForUser(userId: string): Promise<PpPairHistoryRow[]> {
   return appDb.ppPairHistory.where('userId').equals(userId).toArray();
+}
+
+// ─── Round log (plan 4) ───────────────────────────────────────────────────────
+
+export async function addRound(r: RoundRecord): Promise<void> {
+  await appDb.roundLog.add(r);
+}
+
+export async function getRounds(
+  userId: string, date: string, category: RoundRecord['category'],
+): Promise<RoundRecord[]> {
+  return appDb.roundLog.where('[userId+date+category]').equals([userId, date, category]).sortBy('at');
+}
+
+/** Every round of the latest day before `beforeDate` that had rounds in this category. */
+export async function getPreviousSessionRounds(
+  userId: string, category: RoundRecord['category'], beforeDate: string,
+): Promise<RoundRecord[]> {
+  const earlier = await appDb.roundLog
+    .where('[userId+category+date]')
+    .between([userId, category, ''], [userId, category, beforeDate], true, false)
+    .toArray();
+  if (earlier.length === 0) return [];
+  const last = earlier.reduce((d, r) => (r.date > d ? r.date : d), '');
+  return earlier.filter((r) => r.date === last).sort((a, b) => a.at - b.at);
 }

@@ -39,7 +39,7 @@ React 18 + TypeScript, Vite, Tailwind CSS, Zustand, Dexie (IndexedDB), i18next, 
 /app/game/:gameId        → GameRouter           │
 /app/game/:gameId/score  → ScoreCard            │
 /app/free-play           → FreePlayScreen       │
-/app/summary             → SessionSummary       │
+/app/category-summary/:category → CategorySummary │
 /app/settings            → SettingsScreen      ─┘
 ```
 
@@ -65,11 +65,21 @@ The rules live in one pure, tested module: `src/lib/sessionLedger.ts`. Spec:
    and shows the `ScoreCard` with an unlock banner; otherwise the next round starts. A level
    always finishes before the category completes.
 4. Home plays the unlock animation once (`unlocksSeen`). After the third category the score
-   card goes to the day summary, which lists `gamesPlayed`, then Home offers Free Play.
+   card goes to that category's 10-minute summary, then Home (which offers Free Play once all
+   three are done).
 5. Garden Keeper is out of the daily session (FINAL_SPEC D15), so Attention shows Spot Focus
    until Baggage Sort exists; it is still in Free Play.
 6. Saved sessions from before v1.36 (with `plannedGames`/`sessionStarted`) are converted by
    `normalizeSession()`, both from Dexie and, via the persist `merge`, from localStorage.
+
+### Scoring (`src/lib/scoring/`, since v1.39.0)
+Rounds that count for a category session (the same rule as the 10 minutes, `countsForSession`)
+are written to the Dexie `roundLog` table by `GameShell` before the category can complete.
+`measures.ts` turns rounds into skill scores per FINAL_SPEC 7.1 (`SCORED_SKILLS` in
+`gameSkills.ts`, two per game), measure only, 0-100; a skill with nothing to judge is left out.
+`summary.ts` gives the scorecard's cards (5 bands, words and bars only, no numbers) and the
+10-minute summary's rings (numbers, change since the last session of that category, the 7.2
+ten-band headline). Spot Focus response speed maps 2 s = 100 to 20 s = 0, provisionally.
 
 ### State (`src/store/index.ts`)
 Single Zustand store with `persist` middleware (localStorage key `brain-training-store`). Three slices:

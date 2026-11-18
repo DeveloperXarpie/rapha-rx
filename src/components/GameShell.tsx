@@ -13,6 +13,8 @@ import { shouldAdjustDifficulty, type RoundOutcome } from '../lib/roundOutcome';
 import { isLadderGame, ladderLength, LADDER_VERSION } from '../lib/ladders';
 import { shouldMoveLadder } from '../lib/ladders/movement';
 import { advanceLadder } from '../lib/ladders/store';
+import { countsForSession } from '../lib/scoring/roundLog';
+import { addRound } from '../lib/db';
 import { Button } from './ui/Button';
 import type { GameVisit, LevelConfig } from '../games/types';
 import { needsSecondTrip, requestSecondTrip } from '../games/memory/MarketMemory/secondTrip';
@@ -120,6 +122,9 @@ function useBoardAnchor(enabled: boolean, gameId: string): [(el: HTMLDivElement 
 
   return [ref, anchor];
 }
+
+/** The wall clock, read outside render; a round's log stamp is taken at its end. */
+const wallClock = () => Date.now();
 
 export default function GameShell({
   gameId,
@@ -281,6 +286,22 @@ export default function GameShell({
       ladderLevel,
       debug,
     });
+
+    /*
+     * The round log behind skill scores (plan 4): only rounds that count for the
+     * category session, read before the category completes so the crossing round is
+     * in it. Awaited, because the scorecard reads the log the moment it opens; a failed
+     * write costs a score, never the round.
+     */
+    const snapshot = useAppStore.getState().currentSession;
+    if (userId && countsForSession({ gameCategory, completed: snapshot.categoriesCompleted, debug })) {
+      try {
+        await addRound({
+          userId, date: snapshot.date, category: gameCategory, gameId, at: wallClock(),
+          metrics: result.metrics,
+        });
+      } catch { /* scoring degrades; play goes on */ }
+    }
 
     finishLevel({ ...result, newDifficultyScore, newLevel });
   }

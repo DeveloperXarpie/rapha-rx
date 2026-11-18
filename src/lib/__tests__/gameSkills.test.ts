@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { GAME_SKILLS, SKILLS, DOMAIN_KEY, skillsFor } from '../gameSkills';
+import { GAME_SKILLS, SCORED_SKILLS, SKILLS, DOMAIN_KEY, skillsFor } from '../gameSkills';
 import { getGame, marqueeGames } from '../gameCatalog';
 
 const LOCALES = ['en', 'hi', 'kn'] as const;
@@ -19,13 +19,19 @@ describe('gameSkills', () => {
     }
   });
 
-  it('matches the Format doc: primary skill first, then the secondaries', () => {
-    expect(skillsFor('market-memory')).toEqual(['recall', 'recognition', 'retention', 'association']);
-    expect(skillsFor('train-yard')).toEqual(['sequences', 'recall', 'patterns']);
+  // The session games follow FINAL_SPEC 7.1 (D24: the owner fixed these two skills per
+  // game); the rest keep the Format doc's mapping until they are specified.
+  it('matches FINAL_SPEC 7.1 for the session games', () => {
+    expect(skillsFor('market-memory')).toEqual(['recall', 'retention']);
+    expect(skillsFor('train-yard')).toEqual(['sequences', 'association']);
     expect(skillsFor('spot-focus')).toEqual(['selectiveAttention', 'responseTime']);
+    expect(skillsFor('serve-guests')).toEqual(['sequencing', 'decisionMaking']);
+    expect(skillsFor('clear-the-way')).toEqual(['planning', 'problemSolving']);
+    for (const id of Object.keys(SCORED_SKILLS)) expect(skillsFor(id), id).toEqual(SCORED_SKILLS[id]);
+  });
+
+  it('keeps the Format doc mapping for the games outside the session', () => {
     expect(skillsFor('garden-keeper')).toEqual(['selectiveAttention', 'accuracy']);
-    expect(skillsFor('serve-guests')).toEqual(['planning', 'decisionMaking', 'sequencing']);
-    expect(skillsFor('clear-the-way')).toEqual(['problemSolving', 'planning', 'cognitiveFlexibility']);
     expect(skillsFor('word-search')).toEqual(['sustainedAttention', 'concentration']);
   });
 

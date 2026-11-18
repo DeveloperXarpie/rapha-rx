@@ -365,13 +365,10 @@ Nothing in this list is assumed anywhere else in the doc.
 
 | # | Issue | Blocks |
 |---|---|---|
-| C5 | **Scorecard message variants.** When does the scorecard show "Thank you for playing today" and when "Your recall has improved steadily"? | C |
-| C6 | **"After every game" vs "after each level".** The draft says the scorecard shows after every game. A game visit is several short levels. Is it after each level, or once when the resident leaves the game? | A, C |
 | C7 | **Home empty slots.** Mock 1 shows two empty tiles in each category panel. Are they placeholders for future games, decoration, or should they be removed? (Mock 1 also labels the Garden Keeper tile "SHOPPING LIST", assumed to be a mock typo.) | B |
 | C8 | **"Prescriptive games" location.** No such wording exists in the app copy today. Is it in an image, the store listing, or a place outside the locale files? | F |
 | C14 | **"This week's 3 sessions".** Is a session here one full day of 30 minutes? Is the weekly target fixed at 3? | A, C |
 | C15 | **Demographic comparison.** 10 levels of one game or in total? Which demographic and source data? Does it break the no-numbers and no-rankings rules? | C |
-| C16 | **"Since last session".** Is the comparison against the same category's previous 10-minute session, which is the previous day given D2? | C |
 | Q3 | Does Free Play play still feed dynamic difficulty? | D |
 | Q4 | How is Free Play reached from the new Home, and from when? | B |
 | C20 | **Retention delay.** The draft asks about today's list "at the end of the session". The proposed second trip (7.1a) asks at the end of the Shopping List visit instead, so the delay is a few rounds, not the rest of the Memory session. Acceptable, or should the second trip wait for the resident's next Shopping List visit that day? And what if a visit has only one round? | C |
@@ -382,6 +379,15 @@ Nothing in this list is assumed anywhere else in the doc.
 - C1: the summary shows numeric scores (D12).
 - C2: declines are shown with red down arrows (D13).
 - C13: the summary shows only the skills of games played, 2 or 4 rings (D14).
+
+### Resolved (2026-11-19, scoring; built in v1.39.0)
+
+- C3: measure only (owner): each 7.1 measure as a 0-100 whole number, capped; 5 scorecard bands at 40 / 60 / 75 / 90; Spot Focus response speed 2 s = 100 to 20 s = 0 (provisional).
+- C4: scorecard with the unlock banner, then the 10-minute summary, then Home (owner).
+- C5: "Thank you for playing today.", or "You have improved steadily." plus "Keep playing to build on it." when the first skill rose 3+ points (interim; the draft's line was over 10 words).
+- C6: the scorecard shows only at category completion (owner).
+- C16: the same category's most recent earlier day with rounds.
+- Summary headline: absolute bands, 7.2's ten-band table (owner).
 
 ### Resolved (2026-11-18)
 
@@ -398,8 +404,6 @@ Kept so they are not lost; nothing in this spec depends on them yet.
 
 | # | Issue |
 |---|---|
-| C3 | **Measure to band.** How each raw measure becomes a 0-100 score and a 1-5 band. Response speed is in seconds and needs a direction and range. Retention can exceed 100. |
-| C4 | **Order at the threshold.** The order of the level scorecard, the unlock popup, the 10-minute summary, then Home. (The Retention question that was in this sequence will not be built: D16.) |
 
 ## 14. Related documents
 
