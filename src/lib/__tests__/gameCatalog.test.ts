@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  GAME_CATALOG, getGame, marqueeGames, marqueeByCategory, categoryIcon,
+  GAME_CATALOG, getGame, marqueeGames, sessionGamesByCategory, categoryIcon,
 } from '../gameCatalog';
 
 const PUBLIC = join(process.cwd(), 'public');
@@ -16,10 +16,11 @@ describe('gameCatalog', () => {
     ]);
   });
 
-  it('gives each category exactly two marquee games', () => {
-    expect(marqueeByCategory('memory').map((g) => g.id)).toEqual(['market-memory', 'train-yard']);
-    expect(marqueeByCategory('attention').map((g) => g.id)).toEqual(['spot-focus', 'garden-keeper']);
-    expect(marqueeByCategory('executive').map((g) => g.id)).toEqual(['serve-guests', 'clear-the-way']);
+  it('offers five games in the daily session, without Garden Keeper', () => {
+    expect(sessionGamesByCategory('memory').map((g) => g.id)).toEqual(['market-memory', 'train-yard']);
+    expect(sessionGamesByCategory('attention').map((g) => g.id)).toEqual(['spot-focus']);
+    expect(sessionGamesByCategory('executive').map((g) => g.id)).toEqual(['serve-guests', 'clear-the-way']);
+    expect(getGame('garden-keeper')!.marquee).toBe(true);
   });
 
   it('gives every marquee game both a tile and a splash', () => {

@@ -6,17 +6,17 @@ import { Button } from '../components/ui/Button';
 import { BRAND } from '../styles/tokens';
 
 /**
- * "Keep Your Brain Active", shown before every session.
+ * "Keep Your Brain Active", shown once a day before the first game.
  *
- * Purely informational. It sets no flags and picks no games - startSession did
- * all of that before the resident got here - so arriving twice in one day is
- * harmless and it needs no redirect guard. That is the whole reason the flag it
- * used to own was renamed to sessionStarted.
+ * Home routes here while the day's `educationSeen` is false; Continue sets it and
+ * goes on to the game Home already chose (currentGameId). Arriving twice in one
+ * day is harmless, so it needs no redirect guard.
  */
 export default function EducationScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const currentGameId = useAppStore((s) => s.currentSession.currentGameId);
+  const markEducationSeen = useAppStore((s) => s.markEducationSeen);
 
   return (
     <ScreenBlue>
@@ -60,7 +60,11 @@ export default function EducationScreen() {
         <Button
           variant="green"
           size="md"
-          onClick={() => navigate(currentGameId ? `/app/game/${currentGameId}/intro` : '/app/home')}
+          onClick={() => {
+            // Once a day (v2): Home skips this screen after the first game.
+            markEducationSeen();
+            navigate(currentGameId ? `/app/game/${currentGameId}/intro` : '/app/home');
+          }}
           style={{ minWidth: 176 }}
         >
           {t('btn.letsBegin', "Let's Begin")}

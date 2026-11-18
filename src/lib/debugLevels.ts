@@ -39,28 +39,6 @@ export function parseDebugLevel(raw: string | null): number | null {
   return level >= 1 && level <= MAX_DEBUG_LEVEL ? level : null;
 }
 
-/** The jumper's own route, shared by the route table, the ways in and the ticker. */
+/** The jumper's own route, shared by the route table and the ways in. */
 export const DEBUG_LEVELS_PATH = '/app/debug-levels';
 
-/**
- * True when this location belongs to the jumper - the picker itself, or a round
- * started from it.
- *
- * This exists because the session's per-category ticker runs on every route
- * under SessionManager, the jumper included, and it persists. Without freezing
- * it, time spent probing is charged to whichever category the resident is
- * actually mid-way through: four minutes of testing pushes
- * `secondsInCurrentCategory` past ROTATION_THRESHOLD_SECONDS, and the
- * resident's next real round then ends and rotates immediately, cutting their
- * category short. The difficulty score, the current game and rotation itself
- * are all already sandboxed for a debug round; the clock is the fourth.
- *
- * Freezing the tick is preferred over snapshotting and restoring the counter
- * around the jumper, because the level under test is carried in the URL
- * precisely so it survives reloads - and a reload would strand any snapshot
- * held in memory, leaving the counter wherever the probe had pushed it.
- */
-export function isDebugLocation(pathname: string, search: string): boolean {
-  if (pathname === DEBUG_LEVELS_PATH) return true;
-  return parseDebugLevel(new URLSearchParams(search).get(DEBUG_LEVEL_PARAM)) !== null;
-}

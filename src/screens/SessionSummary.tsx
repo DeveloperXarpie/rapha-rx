@@ -5,23 +5,13 @@ import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
 import { getLastLevels } from '../lib/lastLevel';
 import { getGame } from '../lib/gameCatalog';
-import { CATEGORY_ORDER } from '../lib/sessionPlan';
+import { CATEGORY_ORDER } from '../lib/sessionLedger';
 import ScreenBlue from '../components/chrome/ScreenBlue';
 import CategoryBadge from '../components/chrome/CategoryBadge';
 import { staggerDelay } from '../components/chrome/transitions';
 import { useReducedMotion } from '../lib/useReducedMotion';
 import { Button } from '../components/ui/Button';
 import { BRAND } from '../styles/tokens';
-import type { GameCategory } from '../styles/tokens';
-
-const CATEGORY_LABEL_KEY: Record<GameCategory, string> = {
-  memory:    'category.memory',
-  attention: 'category.attention',
-  executive: 'category.planning',
-};
-const CATEGORY_FALLBACK: Record<GameCategory, string> = {
-  memory: 'Cognitive Memory', attention: 'Attention', executive: 'Planning',
-};
 
 export default function SessionSummary() {
   const { t } = useTranslation();
@@ -32,7 +22,13 @@ export default function SessionSummary() {
   const firedRef = useRef(false);
 
   const firstName = profile?.nickname ?? profile?.firstName ?? '';
-  const planned = session.plannedGames ?? [];
+  /*
+   * The games that earned board time today, grouped in unlock order. v2 lets the
+   * resident pick freely, so this can be three games or five; the old screen read
+   * a fixed trio.
+   */
+  const played = CATEGORY_ORDER.flatMap((category) =>
+    session.gamesPlayed.filter((id) => getGame(id)?.category === category));
 
   /*
    * Levels for the games actually played. This screen used to hold a hardcoded
@@ -43,9 +39,9 @@ export default function SessionSummary() {
   const [levels, setLevels] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    if (!profile || planned.length === 0) return;
-    getLastLevels(profile.userId, planned).then(setLevels);
-  }, [profile, planned.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!profile || played.length === 0) return;
+    getLastLevels(profile.userId, played).then(setLevels);
+  }, [profile, played.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (firedRef.current) return;
@@ -54,7 +50,7 @@ export default function SessionSummary() {
       totalDurationSeconds: session.sessionStartedAt
         ? Math.floor((Date.now() - session.sessionStartedAt) / 1000)
         : 0,
-      gamesPlayed: session.categoriesCompleted.length,
+      gamesPlayed: session.gamesPlayed.length,
       categoriesCompleted: 3,
     });
   }, [session]);
@@ -80,7 +76,7 @@ export default function SessionSummary() {
           className="font-baloo"
           style={{ marginTop: 6, fontSize: 18, fontWeight: 600, color: BRAND.cyan }}
         >
-          {t('summary.subtitle', "You finished today's three games.")}
+          {t('summary.subtitleAreas', 'You finished all three areas today.')}
         </p>
 
         <div
@@ -89,9 +85,10 @@ export default function SessionSummary() {
             gap: 12, marginTop: 24,
           }}
         >
-          {planned.map((gameId, i) => {
+          {played.map((gameId, i) => {
             const game = getGame(gameId);
-            const category = game?.category ?? CATEGORY_ORDER[i];
+            if (!game) return null;
+            const category = game.category;
             const level = levels[gameId];
             return (
               <div
@@ -112,7 +109,8 @@ export default function SessionSummary() {
                     className="font-baloo"
                     style={{ fontSize: 18, fontWeight: 700, color: BRAND.cyanBright }}
                   >
-                    {t(CATEGORY_LABEL_KEY[category], CATEGORY_FALLBACK[category])}
+                    {/* The game's name: two rows can now share a category. */}
+                    {t(game.nameKey, '')}
                   </p>
                   {level !== undefined && (
                     <p

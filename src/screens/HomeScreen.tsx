@@ -1,15 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
-import { checkForResumableSession } from '../lib/resumeSession';
 import * as fullscreen from '../lib/fullscreen';
-import { getLastLevels } from '../lib/lastLevel';
 import { DEBUG_LEVELS_PATH } from '../lib/debugLevels';
-import { getGame, marqueeGames, tileArt } from '../lib/gameCatalog';
-import { ROTATION_THRESHOLD_SECONDS } from '../components/GameShell';
+import { getGame, sessionGamesByCategory } from '../lib/gameCatalog';
+import {
+  CATEGORY_ORDER, categoryStatus, isDayComplete, pendingUnlock, tapOutcome,
+} from '../lib/sessionLedger';
+import { todayISO } from '../lib/dates';
 import ScreenBlue from '../components/chrome/ScreenBlue';
-import GameRow from '../components/chrome/GameRow';
+import CategoryPanel from '../components/chrome/CategoryPanel';
+import HomePopup from '../components/chrome/HomePopup';
 import ScreenTransition from '../components/chrome/ScreenTransition';
 import { Button } from '../components/ui/Button';
 import { BRAND } from '../styles/tokens';
@@ -19,82 +21,83 @@ import { version } from '../../package.json';
 // production build. Deliberately more than a resident would ever land on.
 const DEV_UNLOCK_TAPS = 5;
 
-const CATEGORY_COUNT = 3;
-
 /** Matches the session summary's primary green button. */
 const PRIMARY_ACTION = { minWidth: 262, maxWidth: '100%' } as const;
 
+type Popup = { kind: 'locked' } | { kind: 'completed'; gameId: string } | null;
+
+/*
+ * v2 Home (FINAL_SPEC section 6, Mock 1). The resident picks any game in an open
+ * category; there is no Start Session or Continue any more. What is open, done or
+ * locked comes from sessionLedger.ts.
+ */
 export default function HomeScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const profile          = useAppStore((s) => s.activeProfile);
-  const session          = useAppStore((s) => s.currentSession);
-  const startSession     = useAppStore((s) => s.startSession);
-  const devCompleteToday = useAppStore((s) => s.devCompleteToday);
-  const devResetToday    = useAppStore((s) => s.devResetToday);
+  const profile           = useAppStore((s) => s.activeProfile);
+  const session           = useAppStore((s) => s.currentSession);
+  const ensureToday       = useAppStore((s) => s.ensureToday);
+  const setCurrentGame    = useAppStore((s) => s.setCurrentGame);
+  const markUnlockSeen    = useAppStore((s) => s.markUnlockSeen);
+  const devCompleteCategory = useAppStore((s) => s.devCompleteCategory);
+  const devCompleteToday  = useAppStore((s) => s.devCompleteToday);
+  const devResetToday     = useAppStore((s) => s.devResetToday);
 
-  const [isResumable, setIsResumable] = useState(false);
-  const [lastLevels, setLastLevels] = useState<Record<string, number>>({});
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [popup, setPopup] = useState<Popup>(null);
   const [versionTaps, setVersionTaps] = useState(0);
 
   const firstName = profile?.nickname ?? profile?.firstName ?? '';
+  const completed = session.categoriesCompleted;
+  const dayDone = isDayComplete(completed);
+  const unlocking = pendingUnlock(completed, session.unlocksSeen);
 
-  const todayISO = new Date().toISOString().split('T')[0];
-  const allDone = ['memory', 'attention', 'executive']
-    .every((c) => session.categoriesCompleted.includes(c));
-  const todayDone = session.date === todayISO && allDone;
+  // SessionManager mounts once per page load, so arriving here is the other
+  // chance to notice a new day on a tablet left open overnight.
+  useEffect(() => { ensureToday(); }, [ensureToday]);
 
-  /*
-   * Home has to show the three games before the session starts, so it starts
-   * the session on arrival rather than previewing a trio it might contradict.
-   * startSession is idempotent for today - it returns early once sessionStarted
-   * is set - so this neither re-rolls the trio nor wipes progress on a revisit.
-   */
-  useEffect(() => {
-    if (!profile) return;
-    if (session.date !== todayISO || !session.sessionStarted) startSession();
-  }, [profile, session.date, session.sessionStarted, todayISO, startSession]);
-
-  useEffect(() => {
-    if (!profile) return;
-    checkForResumableSession(profile.userId).then((r) => setIsResumable(!!r));
-  }, [profile, refreshKey]);
-
-  const planned = session.plannedGames ?? [];
-
-  useEffect(() => {
-    if (!profile || planned.length === 0) return;
-    getLastLevels(profile.userId, planned).then(setLastLevels);
-  }, [profile, planned.join(','), refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const onUnlockAnimationEnd = useCallback(() => {
+    if (unlocking) markUnlockSeen(unlocking);
+  }, [unlocking, markUnlockSeen]);
 
   /*
-   * The three taps below are the only places a session begins, and each one goes
-   * fullscreen on the way in. It has to happen here rather than in AppShell: a browser
-   * grants fullscreen only from inside a user gesture, so a mount or route-change effect
-   * would simply be refused. AppShell keeps it from there on - see the re-entry listener.
+   * Fullscreen has to start inside the tap: a browser grants it only from a user
+   * gesture, so a mount or route-change effect would be refused. AppShell keeps
+   * it from there on - see its re-entry listener.
    */
-  function enterSession(to: string) {
+  function openGame(gameId: string) {
+    setPopup(null);
+    ensureToday();
+    setCurrentGame(gameId);
     fullscreen.arm();
     void fullscreen.enter();
-    navigate(to);
+    // Education shows once a day, before the first game; it continues to this
+    // game's intro through currentGameId. Read after ensureToday, so a new day
+    // shows it again.
+    const { educationSeen } = useAppStore.getState().currentSession;
+    navigate(educationSeen ? `/app/game/${gameId}/intro` : '/app/education');
   }
 
-  function handleStartSession() {
-    startSession();
-    enterSession('/app/education');
+  /*
+   * Judged against today's ledger, not the one rendered: a tablet left on Home
+   * overnight still shows yesterday until something re-renders it.
+   */
+  function handleTileTap(gameId: string) {
+    const game = getGame(gameId);
+    if (!game) return;
+    const action = tapOutcome(useAppStore.getState().currentSession, todayISO(), game.category);
+    ensureToday();
+    if (action === 'play') openGame(gameId);
+    else if (action === 'locked') setPopup({ kind: 'locked' });
+    else setPopup({ kind: 'completed', gameId });
   }
 
-  function handleResumeSession() {
-    // Back into the intro for whichever game was in play.
-    enterSession(session.currentGameId ? `/app/game/${session.currentGameId}/intro` : '/app/education');
-  }
-
-  // Re-runs the lookups once the Dexie write lands, so the screen reflects the
-  // new session state without a manual refresh.
-  async function handleDevAction(action: () => Promise<void>) {
-    await action();
-    setRefreshKey((k) => k + 1);
+  function enterFreePlay() {
+    ensureToday();
+    // A new day since the screen was drawn: Free Play is closed again.
+    if (!isDayComplete(useAppStore.getState().currentSession.categoriesCompleted)) return;
+    fullscreen.arm();
+    void fullscreen.enter();
+    navigate('/app/free-play');
   }
 
   function getGreeting(): string {
@@ -103,18 +106,6 @@ export default function HomeScreen() {
     if (hour < 17) return t('greeting.afternoon', 'Good Afternoon');
     return t('greeting.evening', 'Good Evening');
   }
-
-  /*
-   * Derived, not the handoff's hardcoded "30 minutes". A category rotates after
-   * ROTATION_THRESHOLD_SECONDS, so three of them is the real session length -
-   * currently six minutes. If the therapeutic dose changes, this follows it.
-   */
-  const minutes = Math.round((ROTATION_THRESHOLD_SECONDS * CATEGORY_COUNT) / 60);
-
-  // The marquee games not chosen for today. Not locked - just not today's -
-  // which is why the strip says ANOTHER DAY rather than the handoff's
-  // UNLOCKS LATER.
-  const anotherDay = marqueeGames().filter((g) => !planned.includes(g.id));
 
   return (
     <ScreenBlue>
@@ -146,96 +137,50 @@ export default function HomeScreen() {
           </button>
         </div>
 
-        {/* Greeting. Centred per the Sep-9 review; the logo and settings above it
-            keep the header's own left/right split. */}
+        {/* Greeting */}
         <div style={{ position: 'relative', padding: '12px 20px 0', textAlign: 'center' }}>
           <p className="font-baloo" style={{ fontSize: 24, fontWeight: 700, color: '#FFFFFF' }}>
             {getGreeting()}{firstName ? `, ${firstName}` : ''}
           </p>
           <p className="font-baloo" style={{ fontSize: 18, fontWeight: 600, color: BRAND.cyan }}>
-            {todayDone
+            {dayDone
               ? t('home.sessionComplete', "Today's workout is complete.")
-              : t('home.duration', "Today's Workout takes {{minutes}} minutes.", { minutes })}
+              : t('home.prompt', 'What would you like to play today?')}
           </p>
         </div>
 
-        {/* Today's three games */}
+        {/* One panel per category, in unlock order (D6) */}
         <div
           style={{
             position: 'relative', display: 'flex', flexDirection: 'column',
-            gap: 14, padding: '0 20px', marginTop: 22,
+            gap: 14, padding: '0 20px', marginTop: 20,
           }}
         >
-          {planned.map((id) => {
-            const game = getGame(id);
-            if (!game) return null;
-            return <GameRow key={id} game={game} lastLevel={lastLevels[id] ?? null} />;
-          })}
+          {CATEGORY_ORDER.map((category) => (
+            <CategoryPanel
+              key={category}
+              category={category}
+              status={categoryStatus(category, completed)}
+              games={sessionGamesByCategory(category)}
+              unlocking={unlocking === category}
+              onTileTap={handleTileTap}
+              onUnlockAnimationEnd={onUnlockAnimationEnd}
+            />
+          ))}
         </div>
 
-        {/* The other three marquee games */}
-        {anotherDay.length > 0 && (
-          <div
-            style={{
-              position: 'relative', margin: '18px 20px 0', paddingTop: 14,
-              borderTop: '1px solid rgba(255,255,255,0.16)',
-            }}
-          >
-            <p
-              className="font-baloo"
-              style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', color: BRAND.muted }}
-            >
-              {t('home.anotherDay', 'ANOTHER DAY')}
-            </p>
-            <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
-              {anotherDay.map((g) => (
-                <img
-                  key={g.id}
-                  src={tileArt(g)}
-                  alt=""
-                  aria-hidden="true"
-                  width={60}
-                  height={60}
-                  style={{
-                    width: 60, height: 60, borderRadius: 14,
-                    filter: 'grayscale(0.9)', opacity: 0.5,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Primary action */}
         {/*
          * `marginTop: auto` pins this to the bottom only while there is spare
-         * room. Once the content is taller than the screen it collapses to
-         * zero and the button lands flush against the strip above it, which is
-         * what it did on a 480px-wide window. paddingTop is the floor that
-         * cannot collapse.
+         * room; paddingTop is the floor that cannot collapse.
          */}
         <div style={{ position: 'relative', margin: 'auto 20px 30px', paddingTop: 24 }}>
-          {/*
-           * Centred at the handoff's fixed width rather than stretched. Home was
-           * the one screen asking a brand button for fullWidth, so on anything
-           * wider than a phone its primary action grew to the whole column while
-           * the summary's and the splash's stayed at ~260px.
-           */}
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            {todayDone ? (
-              <Button variant="green" style={PRIMARY_ACTION} onClick={() => enterSession('/app/free-play')}>
+          {dayDone && (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Button variant="green" style={PRIMARY_ACTION} onClick={enterFreePlay}>
                 {t('home.freePlay', 'Free Play')}
               </Button>
-            ) : isResumable ? (
-              <Button variant="green" style={PRIMARY_ACTION} onClick={handleResumeSession}>
-                {t('btn.continue', 'Continue')}
-              </Button>
-            ) : (
-              <Button variant="green" style={PRIMARY_ACTION} onClick={handleStartSession}>
-                {t('btn.startSession', 'Start Session')}
-              </Button>
-            )}
-          </div>
+            </div>
+          )}
 
           <button
             onClick={() => setVersionTaps((n) => n + 1)}
@@ -252,31 +197,41 @@ export default function HomeScreen() {
               a resident cannot reach them by accident. */}
           {(import.meta.env.DEV || versionTaps >= DEV_UNLOCK_TAPS) && (
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12, paddingTop: 10 }}>
-              <button
-                onClick={() => handleDevAction(devCompleteToday)}
-                className="font-mono"
-                style={{ fontSize: 12, color: '#FFE9A8', border: '1px dashed #FFE9A8', borderRadius: 4, padding: '4px 10px' }}
-              >
-                dev: complete today
-              </button>
-              <button
-                onClick={() => handleDevAction(devResetToday)}
-                className="font-mono"
-                style={{ fontSize: 12, color: '#FFE9A8', border: '1px dashed #FFE9A8', borderRadius: 4, padding: '4px 10px' }}
-              >
-                dev: reset today
-              </button>
-              <button
-                onClick={() => navigate(DEBUG_LEVELS_PATH)}
-                className="font-mono"
-                style={{ fontSize: 12, color: '#FFE9A8', border: '1px dashed #FFE9A8', borderRadius: 4, padding: '4px 10px' }}
-              >
-                dev: levels
-              </button>
+              {[
+                { label: 'dev: finish category', run: () => void devCompleteCategory() },
+                { label: 'dev: complete today', run: () => void devCompleteToday() },
+                { label: 'dev: reset today', run: () => void devResetToday() },
+                { label: 'dev: levels', run: () => navigate(DEBUG_LEVELS_PATH) },
+              ].map((d) => (
+                <button
+                  key={d.label}
+                  onClick={d.run}
+                  className="font-mono"
+                  style={{ fontSize: 12, color: '#FFE9A8', border: '1px dashed #FFE9A8', borderRadius: 4, padding: '4px 10px' }}
+                >
+                  {d.label}
+                </button>
+              ))}
             </div>
           )}
         </div>
       </ScreenTransition>
+
+      {popup?.kind === 'locked' && (
+        <HomePopup
+          message={t('home.locked', 'Play the assigned games.')}
+          actions={[{ label: t('btn.ok', 'OK'), onClick: () => setPopup(null) }]}
+        />
+      )}
+      {popup?.kind === 'completed' && (
+        <HomePopup
+          message={t('home.completed', 'You have finished this today.')}
+          actions={[
+            { label: t('btn.proceed', 'Proceed'), onClick: () => openGame(popup.gameId) },
+            { label: t('btn.back', 'Back'), onClick: () => setPopup(null), variant: 'secondary' },
+          ]}
+        />
+      )}
     </ScreenBlue>
   );
 }

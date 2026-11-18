@@ -1,7 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAppStore } from '../store';
 import { track } from '../lib/analytics';
 import { getGame, playRoute, tileArt, type GameCatalogEntry } from '../lib/gameCatalog';
 import { useSessionContext } from '../session/SessionManager';
@@ -137,9 +136,7 @@ export function GameIntroView({ game, onContinue, onBack }: ViewProps) {
 export default function GameIntro() {
   const navigate = useNavigate();
   const { gameId } = useParams<{ gameId: string }>();
-  const session = useAppStore((s) => s.currentSession);
   const { sessionComplete: freePlay } = useSessionContext();
-  const trackedRef = useRef(false);
 
   const game = gameId ? getGame(gameId) : undefined;
   const valid = !!game && !!GAME_SKILLS[game.id];
@@ -147,19 +144,6 @@ export default function GameIntro() {
   useEffect(() => {
     if (!valid) navigate(freePlay ? '/app/free-play' : '/app/home', { replace: true });
   }, [valid, freePlay, navigate]);
-
-  // Fires once per arrival. The event moved here with the screen it came from.
-  useEffect(() => {
-    if (trackedRef.current || !valid || !game || freePlay) return;
-    trackedRef.current = true;
-    const completed = session.categoriesCompleted;
-    track('category_rotated', {
-      fromCategory: completed[completed.length - 1] ?? 'unknown',
-      toCategory: game.category,
-      secondsPlayed: session.secondsInCurrentCategory,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [valid, game]);
 
   if (!valid || !game) return null;
 

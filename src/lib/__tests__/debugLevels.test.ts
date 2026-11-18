@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { levelToScore, parseDebugLevel, isDebugLocation, DEBUG_LEVEL_PARAM, DEBUG_LEVELS_PATH, MAX_DEBUG_LEVEL } from '../debugLevels';
+import { levelToScore, parseDebugLevel, DEBUG_LEVEL_PARAM, MAX_DEBUG_LEVEL } from '../debugLevels';
 import { scoreToLevel } from '../dynamicDifficulty';
 
 /**
@@ -68,56 +68,5 @@ describe('parseDebugLevel', () => {
 describe('DEBUG_LEVEL_PARAM', () => {
   it('is the query key the router and the picker both agree on', () => {
     expect(DEBUG_LEVEL_PARAM).toBe('debugLevel');
-  });
-});
-
-describe('isDebugLocation', () => {
-  it('is true for the jumper itself', () => {
-    expect(isDebugLocation(DEBUG_LEVELS_PATH, '')).toBe(true);
-  });
-
-  it('is true for a round started from the jumper', () => {
-    expect(isDebugLocation('/app/game/spot-focus', '?debugLevel=4')).toBe(true);
-  });
-
-  it('is true whatever order the query params arrive in', () => {
-    expect(isDebugLocation('/app/game/spot-focus', '?foo=1&debugLevel=4')).toBe(true);
-  });
-
-  /*
-   * The whole point of the freeze. A resident's ordinary round must keep
-   * ticking, or a session would never rotate at all - a far worse bug than the
-   * leak this function closes.
-   */
-  it.each([
-    ['home', '/app/home', ''],
-    ['an ordinary round', '/app/game/spot-focus', ''],
-    ['free play', '/app/free-play', ''],
-    ['a category intro', '/app/intro/memory', ''],
-    ['the summary', '/app/summary', ''],
-  ])('is false for %s', (_label, pathname, search) => {
-    expect(isDebugLocation(pathname, search)).toBe(false);
-  });
-
-  /*
-   * A param the router itself would reject must not freeze the clock either,
-   * or a stale or hand-edited URL would stop a resident's session rotating
-   * while still playing them an ordinary round. The two readings of the param
-   * have to agree, so this mirrors parseDebugLevel's rejections.
-   */
-  it.each([
-    ['out of range', '?debugLevel=11'],
-    ['zero', '?debugLevel=0'],
-    ['fractional', '?debugLevel=3.5'],
-    ['not a number', '?debugLevel=abc'],
-    ['present but empty', '?debugLevel='],
-  ])('is false for a round whose param is %s', (_label, search) => {
-    expect(isDebugLocation('/app/game/spot-focus', search)).toBe(false);
-  });
-
-  it('keeps the route constant and the route table in step', () => {
-    // The ticker's freeze is matched on this exact string; if the route moves
-    // and this does not, probing silently charges the resident's category again.
-    expect(DEBUG_LEVELS_PATH).toBe('/app/debug-levels');
   });
 });

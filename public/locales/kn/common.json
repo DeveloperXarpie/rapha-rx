@@ -613,5 +613,15 @@
   "scoreCard.compare.steady": "ಸ್ಥಿರ ಮತ್ತು ನಿರಂತರ - ಭಲೇ.",
   "scoreCard.compare.lower": "ಪ್ರತಿ ಆಟವೂ ಸಹಾಯ ಮಾಡುತ್ತದೆ - ಮತ್ತೆ ಸಿಗೋಣ!",
   "scoreCard.bestSkill": "ನೀವು ವಿಶೇಷವಾಗಿ ಚೆನ್ನಾಗಿ ಮಾಡಿದ್ದು",
-  "scoreCard.thanks": "ಇಂದು ಆಡಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದಗಳು."
+  "scoreCard.thanks": "ಇಂದು ಆಡಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದಗಳು.",
+  "home.prompt": "ಇಂದು ನೀವು ಏನು ಆಡಲು ಬಯಸುತ್ತೀರಿ?",
+  "home.panel.memory": "ನಿಮ್ಮ ಸ್ಮರಣೆಯನ್ನು ಹೆಚ್ಚಿಸಿ",
+  "home.panel.attention": "ನಿಮ್ಮ ಗಮನವನ್ನು ಬಲಪಡಿಸಿ",
+  "home.panel.executive": "ನಿಮ್ಮ ಯೋಜನಾ ಶಕ್ತಿಯನ್ನು ಬಲಪಡಿಸಿ",
+  "home.locked": "ಮೊದಲು ನೀಡಿದ ಆಟಗಳನ್ನು ಆಡಿ.",
+  "home.completed": "ಇಂದು ನೀವು ಇದನ್ನು ಮುಗಿಸಿದ್ದೀರಿ.",
+  "scoreCard.unlocked": "{{category}} ಈಗ ತೆರೆದಿದೆ!",
+  "summary.subtitleAreas": "ಇಂದು ನೀವು ಮೂರೂ ವಿಭಾಗಗಳನ್ನು ಮುಗಿಸಿದ್ದೀರಿ.",
+  "btn.proceed": "ಮುಂದುವರಿಸಿ",
+  "btn.ok": "ಸರಿ"
 }

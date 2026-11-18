@@ -47,34 +47,34 @@ React 18 + TypeScript, Vite, Tailwind CSS, Zustand, Dexie (IndexedDB), i18next, 
 Dexie are ready, with a 2000 ms minimum. `/login/:careHomeId`, `/app/questionnaire`,
 `/app/rotation` and `/app/intro/:category` survive only as redirects for cached URLs.
 
-`RequireProfile` redirects unauthenticated users to `/`. `SessionManager` is a layout route that provides `SessionContext` (category timer, rotation logic) to all `/app/*` routes via `useSessionContext()`.
+`RequireProfile` redirects unauthenticated users to `/`. `SessionManager` is a layout route that rolls the ledger over to a new day and provides `SessionContext` (`userId`, `sessionComplete`) to all `/app/*` routes via `useSessionContext()`.
 
-### Session flow
-1. `startSession()` is the single session-start point. It sets `sessionStarted`, and picks
-   `plannedGames` via `pickTrio()` — one marquee game per category, never repeating the
-   previous session's game for that category. `HomeScreen` calls it on arrival, so the three
-   rows it shows are the three games the session will actually play.
-2. Home → Education → `/app/game/:gameId/intro`. `GameIntro` lists the skills the game
-   trains (from `src/lib/gameSkills.ts`) and waits for Continue, then the title screen,
-   then the board.
-3. `SessionManager` ticks `secondsInCurrentCategory` every second. A level completed under
-   `ROTATION_THRESHOLD_SECONDS` (120) starts **another round of the same game**; past it,
-   `triggerRotation()` delegates to `nextStep()` in `src/lib/sessionPlan.ts`, which returns
-   the next game, the summary, or `stay`. `stay` is the free-play case: the ticker
-   keeps running after a session completes, and without it a long free-play round would
-   bounce the resident into the summary.
-   Rotation shows the finished game's `ScoreCard` first. Its Continue reads the next step
-   from the session (`afterScoreCard()`). The card's data comes from `getScoreCard()` in
-   `src/lib/scoreCard.ts`, an empty placeholder until the scoring system exists.
-4. A partially complete session is resumable via `checkForResumableSession()`; Home offers
-   Continue, returning to `/app/game/:currentGameId/intro`.
-5. Once all three categories are done, Home offers Free Play (`/app/free-play`) — the
-   library that replaced the old inline Practice Mode.
+### Session flow (redesign v2, since v1.36.0)
+The rules live in one pure, tested module: `src/lib/sessionLedger.ts`. Spec:
+`docs/redesign-v2/FINAL_SPEC.md` sections 5 and 6.
+1. Each day starts with only Memory open; Attention and Planning are locked (unlock order
+   memory, attention, executive). Unlocks reset daily. `ensureToday()` rolls the ledger over,
+   called from `SessionManager` (mount and tab return), `HomeScreen` and every credited second.
+2. Home shows one `CategoryPanel` per category. The resident taps any game in the open
+   category. A locked tile shows "Play the assigned games."; a tile in a completed category
+   offers Proceed or Back, and that play credits nothing. The first game of the day goes
+   through Education (`educationSeen`), then `/app/game/:gameId/intro` → title → board.
+3. Only **board time** counts: `GameShell` runs the ticker (`creditSecond`) while the board is
+   mounted, the exit dialog is closed, the tab is visible and the round is not a debug probe.
+   A level ending at or past `CATEGORY_SESSION_SECONDS` (600) completes the open category
+   and shows the `ScoreCard` with an unlock banner; otherwise the next round starts. A level
+   always finishes before the category completes.
+4. Home plays the unlock animation once (`unlocksSeen`). After the third category the score
+   card goes to the day summary, which lists `gamesPlayed`, then Home offers Free Play.
+5. Garden Keeper is out of the daily session (FINAL_SPEC D15), so Attention shows Spot Focus
+   until Baggage Sort exists; it is still in Free Play.
+6. Saved sessions from before v1.36 (with `plannedGames`/`sessionStarted`) are converted by
+   `normalizeSession()`, both from Dexie and, via the persist `merge`, from localStorage.
 
 ### State (`src/store/index.ts`)
 Single Zustand store with `persist` middleware (localStorage key `brain-training-store`). Three slices:
 - **user** — `activeProfile` (UserProfile)
-- **session** — `currentSession` (CurrentSession): category progress, game in play, per-category timer. Every mutation also writes to Dexie via `persistSession()`.
+- **session** — `currentSession` (the `LedgerSession` from `sessionLedger.ts`): categories done, board seconds in the open category, games played, unlocks shown. Mutations write to Dexie via `persistSession()`; the per-second tick writes every 10 s.
 - **settings** — language, textSize, soundEnabled
 
 ### Persistence (`src/lib/db.ts`)
@@ -87,7 +87,7 @@ Each game has a `DifficultyState` record (score 0.0–1.0) per user per day. `ge
 - **Registry** in `src/screens/GameRouter.tsx` — maps `gameId` strings to React components + category.
 - **Content generation** — most games have a generator in `src/lib/contentGenerators/` that takes difficulty params and returns randomised content. Called once per round (keyed by `gameKey`).
 - **Game interface** — every game component receives `{ levelConfig: LevelConfig, onLevelComplete: (result: LevelResult) => void, generatedContent? }`. Call `onLevelComplete` with `completed`, `durationSeconds`, and a `metrics` object. Metrics must match what `computePerformanceRatio` expects for that `gameId`.
-- **GameShell** (`src/components/GameShell.tsx`) — wraps every game; handles the exit confirmation, calls `adjustDifficulty`, fires analytics, and decides whether to rotate or continue.
+- **GameShell** (`src/components/GameShell.tsx`) — wraps every game; handles the exit confirmation, calls `adjustDifficulty`, fires analytics, runs the board-time ticker, and decides whether the level completes its category or the next round starts.
 
 ### Games by category
 | Category | Games |
@@ -109,8 +109,9 @@ These files are precached and revisioned with each build (the `globPatterns` ent
 
 ### Game catalog (`src/lib/gameCatalog.ts`)
 The one map from `gameId` to display key, category and art. Six games are `marquee` —
-they have commissioned tile and splash art and are the only ones the daily session draws
-from; the other nine are reachable from Free Play and fall back to their category icon.
+they have commissioned tile and splash art. `inDailySession` marks the ones Home offers
+(the marquee games minus Garden Keeper); the other nine are reachable from Free Play and
+fall back to their category icon.
 Adding a game means an entry here **and** in `GameRouter`'s registry.
 
 ### Layout

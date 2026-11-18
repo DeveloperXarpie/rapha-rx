@@ -8,6 +8,7 @@ import { recordLastLevel } from '../lib/lastLevel';
 import { getGame } from '../lib/gameCatalog';
 import { UI_CLOSE_X } from '../lib/uiKit';
 import { useAppStore } from '../store';
+import { shouldCompleteCategory } from '../lib/sessionLedger';
 import { Button } from './ui/Button';
 import type { LevelConfig } from '../games/types';
 import { gardenKeeperPerformance } from '../games/attention/GardenKeeper/model';
@@ -31,18 +32,11 @@ interface GameShellProps {
   /**
    * This round was reached through the debug level jumper, so it is a probe and
    * not a resident's play. It leaves the difficulty score and the "Last time"
-   * label alone, and it does not rotate. Analytics still fire, tagged, so the
+   * label alone, and it earns no board time. Analytics still fire, tagged, so the
    * jumper can be used to check instrumentation rather than hiding it.
    */
   debug?: boolean;
 }
-
-/**
- * How long a category runs before rotating. A level completed before this
- * starts another round of the same game; Home derives its session-length copy
- * from it, so the two can never drift.
- */
-export const ROTATION_THRESHOLD_SECONDS = 2 * 60; // 2 min per category
 
 interface Anchor { top: number; left: number; right: number }
 
@@ -126,10 +120,33 @@ export default function GameShell({
 }: GameShellProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { secondsInCurrentCategory, triggerRotation, sessionComplete } = useSessionContext();
+  const { sessionComplete } = useSessionContext();
   const profile = useAppStore((s) => s.activeProfile);
+  const creditSecond = useAppStore((s) => s.creditSecond);
+  const completeActiveCategory = useAppStore((s) => s.completeActiveCategory);
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  /*
+   * The category clock. Only board time counts toward a category's ten minutes
+   * (FINAL_SPEC Q2, owner decision 2026-11-18): this shell is mounted only while a
+   * board is on screen, and the clock also stops for the exit dialog, a hidden tab
+   * and a debug probe. Change the rule here.
+   *
+   * GameShell remounts every round (GameRouter keys it), so each round drops the
+   * fraction of a second already counted - up to 1 s per round, accepted.
+   *
+   * Keep the dependencies to these primitives and the stable store action. The
+   * shell re-renders often, and an unstable dependency would restart the
+   * interval before it ever fired.
+   */
+  useEffect(() => {
+    if (debug || showExitConfirm) return;
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') creditSecond(gameId, gameCategory);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [debug, showExitConfirm, gameId, gameCategory, creditSecond]);
   const startedAt = useRef<number>(Date.now());
 
   // Only the six games the daily session draws from carry a `data-board`; the other
@@ -154,12 +171,14 @@ export default function GameShell({
       track('session_interrupted', {
         gameId,
         levelId: levelConfig.id,
-        timeInSessionSeconds: secondsInCurrentCategory,
+        timeInSessionSeconds: useAppStore.getState().currentSession.secondsInCurrentCategory,
       });
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [gameId, gameCategory, levelConfig.id, secondsInCurrentCategory, difficultyScore, debug]);
+    // The seconds are read at unload time, never a dependency: as one, they made
+    // game_started fire every second.
+  }, [gameId, gameCategory, levelConfig.id, difficultyScore, debug]);
 
   async function handleLevelComplete(result: LevelResult) {
     const userId = profile?.userId;
@@ -211,21 +230,24 @@ export default function GameShell({
 
   function finishLevel(result: LevelResult) {
     /*
-     * Past the threshold we ask to rotate, but the ask can decline: `triggerRotation`
-     * returns false for free play after the day's session (nothing left to rotate into)
-     * and when there is no profile. Both used to fall through to nothing at all - no
-     * navigation and no next round - which froze the game on its round-end card with
-     * its own commit guard already spent, so the button was dead. Whenever rotation
-     * does not move us, the next round starts here.
-     *
-     * A debug round never rotates. The session ticker keeps running underneath
-     * the jumper, so without this a probe that ran past the threshold would
-     * throw whoever is testing into a category intro mid-investigation.
+     * A level past the category's ten minutes completes it (D4: the level finishes
+     * first) and shows the score card; otherwise the next round starts here. The
+     * ledger only completes the open category, so a long round in a completed one
+     * or in free play just carries on. A debug round never completes anything.
+     * A level left with the X past the threshold does not complete the category:
+     * the next finished level will.
      */
-    const rotated = !debug
-      && secondsInCurrentCategory >= ROTATION_THRESHOLD_SECONDS
-      && triggerRotation();
-    if (!rotated) onLevelComplete(result);
+    // Read the ledger now, not from render: the closure can be a second stale.
+    const { categoriesCompleted, secondsInCurrentCategory } = useAppStore.getState().currentSession;
+    const crossed = !debug && shouldCompleteCategory({
+      gameCategory, completed: categoriesCompleted, seconds: secondsInCurrentCategory,
+    });
+    if (crossed) {
+      completeActiveCategory(gameCategory);
+      navigate(`/app/game/${gameId}/score`);
+    } else {
+      onLevelComplete(result);
+    }
   }
 
   function handleExit() {
@@ -236,7 +258,7 @@ export default function GameShell({
     track('session_interrupted', {
       gameId,
       levelId: levelConfig.id,
-      timeInSessionSeconds: secondsInCurrentCategory,
+      timeInSessionSeconds: useAppStore.getState().currentSession.secondsInCurrentCategory,
     });
     // A round played after the day's session is free play, so leaving it goes
     // back to the library rather than Home.

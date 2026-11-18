@@ -19,24 +19,25 @@ export interface SessionState {
   id?: number;              // auto-increment
   userId: string;
   date: string;             // ISO date YYYY-MM-DD
-  /**
-   * Set by startSession. Was `questionnaireCompleted` until the redesign, when
-   * the questionnaire screen became an information screen shown before every
-   * session and so could no longer own a once-per-day flag.
-   */
-  sessionStarted: boolean;
-  /**
-   * The three gameIds this session will play, memory/attention/executive.
-   * Not indexed, so this needs no Dexie version bump - same as tipCardPhotoShown
-   * below. An older row reads undefined; the store treats that as "not planned".
-   */
-  plannedGames?: string[];
-  focusCategory: 'memory' | 'attention' | 'executive' | null;
   categoriesCompleted: string[];
   currentCategory: string | null;
   currentGameId: string | null;
   secondsInCurrentCategory: number;
   sessionStartedAt: number | null;
+  /*
+   * v2 ledger fields (src/lib/sessionLedger.ts). None is indexed, so they need no
+   * Dexie version bump. A row written before v1.36 lacks them; normalizeSession
+   * fills them in.
+   */
+  gamesPlayed?: string[];
+  unlocksSeen?: string[];
+  educationSeen?: boolean;
+  /** @deprecated v1.35 rotation fields. Old rows still carry them; nothing reads them. */
+  sessionStarted?: boolean;
+  /** @deprecated See sessionStarted. */
+  plannedGames?: string[];
+  /** @deprecated See sessionStarted. */
+  focusCategory?: 'memory' | 'attention' | 'executive' | null;
 }
 
 export interface GameProgress {

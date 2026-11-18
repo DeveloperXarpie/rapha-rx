@@ -11,9 +11,11 @@ import CategoryBadge from '../../components/chrome/CategoryBadge';
 import ProgressBar from '../../components/chrome/ProgressBar';
 import GameRow from '../../components/chrome/GameRow';
 import GameTile from '../../components/chrome/GameTile';
+import CategoryPanel from '../../components/chrome/CategoryPanel';
+import HomePopup from '../../components/chrome/HomePopup';
 import ScreenTransition from '../../components/chrome/ScreenTransition';
 import { staggerDelay, type TransitionName } from '../../components/chrome/transitions';
-import { marqueeGames, GAME_CATALOG } from '../../lib/gameCatalog';
+import { marqueeGames, sessionGamesByCategory, GAME_CATALOG } from '../../lib/gameCatalog';
 import { Button } from '../../components/ui/Button';
 import { GameIntroView } from '../GameIntro';
 import { GAME_SKILLS } from '../../lib/gameSkills';
@@ -23,6 +25,22 @@ import { BRAND, CATEGORY_BRAND } from '../../styles/tokens';
 import type { GameCategory } from '../../styles/tokens';
 
 const CATEGORIES: GameCategory[] = ['memory', 'attention', 'executive'];
+
+/** The three panel states, plus a replayable unlock animation. */
+function PanelDemo() {
+  const [run, setRun] = useState(0);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 420 }}>
+      <CategoryPanel category="memory" status="completed" games={sessionGamesByCategory('memory')}
+        unlocking={false} onTileTap={noop} onUnlockAnimationEnd={noop} />
+      <CategoryPanel key={run} category="attention" status="active" games={sessionGamesByCategory('attention')}
+        unlocking={run > 0} onTileTap={noop} onUnlockAnimationEnd={noop} />
+      <CategoryPanel category="executive" status="locked" games={sessionGamesByCategory('executive')}
+        unlocking={false} onTileTap={noop} onUnlockAnimationEnd={noop} />
+      <Button variant="secondary" onClick={() => setRun((n) => n + 1)}>Replay unlock</Button>
+    </div>
+  );
+}
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -174,6 +192,19 @@ export default function ChromeGallery() {
         </div>
       </Section>
 
+      <Section title="Home category panels">
+        <PanelDemo />
+      </Section>
+
+      <Section title="Home popups">
+        <div style={{ position: 'relative', height: 260, transform: 'translateZ(0)', overflow: 'hidden' }}>
+          <HomePopup
+            message="You have finished this today."
+            actions={[{ label: 'Proceed', onClick: noop }, { label: 'Back', onClick: noop, variant: 'secondary' }]}
+          />
+        </div>
+      </Section>
+
       <Section title="Game tiles">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
           {marqueeGames().slice(0, 3).map((g) => <GameTile key={g.id} game={g} onClick={() => {}} />)}
@@ -197,6 +228,9 @@ export default function ChromeGallery() {
         <div style={{ display: 'flex', gap: 16, overflowX: 'auto' }}>
           <Phone>
             <ScoreCardView game={GAME_CATALOG['market-memory']} data={getScoreCard('market-memory')} onContinue={noop} onClose={noop} />
+          </Phone>
+          <Phone>
+            <ScoreCardView game={GAME_CATALOG['train-yard']} data={getScoreCard('train-yard')} unlocked="attention" onContinue={noop} onClose={noop} />
           </Phone>
           <Phone>
             <ScoreCardView game={GAME_CATALOG['market-memory']} data={{ primary: 82, previous: 76, bestSkill: 'recognition' }} onContinue={noop} onClose={noop} />

@@ -613,5 +613,15 @@
   "scoreCard.compare.steady": "Steady and consistent - well done.",
   "scoreCard.compare.lower": "Every game helps - see you next time!",
   "scoreCard.bestSkill": "You did especially well at",
-  "scoreCard.thanks": "Thank you for playing today."
+  "scoreCard.thanks": "Thank you for playing today.",
+  "home.prompt": "What would you like to play today?",
+  "home.panel.memory": "Boost Your MEMORY",
+  "home.panel.attention": "Build Your FOCUS",
+  "home.panel.executive": "Strengthen Your PLANNING",
+  "home.locked": "Play the assigned games.",
+  "home.completed": "You have finished this today.",
+  "scoreCard.unlocked": "{{category}} is now unlocked!",
+  "summary.subtitleAreas": "You finished all three areas today.",
+  "btn.proceed": "Proceed",
+  "btn.ok": "OK"
 }

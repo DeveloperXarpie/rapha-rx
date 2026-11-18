@@ -2,12 +2,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { UserProfile, SessionState } from '../lib/db';
 import { upsertSessionState, upsertUserProfile, getSessionState } from '../lib/db';
-import type { Language, TextSize } from '../styles/tokens';
-import { pickTrio, CATEGORY_ORDER } from '../lib/sessionPlan';
-
-function todayISO(): string {
-  return new Date().toISOString().split('T')[0];
-}
+import type { GameCategory, Language, TextSize } from '../styles/tokens';
+import { todayISO } from '../lib/dates';
+import { track } from '../lib/analytics';
+import {
+  CATEGORY_ORDER, activeCategory, completeCategory, creditsTime, freshSession,
+  normalizeSession, type LedgerSession,
+} from '../lib/sessionLedger';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -17,19 +18,8 @@ export interface UserSettings {
   soundEnabled: boolean;
 }
 
-export interface CurrentSession {
-  date: string;
-  /** Was `questionnaireCompleted`. Set by startSession; gates resume. */
-  sessionStarted: boolean;
-  /** The three gameIds this session plays, in CATEGORY_ORDER. */
-  plannedGames: string[];
-  focusCategory: 'memory' | 'attention' | 'executive' | null;
-  categoriesCompleted: string[];
-  currentCategory: string | null;
-  currentGameId: string | null;
-  secondsInCurrentCategory: number;
-  sessionStartedAt: number | null;
-}
+/** The day's ledger. The rules that read and change it live in sessionLedger.ts. */
+export type CurrentSession = LedgerSession;
 
 interface AppState {
   // User slice
@@ -39,18 +29,20 @@ interface AppState {
 
   // Session slice
   currentSession: CurrentSession;
-  startSession: () => void;
-  setFocusCategory: (cat: 'memory' | 'attention' | 'executive') => void;
-  markCategoryComplete: (cat: string) => void;
+  /** Rolls the ledger over to a fresh day when its date is stale (D2). */
+  ensureToday: () => void;
+  /** One second of board time. Credits nothing outside the open category (D3). */
+  creditSecond: (gameId: string, gameCategory: GameCategory) => void;
+  /** Completes the open category if `gameCategory` is it; otherwise does nothing. */
+  completeActiveCategory: (gameCategory: GameCategory) => void;
+  markUnlockSeen: (category: GameCategory) => void;
+  markEducationSeen: () => void;
   setCurrentGame: (gameId: string) => void;
-  setCurrentCategory: (category: string) => void;
-  markSessionStarted: () => void;
-  restoreSession: (state: CurrentSession) => void;
-  tickCategory: () => void;
 
   // Session shortcuts. Shown outright in dev; in a production build HomeScreen
   // keeps them hidden until the version label is tapped five times, so they ship
   // in the bundle but stay out of a resident's way.
+  devCompleteCategory: () => Promise<void>;
   devCompleteToday: () => Promise<void>;
   devResetToday: () => Promise<void>;
 
@@ -59,43 +51,33 @@ interface AppState {
   updateSetting: <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => void;
 }
 
-const defaultSession: CurrentSession = {
-  date: todayISO(),
-  sessionStarted: false,
-  plannedGames: [],
-  focusCategory: null,
-  categoriesCompleted: [],
-  currentCategory: null,
-  currentGameId: null,
-  secondsInCurrentCategory: 0,
-  sessionStartedAt: null,
-};
-
 const defaultSettings: UserSettings = {
   language: 'en',
   textSize: 'normal',
   soundEnabled: true,
 };
 
+/** Board seconds between Dexie writes; localStorage (Zustand persist) gets every tick. */
+const PERSIST_EVERY_SECONDS = 10;
+
 // Helper — persist session to Dexie (called from actions, not part of interface)
 // Returns the write promise so callers that need the write to land before reading
-// back (the dev helpers) can await it. Normal actions ignore it, as before.
+// back (the dev helpers) can await it. Normal actions ignore it.
 function persistSession(userId: string | undefined, state: CurrentSession): Promise<void> {
   if (!userId) return Promise.resolve();
   const dbState: SessionState = {
     userId,
-    date: state.date,
-    sessionStarted: state.sessionStarted,
     // This literal hand-copies every field. Anything missing from it is
-    // silently dropped on every write, which for plannedGames would mean a
-    // resumed session quietly playing a different trio.
-    plannedGames: state.plannedGames,
-    focusCategory: state.focusCategory,
+    // silently dropped on every write, and a refresh would then lose it.
+    date: state.date,
     categoriesCompleted: state.categoriesCompleted,
     currentCategory: state.currentCategory,
     currentGameId: state.currentGameId,
     secondsInCurrentCategory: state.secondsInCurrentCategory,
     sessionStartedAt: state.sessionStartedAt,
+    gamesPlayed: state.gamesPlayed,
+    unlocksSeen: state.unlocksSeen,
+    educationSeen: state.educationSeen,
   };
   return upsertSessionState(dbState).catch(() => {});
 }
@@ -104,7 +86,26 @@ function persistSession(userId: string | undefined, state: CurrentSession): Prom
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set, get) => ({
+    (set, get) => {
+      /** Sets the session and writes it to Dexie. */
+      const commit = (updated: CurrentSession) => {
+        set({ currentSession: updated });
+        return persistSession(get().activeProfile?.userId, updated);
+      };
+
+      /** The session with the open category completed, or null when nothing changes. */
+      const withCompleted = (prev: CurrentSession, category: GameCategory): CurrentSession | null => {
+        const completed = completeCategory(prev.categoriesCompleted, category);
+        if (completed === prev.categoriesCompleted) return null;
+        return {
+          ...prev,
+          categoriesCompleted: completed,
+          currentCategory: activeCategory(completed),
+          secondsInCurrentCategory: 0,
+        };
+      };
+
+      return {
       // User slice
       activeProfile: null,
 
@@ -119,140 +120,102 @@ export const useAppStore = create<AppState>()(
         });
 
         const today = todayISO();
-        const existingSession = await getSessionState(profile.userId, today);
-        if (existingSession) {
-          const { id, userId, ...sessionData } = existingSession as any;
-          // A row written before plannedGames existed has none. Spreading over
-          // defaultSession keeps every field defined.
-          set({ currentSession: { ...defaultSession, ...sessionData,
-                                  plannedGames: sessionData.plannedGames ?? [] } });
-        } else {
-          set({ currentSession: { ...defaultSession, date: today } });
-        }
+        const existing = await getSessionState(profile.userId, today);
+        set({ currentSession: normalizeSession(existing, today) });
       },
 
       clearProfile: () => {
-        set({ activeProfile: null, currentSession: { ...defaultSession, date: todayISO() } });
+        set({ activeProfile: null, currentSession: freshSession(todayISO()) });
       },
 
       // Session slice
-      currentSession: { ...defaultSession },
+      currentSession: freshSession(todayISO()),
 
-      /*
-       * The single session-start point. It used to be split: HomeScreen called
-       * this, then DailyQuestionnaire separately picked the category and game
-       * and set the completed flag. Education plays before every session now and
-       * so cannot own a once-per-day flag, so all of it lands here.
-       */
-      startSession: () => {
-        const today = todayISO();
-        const existing = get().currentSession;
-
-        // Don't wipe an in-progress session for today, and never re-roll its trio.
-        if (existing.date === today && existing.sessionStarted) return;
-
-        const plannedGames = pickTrio(existing.plannedGames);
-        const updated: CurrentSession = {
-          ...defaultSession,
-          date: today,
-          sessionStarted: true,
-          sessionStartedAt: Date.now(),
-          plannedGames,
-          currentCategory: CATEGORY_ORDER[0],
-          currentGameId: plannedGames[0],
-        };
-        set({ currentSession: updated });
-        persistSession(get().activeProfile?.userId, updated);
-      },
-
-      setFocusCategory: (cat) => {
-        const updated = { ...get().currentSession, focusCategory: cat, currentCategory: cat };
-        set({ currentSession: updated });
-        persistSession(get().activeProfile?.userId, updated);
-      },
-
-      markCategoryComplete: (cat) => {
+      ensureToday: () => {
         const prev = get().currentSession;
-        const updated = {
+        if (prev.date !== todayISO()) void commit(freshSession(todayISO()));
+      },
+
+      creditSecond: (gameId, gameCategory) => {
+        // A tablet left on a board past midnight must credit the new day, not
+        // yesterday's ledger. A string compare per second is cheap.
+        get().ensureToday();
+        const prev = get().currentSession;
+        if (!creditsTime(gameCategory, prev.categoriesCompleted)) return;
+        const firstPlay = !prev.gamesPlayed.includes(gameId);
+        const updated: CurrentSession = {
           ...prev,
-          categoriesCompleted: prev.categoriesCompleted.includes(cat)
-            ? prev.categoriesCompleted
-            : [...prev.categoriesCompleted, cat],
-          secondsInCurrentCategory: 0,
+          secondsInCurrentCategory: prev.secondsInCurrentCategory + 1,
+          gamesPlayed: firstPlay ? [...prev.gamesPlayed, gameId] : prev.gamesPlayed,
+          sessionStartedAt: prev.sessionStartedAt ?? Date.now(),
         };
-        set({ currentSession: updated });
-        persistSession(get().activeProfile?.userId, updated);
+        if (firstPlay || updated.secondsInCurrentCategory % PERSIST_EVERY_SECONDS === 0) {
+          void commit(updated);
+        } else {
+          set({ currentSession: updated });
+        }
+      },
+
+      completeActiveCategory: (gameCategory) => {
+        const prev = get().currentSession;
+        const next = withCompleted(prev, gameCategory);
+        if (!next) return;
+        // Was `category_rotated`, fired from GameIntro on every intro; with free
+        // choice of game that logged a fake rotation per tile tap.
+        track('category_completed', {
+          category: gameCategory,
+          secondsInCategory: prev.secondsInCurrentCategory,
+          gamesPlayed: prev.gamesPlayed,
+        });
+        void commit(next);
+      },
+
+      markUnlockSeen: (category) => {
+        const prev = get().currentSession;
+        if (prev.unlocksSeen.includes(category)) return;
+        void commit({ ...prev, unlocksSeen: [...prev.unlocksSeen, category] });
+      },
+
+      markEducationSeen: () => {
+        const prev = get().currentSession;
+        if (prev.educationSeen) return;
+        void commit({ ...prev, educationSeen: true });
       },
 
       setCurrentGame: (gameId) => {
-        const updated = { ...get().currentSession, currentGameId: gameId };
-        set({ currentSession: updated });
-        persistSession(get().activeProfile?.userId, updated);
-      },
-
-      setCurrentCategory: (category) => {
-        const updated = {
-          ...get().currentSession,
-          currentCategory: category,
-          secondsInCurrentCategory: 0,
-        };
-        set({ currentSession: updated });
-        persistSession(get().activeProfile?.userId, updated);
-      },
-
-      markSessionStarted: () => {
-        const updated = { ...get().currentSession, sessionStarted: true };
-        set({ currentSession: updated });
-        persistSession(get().activeProfile?.userId, updated);
-      },
-
-      restoreSession: (state) => {
-        set({ currentSession: state });
-      },
-
-      tickCategory: () => {
-        const prev = get().currentSession;
-        set({
-          currentSession: {
-            ...prev,
-            secondsInCurrentCategory: prev.secondsInCurrentCategory + 1,
-          },
-        });
+        void commit({ ...get().currentSession, currentGameId: gameId });
       },
 
       // ─── Session shortcuts ─────────────────────────────────────────────────
-      // Marks today as fully done so HomeScreen shows the Practice Mode game
-      // list without playing a session. Awaits the Dexie write, because the
-      // store rehydrates from Dexie on profile load and a state-only change
-      // would not survive a refresh.
-      devCompleteToday: async () => {
+      // Each awaits the Dexie write, because the store rehydrates from Dexie on
+      // profile load and a state-only change would not survive a refresh.
+
+      /** Completes the open category without playing ten minutes. */
+      devCompleteCategory: async () => {
         const prev = get().currentSession;
-        const updated: CurrentSession = {
-          ...prev,
-          date: todayISO(),
-          sessionStarted: true,
-          // Give the shortcut a trio if it has none, so the rebuilt Home and
-          // summary have something real to render.
-          plannedGames: prev.plannedGames?.length ? prev.plannedGames : pickTrio(null),
-          categoriesCompleted: ['memory', 'attention', 'executive'],
+        const active = activeCategory(prev.categoriesCompleted);
+        const next = active ? withCompleted(prev, active) : null;
+        if (next) await commit(next);
+      },
+
+      // Marks today as fully done so Home shows Free Play without playing.
+      devCompleteToday: async () => {
+        await commit({
+          ...freshSession(todayISO()),
+          categoriesCompleted: [...CATEGORY_ORDER],
           currentCategory: null,
-          currentGameId: null,
-          secondsInCurrentCategory: 0,
-          sessionStartedAt: prev.sessionStartedAt ?? Date.now(),
-        };
-        set({ currentSession: updated });
-        await persistSession(get().activeProfile?.userId, updated);
+          unlocksSeen: [...CATEGORY_ORDER],
+          educationSeen: true,
+          sessionStartedAt: Date.now(),
+        });
       },
 
-      // The inverse, so the Start Session and Resume flows stay testable after
-      // devCompleteToday has been used.
+      // The inverse, so a fresh day stays testable after devCompleteToday.
       devResetToday: async () => {
-        const updated: CurrentSession = { ...defaultSession, date: todayISO() };
-        set({ currentSession: updated });
-        await persistSession(get().activeProfile?.userId, updated);
+        await commit(freshSession(todayISO()));
       },
 
-      // Settings slice
+// Settings slice
       settings: { ...defaultSettings },
 
       updateSetting: (key, value) => {
@@ -271,7 +234,8 @@ export const useAppStore = create<AppState>()(
           upsertUserProfile(updatedProfile).catch(() => {});
         }
       },
-    }),
+      };
+    },
     {
       name: 'brain-training-store',
       partialize: (state) => ({
@@ -279,6 +243,20 @@ export const useAppStore = create<AppState>()(
         settings: state.settings,
         currentSession: state.currentSession,
       }),
+      /*
+       * A reload restores the profile from here, so setActiveProfile never runs and
+       * this is the only normalisation a saved session gets before Home renders.
+       * Without it a v1.35 session (no unlocksSeen) crashes Home's first render,
+       * and yesterday's session flashes up before any effect could reset it.
+       */
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<AppState>;
+        return {
+          ...current,
+          ...p,
+          currentSession: normalizeSession(p.currentSession, todayISO()),
+        };
+      },
     },
   ),
 );

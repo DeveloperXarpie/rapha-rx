@@ -4,17 +4,26 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../store';
 import { getGame, type GameCatalogEntry } from '../lib/gameCatalog';
 import { SKILLS } from '../lib/gameSkills';
-import { afterScoreCard } from '../lib/sessionPlan';
+import { afterScoreCard, pendingUnlock } from '../lib/sessionLedger';
 import {
   comparisonKey, getScoreCard, mainWordKey, type ScoreCardData,
 } from '../lib/scoreCard';
 import GameCardFrame from '../components/chrome/GameCardFrame';
 import { Button } from '../components/ui/Button';
-import { BRAND } from '../styles/tokens';
+import { BRAND, type GameCategory } from '../styles/tokens';
+
+/** The category's existing display name key, for the unlock banner. */
+const CATEGORY_NAME: Record<GameCategory, { key: string; fallback: string }> = {
+  memory:    { key: 'category.memory',    fallback: 'Cognitive Memory' },
+  attention: { key: 'category.attention', fallback: 'Attention' },
+  executive: { key: 'category.planning',  fallback: 'Planning' },
+};
 
 interface ViewProps {
   game: GameCatalogEntry;
   data: ScoreCardData;
+  /** The category this game's ten minutes just opened, if Home has not shown it yet. */
+  unlocked?: GameCategory | null;
   onContinue: () => void;
   onClose: () => void;
 }
@@ -24,7 +33,7 @@ interface ViewProps {
  * that needs a score renders only when there is one, so with today's empty
  * placeholder the card is the title, the thank-you and Continue.
  */
-export function ScoreCardView({ game, data, onContinue, onClose }: ViewProps) {
+export function ScoreCardView({ game, data, unlocked, onContinue, onClose }: ViewProps) {
   const { t } = useTranslation();
   const word = mainWordKey(data.primary);
   const compare = comparisonKey(data.primary, data.previous);
@@ -69,6 +78,22 @@ export function ScoreCardView({ game, data, onContinue, onClose }: ViewProps) {
         </p>
       </div>
 
+      {unlocked && (
+        <p
+          role="status"
+          className="font-baloo"
+          style={{
+            marginTop: 16, padding: '10px 18px', borderRadius: 16,
+            background: BRAND.surfaceStrong, color: BRAND.lime,
+            fontSize: 22, fontWeight: 700, lineHeight: 1.3, textAlign: 'center',
+          }}
+        >
+          {t('scoreCard.unlocked', '{{category}} is now unlocked!', {
+            category: t(CATEGORY_NAME[unlocked].key, CATEGORY_NAME[unlocked].fallback),
+          })}
+        </p>
+      )}
+
       <div style={{ paddingTop: 24 }}>
         <Button variant="green" size="md" onClick={onContinue} style={{ minWidth: 200 }}>
           {t('btn.continue', 'Continue')}
@@ -79,9 +104,10 @@ export function ScoreCardView({ game, data, onContinue, onClose }: ViewProps) {
 }
 
 /**
- * Shown once after each session game, when rotation moves the session on. By
- * then the session already points at the next game, so Continue reads the
- * destination from it - see afterScoreCard.
+ * Shown when a level ends past the category's ten minutes. The category is
+ * already complete by then, so the unlock banner and Continue both read from the
+ * session, and a refresh on the card keeps them. Home marks the unlock seen once
+ * it has played the animation, not here.
  */
 export default function ScoreCard() {
   const navigate = useNavigate();
@@ -101,10 +127,8 @@ export default function ScoreCard() {
     <ScoreCardView
       game={game}
       data={getScoreCard(game.id)}
-      onContinue={() => navigate(afterScoreCard({
-        categoriesCompleted: session.categoriesCompleted,
-        currentGameId: session.currentGameId,
-      }))}
+      unlocked={pendingUnlock(session.categoriesCompleted, session.unlocksSeen)}
+      onContinue={() => navigate(afterScoreCard(session.categoriesCompleted))}
       // No session_interrupted here: the game is finished, and the session is
       // already saved at the next one, so Home offers Continue.
       onClose={() => navigate('/app/home')}

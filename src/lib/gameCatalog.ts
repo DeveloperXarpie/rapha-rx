@@ -9,9 +9,10 @@ import type { GameCategory } from '../styles/tokens';
  * registry call it `executive` and that is not changing, so `executive` is the
  * key everywhere and "Planning" only ever appears behind a translation key.
  *
- * `marquee` marks the six games with commissioned art that the daily session
- * draws from. Everything else is reachable from free play only, and renders
- * with its category icon rather than bespoke art.
+ * `marquee` marks the six games with commissioned art. `inDailySession` marks
+ * the ones Home offers - the marquee games except Garden Keeper (FINAL_SPEC D15).
+ * Everything else is reachable from free play only, and renders with its
+ * category icon rather than bespoke art.
  */
 export interface GameCatalogEntry {
   id: string;
@@ -22,7 +23,10 @@ export interface GameCatalogEntry {
   tile: string | null;
   /** Full-bleed game title screen art, or null when the game has none. */
   splash: string | null;
+  /** Commissioned art; also opts the board into GameShell's anchoring. */
   marquee: boolean;
+  /** Offered on Home in the daily session. Not the same as marquee: see garden-keeper. */
+  inDailySession: boolean;
 }
 
 const CATEGORY_ICONS: Record<GameCategory, string> = {
@@ -41,11 +45,15 @@ function marquee(
     tile: `/games/tile-${art}.png`,
     splash: `/games/splash-${art}.webp`,
     marquee: true,
+    inDailySession: true,
   };
 }
 
 function extra(id: string, category: GameCategory): GameCatalogEntry {
-  return { id, category, nameKey: `game.${id}.name`, tile: null, splash: null, marquee: false };
+  return {
+    id, category, nameKey: `game.${id}.name`, tile: null, splash: null,
+    marquee: false, inDailySession: false,
+  };
 }
 
 /**
@@ -58,7 +66,9 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
   'market-memory':         marquee('market-memory',        'memory',    'shopping'),
   'train-yard':            marquee('train-yard',           'memory',    'station'),
   'spot-focus':            marquee('spot-focus',           'attention', 'spot'),
-  'garden-keeper':         marquee('garden-keeper',        'attention', 'garden'),
+  // Out of the core six (FINAL_SPEC D15): keeps its art and Free Play, leaves Home
+  // until Baggage Sort takes its place.
+  'garden-keeper':         { ...marquee('garden-keeper',       'attention', 'garden'), inDailySession: false },
   'serve-guests':          marquee('serve-guests',         'executive', 'tiffen'),
   'clear-the-way':         marquee('clear-the-way',        'executive', 'freeme'),
 
@@ -85,8 +95,10 @@ export function marqueeGames(): GameCatalogEntry[] {
   return ORDER.map((id) => GAME_CATALOG[id]).filter((g) => g.marquee);
 }
 
-export function marqueeByCategory(category: GameCategory): GameCatalogEntry[] {
-  return marqueeGames().filter((g) => g.category === category);
+/** The games Home offers for a category in the daily session, in declaration order. */
+export function sessionGamesByCategory(category: GameCategory): GameCatalogEntry[] {
+  return ORDER.map((id) => GAME_CATALOG[id])
+    .filter((g) => g.inDailySession && g.category === category);
 }
 
 export function allByCategory(category: GameCategory): GameCatalogEntry[] {

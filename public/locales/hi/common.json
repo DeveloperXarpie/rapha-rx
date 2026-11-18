@@ -613,5 +613,15 @@
   "scoreCard.compare.steady": "लगातार और स्थिर - शाबाश।",
   "scoreCard.compare.lower": "हर खेल मदद करता है - फिर मिलेंगे!",
   "scoreCard.bestSkill": "आपने इसमें खास तौर पर अच्छा किया",
-  "scoreCard.thanks": "आज खेलने के लिए धन्यवाद।"
+  "scoreCard.thanks": "आज खेलने के लिए धन्यवाद।",
+  "home.prompt": "आज आप क्या खेलना चाहेंगे?",
+  "home.panel.memory": "अपनी याददाश्त बढ़ाएँ",
+  "home.panel.attention": "अपना ध्यान मज़बूत करें",
+  "home.panel.executive": "अपनी योजना-शक्ति मज़बूत करें",
+  "home.locked": "पहले दिए गए खेल खेलें।",
+  "home.completed": "आज आपने यह पूरा कर लिया है।",
+  "scoreCard.unlocked": "{{category}} अब खुल गया है!",
+  "summary.subtitleAreas": "आज आपने तीनों भाग पूरे कर लिए।",
+  "btn.proceed": "आगे बढ़ें",
+  "btn.ok": "ठीक है"
 }
