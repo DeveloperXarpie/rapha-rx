@@ -71,19 +71,60 @@ export function categorySummary(today: RoundRecord[], previous: RoundRecord[]): 
 
 export interface ScoreCardData {
   cards: { skill: SkillId; score: number; band: Band }[];
-  /** The first card's skill rose by 3 or more since the last session. */
-  improved: boolean;
+  /** The word under the cards, from the average of the cards' scores. */
+  accoladeKey: string | null;
 }
 
-export const IMPROVED_POINTS = 3;
+/**
+ * The scorecard's accolade (amends 2026-11-23, "based on performance - averages"). Its
+ * six words sit on the same five bands as the skill words, with the sixth, Champion!,
+ * kept for a perfect 100, as the summary keeps its own top word for 100.
+ */
+export function accoladeKey(average: number): string {
+  const a = Math.round(average);
+  return `scoreCard.accolade.${a >= 100 ? 6 : skillBand(a)}`;
+}
 
-export function scoreCardData(gameId: string, today: RoundRecord[], previous: RoundRecord[]): ScoreCardData {
+export function scoreCardData(gameId: string, today: RoundRecord[]): ScoreCardData {
   const now = skillScores(gameId, byGame(today, gameId));
-  const before = skillScores(gameId, byGame(previous, gameId));
   const cards = (SCORED_SKILLS[gameId] ?? [])
     .filter((skill) => now[skill] !== undefined)
     .map((skill) => ({ skill, score: now[skill]!, band: skillBand(now[skill]!) }));
-  const first = cards[0];
-  const prev = first ? before[first.skill] : undefined;
-  return { cards, improved: !!first && prev !== undefined && first.score - prev >= IMPROVED_POINTS };
+  if (cards.length === 0) return { cards, accoladeKey: null };
+  return { cards, accoladeKey: accoladeKey(cards.reduce((t, c) => t + c.score, 0) / cards.length) };
+}
+
+/** How many sessions the summary's History Metrics shows (owner, 2026-11-23). */
+export const HISTORY_SESSIONS = 7;
+
+export interface HistoryMetrics {
+  /** The session dates shown, oldest first; the last is usually today. */
+  dates: string[];
+  /** One row per skill, a score per date, null where that skill was not played. */
+  rows: { skill: SkillId; scores: (number | null)[] }[];
+}
+
+const GAME_OF_SKILL: Partial<Record<SkillId, string>> = Object.fromEntries(
+  Object.entries(SCORED_SKILLS).flatMap(([gameId, skills]) => skills.map((s) => [s, gameId])),
+);
+
+/**
+ * The summary's "HISTORY METRICS" (FINAL_SPEC 7.5, owner 2026-11-23): each of today's
+ * skills as it scored in each of the last few sessions of this category. A session is
+ * a day with rounds in the category, scored the same way as that day's rings.
+ */
+export function historyMetrics(
+  rounds: RoundRecord[], skills: SkillId[], sessions = HISTORY_SESSIONS,
+): HistoryMetrics {
+  const dates = [...new Set(rounds.map((r) => r.date))].sort().slice(-sessions);
+  const rows = skills.map((skill) => {
+    const gameId = GAME_OF_SKILL[skill];
+    return {
+      skill,
+      scores: dates.map((date) => (gameId
+        ? skillScores(gameId, rounds.filter((r) => r.date === date && r.gameId === gameId))[skill] ?? null
+        : null)),
+    };
+  });
+  return { dates, rows };
 }

@@ -14,8 +14,7 @@ import type { GameCategory } from '../styles/tokens';
 export const CATEGORY_ORDER: GameCategory[] = ['memory', 'attention', 'executive'];
 
 /** Board time that completes a category (D1). Tunable. */
-// TEMP (2026-11-18, smoke testing): 30 s instead of 600. Revert before committing.
-export const CATEGORY_SESSION_SECONDS = 30;
+export const CATEGORY_SESSION_SECONDS = 600;
 
 export type CategoryStatus = 'completed' | 'active' | 'locked';
 export type TileAction = 'play' | 'locked' | 'completed';

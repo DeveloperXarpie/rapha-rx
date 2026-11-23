@@ -602,6 +602,9 @@
   "home.panel.memory": "Boost Your MEMORY",
   "home.panel.attention": "Build Your FOCUS",
   "home.panel.executive": "Strengthen Your PLANNING",
+  "home.slot.memory": "Memory",
+  "home.slot.attention": "Attention",
+  "home.slot.executive": "Planning",
   "home.locked": "Play the assigned games.",
   "home.completed": "You have finished this today.",
   "scoreCard.unlocked": "{{category}} is now unlocked!",
@@ -634,6 +637,16 @@
   "summary.performanceToday": "Performance today",
   "summary.ofHundred": "of 100",
   "summary.sinceLast": "{{delta}} since last session",
-  "scoreCard.improved": "You have improved steadily.",
-  "scoreCard.keepGoing": "Keep playing to build on it."
+  "summary.history.title": "HISTORY METRICS",
+  "summary.history.subtitle": "Your last {{count}} sessions",
+  "summary.history.today": "Today",
+  "summary.history.firstTime": "Your history starts today. Come back tomorrow!",
+  "summary.history.notPlayed": "Not played",
+  "scoreCard.outOfFive": "{{band}}/5",
+  "scoreCard.accolade.1": "Keep Going",
+  "scoreCard.accolade.2": "Strong Effort",
+  "scoreCard.accolade.3": "Great Game",
+  "scoreCard.accolade.4": "Excellent Play",
+  "scoreCard.accolade.5": "Outstanding",
+  "scoreCard.accolade.6": "Champion!"
 }

@@ -101,8 +101,9 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 | 2 | Game changes: Shopping List, Spot Focus, Tiffin Time graded clear / hold / fail with Replay; Shopping List one hint, half score when hinted, second trip for Retention; Spot Focus "I can't find it" and find timing; Tiffin guest types, numbered dishes, decision logging, no points, "Tiffin" spelling | v1.37.0, `c6613ed` | Pushed 2026-11-19; Preview only, not promoted |
 | 3a | Difficulty ladders for the same three games: daily restart at level 1, up on a clear, down after two fails; anchors from the rules doc's samples; Tiffin round settings per level | v1.38.0, `d809334` | Pushed 2026-11-19; Preview only, not promoted |
 | 4 | Scoring: round log (Dexie v4), skill scores per FINAL_SPEC 7.1 (measure only), Mock 2 scorecard (band words and bars, no numbers), Mock 3 10-minute summary (rings, change since last session, ten-band headline); scorecard, summary, Home | v1.39.0, `e9c8f14` | Pushed 2026-11-19; Preview only, not promoted |
+| Amends | The amends of 2026-11-23 (D25): scorecard "YOUR MEMORY", "n/5" discs, six-word accolade over confetti; summary restyled flat navy with the mock's colours; Home's empty slots and small-caps captions; one lavender popup with a lime button for Home and the in-game exit; History Metrics expander (last 7 sessions per skill) | v1.40.0 | Committed 2026-11-23; smoke test outstanding |
 
-**Temporary:** `CATEGORY_SESSION_SECONDS` is 30 s instead of 600 for owner testing; it is in the pushed builds, so **do not promote any of them to Production** until it is reverted. Two sessionLedger tests fail until it is reverted, and no build with it may be promoted to Production.
+**Timer:** `CATEGORY_SESSION_SECONDS` was 30 s for owner testing in v1.36 to v1.39; **do not promote those builds to Production**. v1.40.0 restores 600 s.
 
 ### Decisions taken during implementation (owner)
 
@@ -110,6 +111,8 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 - Plan 2: scope is Shopping List, Spot Focus, Tiffin Time; Replay sits on the game's own round-end card; a failed round keeps the level; the second trip is the last round of a visit; starting thresholds accepted.
 - Plan 3a: X1 up on a clear, down after two fails; X2 every game restarts at level 1 each day; anchors from the samples for now; X6 deferred to scoring.
 - Plan 4: scores from the measure only (no difficulty weight); absolute bands for the summary headline (7.2's ten bands); the scorecard only at category completion; scorecard, then summary, then Home.
+
+- Amends 2026-11-23: accolade score ranges kept as built (7.2) and History Metrics contents chosen by the user on 2026-11-23 (last 7 sessions per skill). Still held back: weekly stars (C14), Garden Keeper on Home (against D15), and Station Master's Sequences card, ladder and Replay.
 
 ### Notable findings along the way
 
@@ -121,5 +124,5 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 ## 4. Next steps
 
 1. Plan 3b: the spreadsheet importer and the layout-dependent ladder knobs (Tiffin seats and counter, mixed Spot Focus tiers, Shopping List crates and closeness).
-3. Revert the 30 s timer, then push and promote once the owner has smoke-tested plans 2 and 3a.
+3. The 30 s timer is reverted in v1.40.0; push and promote once the owner has smoke-tested it.
 4. Later: Station Master (after art), Free Me (last), Baggage Sort (design), research data.

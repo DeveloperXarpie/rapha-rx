@@ -11,10 +11,9 @@ import {
 import { todayISO } from '../lib/dates';
 import ScreenBlue from '../components/chrome/ScreenBlue';
 import CategoryPanel from '../components/chrome/CategoryPanel';
-import HomePopup from '../components/chrome/HomePopup';
+import Popup from '../components/chrome/Popup';
 import ScreenTransition from '../components/chrome/ScreenTransition';
 import { Button } from '../components/ui/Button';
-import { BRAND } from '../styles/tokens';
 import { version } from '../../package.json';
 
 // Taps on the version label needed to reveal the session shortcuts in a
@@ -142,7 +141,7 @@ export default function HomeScreen() {
           <p className="font-baloo" style={{ fontSize: 24, fontWeight: 700, color: '#FFFFFF' }}>
             {getGreeting()}{firstName ? `, ${firstName}` : ''}
           </p>
-          <p className="font-baloo" style={{ fontSize: 18, fontWeight: 600, color: BRAND.cyan }}>
+          <p className="font-baloo" style={{ fontSize: 18, fontWeight: 600, color: '#DCE6FF' }}>
             {dayDone
               ? t('home.sessionComplete', "Today's workout is complete.")
               : t('home.prompt', 'What would you like to play today?')}
@@ -218,13 +217,13 @@ export default function HomeScreen() {
       </ScreenTransition>
 
       {popup?.kind === 'locked' && (
-        <HomePopup
+        <Popup
           message={t('home.locked', 'Play the assigned games.')}
-          actions={[{ label: t('btn.ok', 'OK'), onClick: () => setPopup(null) }]}
+          actions={[{ label: t('btn.continue', 'Continue'), onClick: () => setPopup(null) }]}
         />
       )}
       {popup?.kind === 'completed' && (
-        <HomePopup
+        <Popup
           message={t('home.completed', 'You have finished this today.')}
           actions={[
             { label: t('btn.proceed', 'Proceed'), onClick: () => openGame(popup.gameId) },

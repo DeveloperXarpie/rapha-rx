@@ -64,6 +64,7 @@ _TBD_
 | D22 | Spot Focus Response speed is the **median gap between finds**. A round without every difference found ends with an **"I can't find it"** button that appears after a delay; there is no time limit. | [Owner] |
 | D23 | Tiffin Time's **on-screen points are removed**. | [Owner] |
 | D24 | **Skill names and measures stay exactly as in section 7.1.** Where a game cannot produce a measure today, a small change to the existing game captures it (section 7.1a): not a new mechanic, not a different skill. Baggage Sort takes Garden Keeper's two skills. | [Owner] |
+| D25 | **Amends of 2026-11-23** (`docs/ Rapha_amends - nov23-2026.pdf`). The per-game scorecard shows each skill's band as **"n/5"** beside its bar, under the heading "YOUR MEMORY", and replaces the message with an **accolade word over confetti** (7.2, 7.4). Home draws the **empty slots** either side of the games (C7). Popups take the lavender panel and lime button of the amends' page 6. | [Owner] |
 
 ## 3. Workstreams
 
@@ -231,6 +232,17 @@ Only the word is shown; the performance label is internal.
 | 90-99 | Outstanding |
 | 100 | Exceeding Expectations |
 
+**Accolade, after every game** (D25): six words for the average of the game's skill scores, on the scorecard. The amends give the words and their tiers (Poor to Above Excellent) but no score ranges, so the tiers use the five skill bands, and the sixth word is kept for a perfect 100, as the summary keeps its own top word. **[User, 2026-11-23]** (kept; the owner has not given ranges)
+
+| Average | Tier | Word shown |
+|---|---|---|
+| 0-39 | Poor | Keep Going |
+| 40-59 | Average | Strong Effort |
+| 60-74 | Fair | Great Game |
+| 75-89 | Good | Excellent Play |
+| 90-99 | Excellent | Outstanding |
+| 100 | Above Excellent | Champion! |
+
 ### 7.3 Game features the measures depend on
 
 To confirm with the game team. **[Draft]**
@@ -248,21 +260,18 @@ To confirm with the game team. **[Draft]**
 
 Status of each against the current code: _TBD_ (to be audited).
 
-### 7.4 Per-game scorecard (Mock 2)
+### 7.4 Per-game scorecard (Mock 2, amended 2026-11-23)
 
-Shown after every game. **[Draft]**
+Shown when a category completes (C6). As amended by D25:
 
-- Game tile art, and the category name below it ("MEMORY").
+- Game tile art, and "YOUR MEMORY" below it.
 - One card per skill of that game (two cards), each with:
   - the skill name ("Recall")
-  - the encouraging word for its band ("Rising Confidence")
-  - a five-segment bar, filled to the band level
-- Each skill has its own colour; Mock 2 shows Recall in green and Retention in yellow.
-- A message below the cards. Mock 2 shows two variants:
-  - "Thank you for playing today."
-  - "Your recall has improved steadily. Keep playing a few times a week to build on it."
-  When each variant shows: see C5 in section 13.
-- Continue button. On a failed round it reads **Replay** and replays the level (D20).
+  - the encouraging word for its band ("Good Potential")
+  - "3/5" in a disc, then a five-segment bar filled to the band level
+- Each skill has its own colour; the mock shows Recall in green and Retention in yellow.
+- The accolade for the average (7.2) in a badge, over confetti. It replaces the earlier "Thank you" and "improved" messages (C5); "Thank you for playing today." remains only when no skill has anything to judge.
+- Continue button.
 
 ### 7.5 10-minute summary (Mock 3)
 
@@ -275,7 +284,7 @@ Shown at the end of each 10-minute category session. **[Draft]**
   - the score "of 100" (D12)
   - the change since last session, with a green up arrow or a red down arrow (D13)
 - Ring colours (Mock 3): Recall green, Retention yellow, Sequence cyan, Association pink.
-- A "HISTORY METRICS" expander. Contents: _TBD_
+- A "HISTORY METRICS" expander, closed by default (amends p4 for its look). Open, it shows each of today's skills as a row of bars, one per session, over the last 7 sessions of this category, with the score over each bar and the dates along the bottom; a skill not played that session shows "-". A session here is a day with rounds in the category. On a first session it says the history starts today. **[User, 2026-11-23]** (the owner had left the contents TBD)
 - The overall-average word from 7.2 ("Great Progress!").
 - Continue button.
 - At the end of each session the player also sees how many of this week's 3 sessions are done, as stars that fill in. This rewards turning up, not performance. **[Draft]**
@@ -288,7 +297,7 @@ From the draft, for what the player sees: **[Draft]**
 - Name the skill in everyday words: "remembering", "spotting", "planning".
 - Every message in Kannada, Hindi and English, under 10 words (D10).
 
-Exception: the 10-minute summary shows numeric scores and declines (D12, D13).
+Exceptions: the 10-minute summary shows numeric scores and declines (D12, D13); the scorecard shows each skill's band as "n/5" (D25).
 
 ### 7.7 Demographic comparison
 
@@ -365,7 +374,7 @@ Nothing in this list is assumed anywhere else in the doc.
 
 | # | Issue | Blocks |
 |---|---|---|
-| C7 | **Home empty slots.** Mock 1 shows two empty tiles in each category panel. Are they placeholders for future games, decoration, or should they be removed? (Mock 1 also labels the Garden Keeper tile "SHOPPING LIST", assumed to be a mock typo.) | B |
+| C7 | **Home empty slots.** Resolved by D25: drawn as placeholders labelled with the category. Still open: the amends' Home mock shows Garden Keeper in Focus, against D15; the build keeps D15 until the owner says otherwise. | B |
 | C8 | **"Prescriptive games" location.** No such wording exists in the app copy today. Is it in an image, the store listing, or a place outside the locale files? | F |
 | C14 | **"This week's 3 sessions".** Is a session here one full day of 30 minutes? Is the weekly target fixed at 3? | A, C |
 | C15 | **Demographic comparison.** 10 levels of one game or in total? Which demographic and source data? Does it break the no-numbers and no-rankings rules? | C |

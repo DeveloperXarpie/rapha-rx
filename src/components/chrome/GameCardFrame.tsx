@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KIT_COLOURS } from '../../lib/uiKit';
+import { SCORE_UI } from '../../styles/tokens';
 
 interface Props {
   /** The game's splash art, cover-cropped behind the panel. */
@@ -47,7 +48,7 @@ export default function GameCardFrame({ art, onClose, children }: Props) {
         <div
           className="flex-1 min-h-0 flex flex-col items-center"
           style={{
-            background: KIT_COLOURS.instruction,
+            background: SCORE_UI.panel,
             border: `4px solid ${KIT_COLOURS.instructionRim}`,
             borderRadius: 40,
             boxShadow: '0 10px 28px rgba(8, 26, 52, 0.45)',

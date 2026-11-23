@@ -12,7 +12,7 @@ import ProgressBar from '../../components/chrome/ProgressBar';
 import GameRow from '../../components/chrome/GameRow';
 import GameTile from '../../components/chrome/GameTile';
 import CategoryPanel from '../../components/chrome/CategoryPanel';
-import HomePopup from '../../components/chrome/HomePopup';
+import Popup from '../../components/chrome/Popup';
 import ScreenTransition from '../../components/chrome/ScreenTransition';
 import { staggerDelay, type TransitionName } from '../../components/chrome/transitions';
 import { marqueeGames, sessionGamesByCategory, GAME_CATALOG } from '../../lib/gameCatalog';
@@ -20,7 +20,8 @@ import { Button } from '../../components/ui/Button';
 import { GameIntroView } from '../GameIntro';
 import { GAME_SKILLS } from '../../lib/gameSkills';
 import { ScoreCardView } from '../ScoreCard';
-import { BRAND, CATEGORY_BRAND } from '../../styles/tokens';
+import HistoryMetrics from '../../components/chrome/HistoryMetrics';
+import { BRAND, CATEGORY_BRAND, SCORE_UI } from '../../styles/tokens';
 import type { GameCategory } from '../../styles/tokens';
 
 const CATEGORIES: GameCategory[] = ['memory', 'attention', 'executive'];
@@ -197,10 +198,13 @@ export default function ChromeGallery() {
 
       <Section title="Home popups">
         <div style={{ position: 'relative', height: 260, transform: 'translateZ(0)', overflow: 'hidden' }}>
-          <HomePopup
+          <Popup
             message="You have finished this today."
             actions={[{ label: 'Proceed', onClick: noop }, { label: 'Back', onClick: noop, variant: 'secondary' }]}
           />
+        </div>
+        <div style={{ position: 'relative', height: 260, transform: 'translateZ(0)', overflow: 'hidden', marginTop: 12 }}>
+          <Popup message="Play the assigned games." actions={[{ label: 'Continue', onClick: noop }]} />
         </div>
       </Section>
 
@@ -226,29 +230,50 @@ export default function ChromeGallery() {
       <Section title="Score cards">
         <div style={{ display: 'flex', gap: 16, overflowX: 'auto' }}>
           <Phone>
-            <ScoreCardView game={GAME_CATALOG['market-memory']} data={{ cards: [], improved: false }} onContinue={noop} onClose={noop} />
+            <ScoreCardView game={GAME_CATALOG['market-memory']} data={{ cards: [], accoladeKey: null }} onContinue={noop} onClose={noop} />
           </Phone>
           <Phone>
             <ScoreCardView
               game={GAME_CATALOG['market-memory']}
-              data={{ cards: [{ skill: 'recall', score: 80, band: 4 }, { skill: 'retention', score: 50, band: 2 }], improved: false }}
+              data={{ cards: [{ skill: 'recall', score: 80, band: 4 }, { skill: 'retention', score: 50, band: 2 }], accoladeKey: 'scoreCard.accolade.3' }}
               unlocked="attention" onContinue={noop} onClose={noop}
             />
           </Phone>
           <Phone>
             <ScoreCardView
               game={GAME_CATALOG['market-memory']}
-              data={{ cards: [{ skill: 'recall', score: 80, band: 4 }, { skill: 'retention', score: 50, band: 2 }], improved: true }}
+              data={{ cards: [{ skill: 'recall', score: 100, band: 5 }, { skill: 'retention', score: 100, band: 5 }], accoladeKey: 'scoreCard.accolade.6' }}
               onContinue={noop} onClose={noop}
             />
           </Phone>
           <Phone>
             <ScoreCardView
               game={GAME_CATALOG['serve-guests']}
-              data={{ cards: [{ skill: 'sequencing', score: 35, band: 1 }, { skill: 'decisionMaking', score: 92, band: 5 }], improved: false }}
+              data={{ cards: [{ skill: 'sequencing', score: 35, band: 1 }, { skill: 'decisionMaking', score: 92, band: 5 }], accoladeKey: 'scoreCard.accolade.3' }}
               onContinue={noop} onClose={noop}
             />
           </Phone>
+        </div>
+      </Section>
+
+      {/* Tap each bar to open it. Sample values: a week of Memory with one day off
+          Station Master, then a first session with no history yet. */}
+      <Section title="History metrics (10-minute summary)">
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          {[
+            {
+              dates: ['2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21', '2026-11-22', '2026-11-23'],
+              rows: [
+                { skill: 'recall' as const, scores: [55, 60, 58, 66, 70, 72, 80] },
+                { skill: 'association' as const, scores: [40, null, 50, 62, 58, 75, 0] },
+              ],
+            },
+            { dates: ['2026-11-23'], rows: [{ skill: 'recall' as const, scores: [72] }] },
+          ].map((history, i) => (
+            <div key={i} style={{ width: 360, padding: 16, borderRadius: 16, background: SCORE_UI.summaryBg, color: '#FFFFFF', display: 'flex', justifyContent: 'center' }}>
+              <HistoryMetrics history={history} today="2026-11-23" />
+            </div>
+          ))}
         </div>
       </Section>
 

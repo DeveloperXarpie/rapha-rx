@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { RingChange } from '../../lib/scoring/summary';
 import { useReducedMotion } from '../../lib/useReducedMotion';
-import { BRAND } from '../../styles/tokens';
+import { SCORE_UI } from '../../styles/tokens';
 
 const SIZE = 132;
 const STROKE = 14;
@@ -23,7 +23,7 @@ export default function SkillRing({ label, score, colour, change }: {
   return (
     <div
       style={{
-        background: BRAND.surfaceStrong, borderRadius: 20, padding: '12px 8px 14px',
+        background: SCORE_UI.ringCard, borderRadius: 20, padding: '12px 8px 14px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
       }}
     >
@@ -32,7 +32,7 @@ export default function SkillRing({ label, score, colour, change }: {
       </p>
       <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
         <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} aria-hidden="true">
-          <circle cx={SIZE / 2} cy={SIZE / 2} r={R} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth={STROKE} />
+          <circle cx={SIZE / 2} cy={SIZE / 2} r={R} fill="none" stroke={SCORE_UI.ringTrack} strokeWidth={STROKE} />
           <circle
             cx={SIZE / 2} cy={SIZE / 2} r={R} fill="none" stroke={colour} strokeWidth={STROKE}
             strokeLinecap="round" strokeDasharray={C} strokeDashoffset={C * (1 - filled)}
@@ -47,17 +47,24 @@ export default function SkillRing({ label, score, colour, change }: {
           }}
         >
           <span style={{ fontSize: 36, fontWeight: 800 }}>{score}</span>
-          <span style={{ fontSize: 13, marginTop: 4, color: BRAND.muted }}>
+          <span style={{ fontSize: 13, marginTop: 4, color: '#FFFFFF' }}>
             {t('summary.ofHundred', 'of 100')}
           </span>
         </div>
       </div>
       {change && (
-        <p style={{ fontSize: 14, fontWeight: 700, color: colour, textAlign: 'center' }}>
-          {change.dir === 'up' && <span style={{ color: '#5BD16B' }} aria-hidden="true">▲ </span>}
-          {change.dir === 'down' && <span style={{ color: '#E5484D' }} aria-hidden="true">▼ </span>}
-          {t('summary.sinceLast', '{{delta}} since last session', {
+        <p
+          style={{ fontSize: 14, fontWeight: 700, color: colour, textAlign: 'center' }}
+          aria-label={t('summary.sinceLast', '{{delta}} since last session', {
             delta: change.delta > 0 ? `+${change.delta}` : String(change.delta),
+          })}
+        >
+          {change.dir === 'up' && <span style={{ color: SCORE_UI.up }} aria-hidden="true">▲ </span>}
+          {change.dir === 'down' && <span style={{ color: SCORE_UI.down }} aria-hidden="true">▼ </span>}
+          {t('summary.sinceLast', '{{delta}} since last session', {
+            // The arrow carries the direction, as in the mock; the aria-label
+            // above gives a screen reader the sign instead.
+            delta: Math.abs(change.delta),
           })}
         </p>
       )}

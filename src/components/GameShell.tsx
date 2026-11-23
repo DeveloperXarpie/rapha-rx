@@ -15,7 +15,7 @@ import { shouldMoveLadder } from '../lib/ladders/movement';
 import { advanceLadder } from '../lib/ladders/store';
 import { countsForSession } from '../lib/scoring/roundLog';
 import { addRound } from '../lib/db';
-import { Button } from './ui/Button';
+import Popup from './chrome/Popup';
 import type { GameVisit, LevelConfig } from '../games/types';
 import { needsSecondTrip, requestSecondTrip } from '../games/memory/MarketMemory/secondTrip';
 import { gardenKeeperPerformance } from '../games/attention/GardenKeeper/model';
@@ -452,18 +452,14 @@ export default function GameShell({
 
       {/* Exit confirmation dialog */}
       {showExitConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
-          <div className="panel-surface p-8 max-w-sm w-full shadow-xl">
-            <h3 className="text-h2 font-bold text-body-text mb-3">{t('game.exit.confirm.title')}</h3>
-            <p className="text-body-md text-caption-text mb-8">{t('game.exit.confirm.message')}</p>
-            <div className="flex flex-col gap-3">
-              <Button fullWidth onClick={confirmExit}>{t('game.exit.confirm.yes')}</Button>
-              <Button variant="secondary" fullWidth onClick={() => setShowExitConfirm(false)}>
-                {t('game.exit.confirm.no')}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <Popup
+          title={t('game.exit.confirm.title')}
+          message={t('game.exit.confirm.message')}
+          actions={[
+            { label: t('game.exit.confirm.yes'), onClick: confirmExit },
+            { label: t('game.exit.confirm.no'), onClick: () => setShowExitConfirm(false), variant: 'secondary' },
+          ]}
+        />
       )}
     </div>
   );

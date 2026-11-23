@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flow: game to game (inside the 10 minutes)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f6fa; --surface: #ffffff; --text: #18223a; --muted: #5b6680; --line: #dbe1ea;
+  --accent: #2459c9; --chip: #e9effb; --warn: #9a5b00; --warnbg: #fff4dc;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f131b; --surface: #181e29; --text: #e7ebf3; --muted: #9aa5b8; --line: #2a3242;
+    --accent: #84b1ff; --chip: #1d2940; --warn: #ffc76b; --warnbg: #33270f;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f131b; --surface: #181e29; --text: #e7ebf3; --muted: #9aa5b8; --line: #2a3242;
+  --accent: #84b1ff; --chip: #1d2940; --warn: #ffc76b; --warnbg: #33270f;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header, main, footer { max-width: 1320px; margin: 0 auto; padding: 0 16px; }
+header { padding-top: 28px; }
+.docmeta { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+.docmeta b { color: var(--text); }
+h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.01em; }
+header p.lede { margin: 0; color: var(--muted); max-width: 75ch; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted);
+  margin: 34px 0 6px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.rowintro { margin: 8px 0 14px; color: var(--muted); max-width: 80ch; }
+.flow { display: flex; flex-wrap: wrap; align-items: flex-start; row-gap: 18px; padding: 6px 2px 18px; }
+.step { flex: none; width: 286px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 8px; }
+.arrow { flex: none; width: 46px; align-self: center; text-align: center; color: var(--accent);
+  font-size: 26px; line-height: 1; padding-bottom: 120px; }
+.arrow small { display: block; font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.25; }
+.meta { padding: 10px 6px 4px; }
+.meta h3 { font-size: 15.5px; margin: 0 0 3px; display: flex; gap: 8px; align-items: center; }
+.num { flex: none; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 12px; background: var(--accent);
+  color: var(--surface); font-size: 12px; display: grid; place-items: center; font-weight: 700; }
+.route code { font-size: 12px; color: var(--accent); background: var(--chip); padding: 1px 6px; border-radius: 6px; }
+.meta p { margin: 6px 0 0; font-size: 13.5px; }
+.meta ul { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; border-radius: 6px;
+  padding: 1px 7px; margin-top: 6px; background: var(--chip); color: var(--accent); }
+.tag.shot { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+.note { background: var(--warnbg); color: var(--warn); border-radius: 8px; padding: 6px 9px; font-size: 12.5px; margin-top: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); margin-top: 12px; }
+footer { color: var(--muted); font-size: 13px; padding-top: 24px; padding-bottom: 40px; }
+footer code { font-size: 12px; }
+
+/* ── Phone: a 360 x 780 design canvas drawn at 0.75 ───────────────────── */
+.phone { position: relative; width: 270px; height: 585px; border-radius: 26px; overflow: hidden;
+  background: #0E2AA8; box-shadow: 0 0 0 3px #11151f, 0 8px 22px rgba(0,0,0,0.25); }
+.screen { position: absolute; left: 0; top: 0; width: 360px; height: 780px; transform: scale(0.75);
+  transform-origin: top left; overflow: hidden; color: #fff;
+  font-family: 'Baloo 2', 'Segoe UI', sans-serif; }
+.screen img.full { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.blue { background: radial-gradient(120% 70% at 50% 0%, #45CFEE 0%, #2A86DE 28%, #1B5AD0 55%, #0E2AA8 100%); }
+.dim { position: absolute; inset: 0; background: rgba(6, 12, 40, 0.5); }
+
+/* app bits */
+.btn-green { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 64px;
+  padding: 0 22px; border-radius: 34px; border: 5px solid transparent; font-weight: 800; font-size: 23px; color: #F7F2E0;
+  background: linear-gradient(180deg,#8FC93F 0%,#6EB22B 44%,#4C8916 100%) padding-box,
+              linear-gradient(180deg,#F6E183 0%,#D8AE3E 38%,#9A6A1E 100%) border-box;
+  text-shadow: 0 3px 0 #2E5C10; box-shadow: 0 10px 18px rgba(0,0,0,0.42); white-space: nowrap; }
+.btn-green img { width: 28px; height: 28px; }
+.btn-green img.m { transform: scaleX(-1); }
+.btn-kit { display: inline-flex; align-items: center; justify-content: center; min-height: 60px; padding: 0 34px;
+  border-radius: 17px; border: 5px solid transparent; color: #fff; font-weight: 800; font-size: 24px;
+  background: linear-gradient(180deg,#7FDD45 0%,#EAFBC8 5%,#63D22F 13%,#3CB61B 56%,#1E9C0C 100%) padding-box,
+              linear-gradient(180deg,#1A820A 0%,#036600 100%) border-box;
+  text-shadow: 0 2px 0 rgba(4,74,2,0.95); }
+.btn-lime { display: inline-flex; align-items: center; justify-content: center; min-height: 60px; width: 220px;
+  border-radius: 32px; border: 4px solid transparent; color: #fff; font-weight: 800; font-size: 23px;
+  background: linear-gradient(180deg,#E2F9C4 0%,#C4F27A 12%,#B4EE5B 30%,#A6E152 58%,#8CC048 82%,#6E9E40 100%) padding-box,
+              linear-gradient(180deg,#4D8FE6 0%,#1B3FA8 45%,#020F44 100%) border-box;
+  text-shadow: 2.5px 0 0 #145F5D,-2.5px 0 0 #145F5D,0 2.5px 0 #145F5D,0 -2.5px 0 #145F5D,
+    1.8px 1.8px 0 #145F5D,-1.8px 1.8px 0 #145F5D,1.8px -1.8px 0 #145F5D,-1.8px -1.8px 0 #145F5D;
+  box-shadow: 0 8px 12px rgba(4,14,80,0.28); }
+.btn-ghost { display: inline-flex; align-items: center; justify-content: center; min-height: 60px; width: 220px;
+  border-radius: 32px; border: 3px solid #05218A; background: rgba(255,255,255,0.35); color: #032C90;
+  font-weight: 800; font-size: 22px; }
+.popup-wrap { position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center;
+  justify-content: center; padding: 24px; }
+.popup { width: 100%; border-radius: 30px; border: 4px solid #05218A;
+  box-shadow: 0 0 0 6px #D0D8F8, 0 14px 30px rgba(4,14,80,0.45);
+  background: linear-gradient(180deg,#D5DEFB 0%,#B4BDFF 100%); padding: 34px 22px 26px; text-align: center;
+  color: #032C90; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.popup h4 { margin: 0; font-size: 27px; line-height: 1.2; font-weight: 800; }
+.popup p { margin: 0 0 18px; font-size: 20px; font-weight: 600; line-height: 1.3; }
+.popup p.only { font-size: 27px; font-weight: 800; }
+
+/* Home */
+.home-top { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 20px 0; }
+.home-top img { width: 136px; }
+.gear { text-align: center; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; line-height: 1; }
+.gear span { display: block; font-size: 48px; line-height: 1; margin-bottom: 4px; }
+.greet { text-align: center; padding-top: 10px; }
+.greet b { display: block; font-size: 24px; font-weight: 700; }
+.greet i { font-style: normal; font-size: 18px; font-weight: 600; color: #DCE6FF; }
+.panels { display: flex; flex-direction: column; gap: 12px; padding: 0 20px; margin-top: 16px; }
+.panel { position: relative; border-radius: 18px; background: rgba(9,26,140,0.55); padding-bottom: 12px; overflow: hidden; }
+.panel h5 { margin: 0; background: rgba(4,14,80,0.45); text-align: center; font-size: 18px; font-weight: 700;
+  letter-spacing: 0.1em; padding: 7px 10px; }
+.panel .lock { display: inline-block; margin-right: 6px; font-size: 17px; letter-spacing: 0; }
+.slots { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; padding: 10px 10px 0; }
+.slot { text-align: center; }
+.slot .ph { width: 100%; aspect-ratio: 1; border-radius: 16px; background: rgba(255,255,255,0.13); }
+.slot img { width: 100%; aspect-ratio: 1; border-radius: 16px; display: block; box-shadow: 0 8px 16px rgba(4,14,80,0.3); }
+.slot p { margin: 5px 0 0; font-size: 12px; font-weight: 600; line-height: 1.15; }
+.slot.empty p { color: rgba(170,196,255,0.75); }
+.slot.locked img { filter: grayscale(0.9); opacity: 0.5; box-shadow: none; }
+.slot.locked p { color: #8FB8E8; }
+.slot.tap img { outline: 4px solid #FFE14A; outline-offset: 3px; }
+.slot.bounce img { outline: 3px dashed #C6F87A; outline-offset: 3px; }
+.screen.home { display: flex; flex-direction: column; }
+.home-foot { margin-top: auto; padding: 14px 0 22px; text-align: center; font-size: 10px; color: rgba(255,255,255,0.45); }
+.home-foot .btn-green { margin-bottom: 10px; font-size: 24px; }
+
+/* Intro */
+.intro { padding: 18px 20px 0; }
+.intro .back { position: absolute; left: 20px; top: 18px; width: 54px; height: 54px; border-radius: 50%;
+  background: #FFC928; border: 3px solid #0B3B8C; color: #1E5FD0; font-size: 30px; font-weight: 900;
+  display: grid; place-items: center; }
+.intro .tile { display: block; width: 132px; height: 132px; margin: 0 auto; border-radius: 26px; }
+.intro .pill { margin: 18px 0 0; background: #F1F5FD; color: #10237E; border-radius: 24px; text-align: center;
+  padding: 10px 12px; font-size: 19px; font-weight: 600; line-height: 1.2; }
+.intro .pill b { display: block; font-size: 27px; font-weight: 800; }
+.skill { display: flex; gap: 14px; align-items: center; margin-top: 14px; border: 2px solid rgba(80,140,255,0.5);
+  background: rgba(9,26,140,0.6); border-radius: 22px; padding: 12px 14px; }
+.skill img { width: 92px; height: 72px; object-fit: contain; flex: none; }
+.skill b { display: block; color: #FFF33B; font-size: 23px; font-weight: 800; line-height: 1.1; }
+.skill span { font-family: system-ui, sans-serif; font-size: 16px; line-height: 1.3; }
+.intro-cta { position: absolute; left: 0; right: 0; bottom: 30px; text-align: center; }
+
+/* Train Yard round-end card */
+.ty-card { position: absolute; left: 24px; right: 24px; top: 260px; background: #F3F6FB; border-radius: 20px;
+  border: 3px solid rgba(3,62,132,0.16); box-shadow: 0 10px 26px rgba(0,0,0,0.32); padding: 28px 22px; text-align: center; }
+.ty-card h4 { margin: 0 0 8px; font-size: 32px; font-weight: 800; }
+.ty-card p { margin: 0 0 18px; color: #033E84; font-size: 19px; font-weight: 600; line-height: 1.3; }
+.ty-card.ok h4 { color: #2E9A3E; } .ty-card.bad h4 { color: #D23C3C; }
+
+/* Scorecard */
+.sc { position: absolute; inset: 0; padding: 56px 16px 28px; display: flex; flex-direction: column; }
+.sc-panel { flex: 1; min-height: 0; background: #233C7E; border: 4px solid rgba(255,255,255,0.92); border-radius: 36px;
+  box-shadow: 0 10px 28px rgba(8,26,52,0.45); padding: 20px 16px 18px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.sc-panel .tile { width: 96px; height: 96px; }
+.sc-label { margin-top: 4px; font-size: 16px; font-weight: 700; letter-spacing: 0.12em; color: #A9B9E6; }
+.card { width: 100%; background: #2C498F; border-radius: 18px; padding: 9px 12px 10px; margin-top: 9px; }
+.card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.card .top b { font-size: 21px; font-weight: 800; }
+.card .top span { font-size: 15px; font-weight: 700; text-align: right; }
+.bar { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.bar .disc { flex: none; width: 40px; height: 40px; border-radius: 20px; background: #1E3577; display: grid; place-items: center; font-size: 17px; font-weight: 800; }
+.bar i { flex: 1; height: 18px; border-radius: 9px; background: #4E66A2; }
+.acc { position: relative; flex: 1; width: 100%; min-height: 110px; display: flex; align-items: center; justify-content: center; }
+.acc .conf { position: absolute; width: 4px; height: 10px; border-radius: 1.5px; }
+.acc .word { position: relative; padding: 2px 18px 0; border-radius: 16px; background: #2B1239; border: 4px solid #FAD241;
+  box-shadow: 0 0 0 4px #A45228, 0 8px 14px rgba(4,10,40,0.45); color: #FFE14A; font-size: 28px; font-weight: 800;
+  letter-spacing: 0.06em; transform: skewX(-8deg); text-shadow: 0 3px 0 #A45228; }
+.unlock { width: 100%; margin-top: 8px; padding: 7px 12px; border-radius: 14px; background: #2C498F; color: #C6F87A;
+  font-size: 19px; font-weight: 700; line-height: 1.25; }
+.sc-panel .btn-green { margin-top: 12px; min-height: 58px; font-size: 22px; }
+.closex { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.6); background: rgba(10,20,40,0.45); display: grid; place-items: center; font-size: 20px; }
+
+/* Summary */
+.sum { position: absolute; inset: 0; background: #1A3373; padding: 26px 18px 0; text-align: center;
+  font-family: 'Segoe UI', system-ui, sans-serif; }
+.sum h4 { margin: 0; font-size: 32px; font-weight: 800; line-height: 1.15; }
+.sum .sub { font-size: 23px; font-weight: 700; color: #A9B9E6; }
+.rings { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.ring { background: #223F83; border-radius: 20px; padding: 10px 6px 12px; }
+.ring .lbl { font-size: 15px; font-weight: 800; letter-spacing: 0.05em; }
+.ring .dial { position: relative; width: 120px; height: 120px; margin: 6px auto; border-radius: 50%; }
+.ring .dial::after { content: ""; position: absolute; inset: 13px; border-radius: 50%; background: #223F83; }
+.ring .val { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.ring .val b { font-size: 34px; } .ring .val small { font-size: 12px; margin-top: 3px; }
+.ring .chg { font-size: 13.5px; font-weight: 700; line-height: 1.25; }
+.headline { margin-top: 26px; font-family: 'Baloo 2', sans-serif; font-size: 25px; font-weight: 800; color: #F0FDA5; }
+.sum .cta { position: absolute; left: 0; right: 0; bottom: 32px; }
+</style>
+</head>
+<body>
+<header>
+  <p class="docmeta"><b>Date:</b> 2026-11-23 &nbsp;&middot;&nbsp; <b>Content Type:</b> Documentation (user flow) &nbsp;&middot;&nbsp; <b>Build:</b> v1.40.0, feat/app-flow-redesign</p>
+  <h1>Flow: game to game (inside the 10 minutes)</h1>
+  <p class="lede">What a resident sees from Home through Station Master and on to the next round or the next game, while the open category still has time left. Only board time counts toward the 10 minutes: the ticker runs while the board is on screen, the exit dialog is closed and the tab is visible.</p>
+  <div class="legend"><span>Reference game: <b>Station Master</b> (<code>train-yard</code>, Memory)</span>
+    <span>Phones are the 360 &times; 780 design canvas at 75%.</span>
+    <span>Rows wrap on a narrow screen; read left to right.</span></div>
+</header>
+<main>
+<h2>A. First game of the day</h2>
+<p class="rowintro">Each day starts with only Memory open. The resident can tap either Memory game; here they pick Station Master.</p>
+<div class="flow"><article class="step"><div class="phone"><div class="screen blue home"><div class="home-top"><img src="../../public/brand/logo-white.png" alt="">
+      <div class="gear"><span>&#9881;</span>SETTINGS</div></div>
+    <div class="greet"><b>Good Afternoon, Meera</b><i>What would you like to play today?</i></div>
+    <div class="panels"><section class="panel"><h5>Boost Your MEMORY</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>MEMORY</p></div><div class="slot "><img src="../../public/games/tile-shopping.png" alt=""><p>SHOPPING LIST</p></div><div class="slot tap"><img src="../../public/games/tile-station.png" alt=""><p>STATION MASTER</p></div><div class="slot empty"><div class="ph"></div><p>MEMORY</p></div></div></section><section class="panel"><h5><span class="lock">&#128274;</span>Build Your FOCUS</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div><div class="slot locked"><img src="../../public/games/tile-spot.png" alt=""><p>SPOT FOCUS</p></div><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div></div></section><section class="panel"><h5><span class="lock">&#128274;</span>Strengthen Your PLANNING</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>PLANNING</p></div><div class="slot locked"><img src="../../public/games/tile-tiffen.png" alt=""><p>TIFFIN TIME</p></div><div class="slot locked"><img src="../../public/games/tile-freeme.png" alt=""><p>FREE ME</p></div><div class="slot empty"><div class="ph"></div><p>PLANNING</p></div></div></section></div>
+    <div class="home-foot"><div>v1.40.0</div></div></div></div>
+  <div class="meta"><h3><span class="num">1</span>Home</h3>
+  <p class="route"><code>/app/home</code></p><ul><li>Memory open; Focus and Planning greyed with a lock.</li><li>Empty slots either side of the games are placeholders, not buttons.</li><li>Tap <b>Station Master</b>.</li></ul><span class="tag">HTML replica of v1.40.0</span></div></article><div class="arrow" aria-hidden="true">&rarr;<small>first game today</small></div><article class="step"><div class="phone"><div class="screen "><img class="full" src="../flow-screens/img/education.jpg" alt=""></div></div>
+  <div class="meta"><h3><span class="num">2</span>Education</h3>
+  <p class="route"><code>/app/education</code></p><p>Shown once a day, before the first game only (<code>educationSeen</code>). <b>Let's begin!</b> goes to the game intro.</p><span class="tag shot">Screenshot, v1.35.5</span></div></article><div class="arrow" aria-hidden="true">&rarr;</div><article class="step"><div class="phone"><div class="screen blue"><div class="intro"><div class="back">&#8630;</div>
+      <img class="tile" src="../../public/games/tile-station.png" alt="">
+      <div class="pill">This game improves your<b>Cognitive Memory</b></div>
+      <div class="skill"><img src="../../public/skills/sequences.webp" alt=""><div><b>Sequences</b>
+        <span>Helps you remember and follow information in the correct order.</span></div></div>
+      <div class="skill"><img src="../../public/skills/association.webp" alt=""><div><b>Association</b>
+        <span>Helps you connect new information with things you already know.</span></div></div>
+      </div><div class="intro-cta"><span class="btn-green" ><img src="../../public/brand/leaf.png" alt="">Continue<img class="m" src="../../public/brand/leaf.png" alt=""></span></div></div></div>
+  <div class="meta"><h3><span class="num">3</span>Game intro</h3>
+  <p class="route"><code>/app/game/train-yard/intro</code></p><p>The domain and the two scored skills, <b>Sequences</b> and <b>Association</b>. Continue goes to the title screen; the back arrow returns Home.</p><span class="tag">HTML replica of v1.40.0</span></div></article><div class="arrow" aria-hidden="true">&rarr;</div><article class="step"><div class="phone"><div class="screen "><img class="full" src="../flow-screens/img/title-train-yard.jpg" alt=""></div></div>
+  <div class="meta"><h3><span class="num">4</span>Title screen</h3>
+  <p class="route"><code>/app/game/train-yard/title</code></p><p>The game's splash art and <b>PLAY</b>. The X returns Home.</p><span class="tag shot">Screenshot, v1.35.5</span></div></article><div class="arrow" aria-hidden="true">&rarr;<small>PLAY</small></div><article class="step"><div class="phone"><div class="screen "><img class="full" src="../game-screens/img/ty-board.jpg" alt="Station Master board"></div></div>
+  <div class="meta"><h3><span class="num">5</span>Board</h3>
+  <p class="route"><code>/app/game/train-yard</code></p><ul><li><b>Study</b>: station names shown, trains hidden.</li><li><b>Hold</b>: signs covered.</li><li><b>Dispatch</b>: send each train to its station; a wrong one costs a heart.</li></ul><p>The 10-minute ticker runs here.</p><span class="tag shot">Screenshot, v1.34 board</span></div></article></div>
+
+<h2>B. Round end, inside the 10 minutes</h2>
+<p class="rowintro">The round ends on Station Master's own card. Its button reports the level to GameShell; with time still left in Memory,
+the next round starts at once on the same route. No scorecard appears between rounds.</p>
+<div class="flow"><article class="step"><div class="phone"><div class="screen "><img class="full" src="../game-screens/img/ty-board.jpg" alt="Station Master board"><div class="dim"></div><div class="ty-card ok"><h4>Round complete</h4><p>All four trains are home with 3 hearts left.</p><span class="btn-kit">Next round</span></div></div></div>
+  <div class="meta"><h3><span class="num">6</span>Round complete</h3>
+  <p class="route"><code>/app/game/train-yard (card)</code></p><p>All four trains home. <b>Next round</b> reports a cleared level; difficulty steps up.</p><span class="tag">HTML replica of v1.40.0</span></div></article><div class="arrow" aria-hidden="true">&rarr;<small>or</small></div><article class="step"><div class="phone"><div class="screen "><img class="full" src="../game-screens/img/ty-board.jpg" alt="Station Master board"><div class="dim"></div><div class="ty-card bad"><h4>Out of hearts</h4><p>Have another go at this yard - the stations will be shown again.</p><span class="btn-kit">Try again</span></div></div></div>
+  <div class="meta"><h3><span class="num">6b</span>Out of hearts</h3>
+  <p class="route"><code>/app/game/train-yard (card)</code></p><p>Three wrong dispatches. <b>Try again</b> reports a failed level; difficulty steps down and the stations are shown again.</p><span class="tag">HTML replica of v1.40.0</span></div></article><div class="arrow" aria-hidden="true">&rarr;<small>under 10 min</small></div><article class="step"><div class="phone"><div class="screen "><img class="full" src="../game-screens/img/ty-board.jpg" alt="Station Master board"></div></div>
+  <div class="meta"><h3><span class="num">7</span>Next round</h3>
+  <p class="route"><code>/app/game/train-yard</code></p><p>A new yard starts straight away and the ticker carries on. Back to step 5; this loops until the 10 minutes are up.</p><span class="tag shot">Screenshot, v1.34 board</span><div class="note">Station Master keeps the old step-down difficulty: it has no ladder or Replay yet (plan 3a covers only Shopping List, Spot Focus and Tiffin Time).</div></div></article></div>
+
+<h2>C. Switching to another game</h2>
+<p class="rowintro">Minutes belong to the category, not the game. Leaving Station Master and playing Shopping List keeps adding to the same Memory 10 minutes.</p>
+<div class="flow"><article class="step"><div class="phone"><div class="screen "><img class="full" src="../game-screens/img/ty-board.jpg" alt="Station Master board"><div class="popup-wrap"><div class="popup"><h4>Leave this game?</h4><p>Your progress in this level will be saved.</p><span class="btn-lime">Yes, exit</span><span class="btn-ghost">Keep playing</span></div></div></div></div>
+  <div class="meta"><h3><span class="num">8</span>Exit dialog</h3>
+  <p class="route"><code>/app/game/train-yard (dialog)</code></p><p>The X on the board. The ticker pauses while this is open. <b>Yes, exit</b> goes Home; <b>Keep playing</b> closes it.</p><span class="tag">HTML replica of v1.40.0</span><div class="note">A level left with the X never completes the category, even past 10 minutes; the next finished level does.</div></div></article><div class="arrow" aria-hidden="true">&rarr;<small>Yes, exit</small></div><article class="step"><div class="phone"><div class="screen blue home"><div class="home-top"><img src="../../public/brand/logo-white.png" alt="">
+      <div class="gear"><span>&#9881;</span>SETTINGS</div></div>
+    <div class="greet"><b>Good Afternoon, Meera</b><i>What would you like to play today?</i></div>
+    <div class="panels"><section class="panel"><h5>Boost Your MEMORY</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>MEMORY</p></div><div class="slot tap"><img src="../../public/games/tile-shopping.png" alt=""><p>SHOPPING LIST</p></div><div class="slot "><img src="../../public/games/tile-station.png" alt=""><p>STATION MASTER</p></div><div class="slot empty"><div class="ph"></div><p>MEMORY</p></div></div></section><section class="panel"><h5><span class="lock">&#128274;</span>Build Your FOCUS</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div><div class="slot locked"><img src="../../public/games/tile-spot.png" alt=""><p>SPOT FOCUS</p></div><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div></div></section><section class="panel"><h5><span class="lock">&#128274;</span>Strengthen Your PLANNING</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>PLANNING</p></div><div class="slot locked"><img src="../../public/games/tile-tiffen.png" alt=""><p>TIFFIN TIME</p></div><div class="slot locked"><img src="../../public/games/tile-freeme.png" alt=""><p>FREE ME</p></div><div class="slot empty"><div class="ph"></div><p>PLANNING</p></div></div></section></div>
+    <div class="home-foot"><div>v1.40.0</div></div></div></div>
+  <div class="meta"><h3><span class="num">9</span>Home</h3>
+  <p class="route"><code>/app/home</code></p><p>Same state: Memory still open. Tap <b>Shopping List</b>.</p><span class="tag">HTML replica of v1.40.0</span></div></article><div class="arrow" aria-hidden="true">&rarr;</div><article class="step"><div class="phone"><div class="screen blue"><div class="intro"><div class="back">&#8630;</div>
+      <img class="tile" src="../../public/games/tile-shopping.png" alt="">
+      <div class="pill">This game improves your<b>Cognitive Memory</b></div>
+      <div class="skill"><img src="../../public/skills/recall.webp" alt=""><div><b>Recall</b>
+        <span>Improves your ability to remember and recall information.</span></div></div>
+      <div class="skill"><img src="../../public/skills/retention.webp" alt=""><div><b>Retention</b>
+        <span>Helps strengthen your ability to retain information over time.</span></div></div>
+      </div><div class="intro-cta"><span class="btn-green" ><img src="../../public/brand/leaf.png" alt="">Continue<img class="m" src="../../public/brand/leaf.png" alt=""></span></div></div></div>
+  <div class="meta"><h3><span class="num">10</span>Shopping List intro</h3>
+  <p class="route"><code>/app/game/market-memory/intro</code></p><p>Education is skipped (already seen today). Intro, title, board, as in steps 3 to 5, for Shopping List.</p><span class="tag">HTML replica of v1.40.0</span></div></article></div>
+
+<h2>D. Tapping a locked game</h2>
+<p class="rowintro">A locked tile stays tappable so Home can say why it will not open.</p>
+<div class="flow"><article class="step"><div class="phone"><div class="screen blue home"><div class="home-top"><img src="../../public/brand/logo-white.png" alt="">
+      <div class="gear"><span>&#9881;</span>SETTINGS</div></div>
+    <div class="greet"><b>Good Afternoon, Meera</b><i>What would you like to play today?</i></div>
+    <div class="panels"><section class="panel"><h5>Boost Your MEMORY</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>MEMORY</p></div><div class="slot "><img src="../../public/games/tile-shopping.png" alt=""><p>SHOPPING LIST</p></div><div class="slot "><img src="../../public/games/tile-station.png" alt=""><p>STATION MASTER</p></div><div class="slot empty"><div class="ph"></div><p>MEMORY</p></div></div></section><section class="panel"><h5><span class="lock">&#128274;</span>Build Your FOCUS</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div><div class="slot locked tap"><img src="../../public/games/tile-spot.png" alt=""><p>SPOT FOCUS</p></div><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div></div></section><section class="panel"><h5><span class="lock">&#128274;</span>Strengthen Your PLANNING</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>PLANNING</p></div><div class="slot locked"><img src="../../public/games/tile-tiffen.png" alt=""><p>TIFFIN TIME</p></div><div class="slot locked"><img src="../../public/games/tile-freeme.png" alt=""><p>FREE ME</p></div><div class="slot empty"><div class="ph"></div><p>PLANNING</p></div></div></section></div>
+    <div class="home-foot"><div>v1.40.0</div></div></div></div>
+  <div class="meta"><h3><span class="num">11</span>Home</h3>
+  <p class="route"><code>/app/home</code></p><p>Tap <b>Spot Focus</b> while Focus is still locked.</p><span class="tag">HTML replica of v1.40.0</span></div></article><div class="arrow" aria-hidden="true">&rarr;</div><article class="step"><div class="phone"><div class="screen blue home"><div class="home-top"><img src="../../public/brand/logo-white.png" alt="">
+      <div class="gear"><span>&#9881;</span>SETTINGS</div></div>
+    <div class="greet"><b>Good Afternoon, Meera</b><i>What would you like to play today?</i></div>
+    <div class="panels"><section class="panel"><h5>Boost Your MEMORY</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>MEMORY</p></div><div class="slot "><img src="../../public/games/tile-shopping.png" alt=""><p>SHOPPING LIST</p></div><div class="slot "><img src="../../public/games/tile-station.png" alt=""><p>STATION MASTER</p></div><div class="slot empty"><div class="ph"></div><p>MEMORY</p></div></div></section><section class="panel"><h5><span class="lock">&#128274;</span>Build Your FOCUS</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div><div class="slot locked"><img src="../../public/games/tile-spot.png" alt=""><p>SPOT FOCUS</p></div><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div><div class="slot empty"><div class="ph"></div><p>ATTENTION</p></div></div></section><section class="panel"><h5><span class="lock">&#128274;</span>Strengthen Your PLANNING</h5><div class="slots"><div class="slot empty"><div class="ph"></div><p>PLANNING</p></div><div class="slot locked"><img src="../../public/games/tile-tiffen.png" alt=""><p>TIFFIN TIME</p></div><div class="slot locked"><img src="../../public/games/tile-freeme.png" alt=""><p>FREE ME</p></div><div class="slot empty"><div class="ph"></div><p>PLANNING</p></div></div></section></div>
+    <div class="home-foot"><div>v1.40.0</div></div><div class="popup-wrap"><div class="popup"><p class="only">Play the assigned games.</p><span class="btn-lime">Continue</span></div></div></div></div>
+  <div class="meta"><h3><span class="num">12</span>Locked popup</h3>
+  <p class="route"><code>/app/home (popup)</code></p><p><b>Continue</b> closes it. Nothing else changes.</p><span class="tag">HTML replica of v1.40.0</span></div></article></div>
+</main>
+<footer>Sources: <code>src/lib/sessionLedger.ts</code> (unlock order, 600 s threshold), <code>src/components/GameShell.tsx</code> (<code>finishLevel</code>, exit), <code>src/games/memory/TrainYard/index.tsx</code> (round-end card), <code>src/screens/HomeScreen.tsx</code>. Screenshots are from <code>docs/flow-screens</code> and <code>docs/game-screens</code>. Companion page: <a href="2026-11-23_flow-end-of-10-minutes.html">end of 10 minutes</a>.</footer>
+</body>
+</html>

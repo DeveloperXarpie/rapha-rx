@@ -310,3 +310,20 @@ export async function getPreviousSessionRounds(
   const last = earlier.reduce((d, r) => (r.date > d ? r.date : d), '');
   return earlier.filter((r) => r.date === last).sort((a, b) => a.at - b.at);
 }
+
+/**
+ * Every round of the latest `sessions` days, up to and including `uptoDate`, that had
+ * rounds in this category (the summary's History Metrics). Reads newest first and stops
+ * at the first day past the limit, so a long history costs no more than a short one.
+ */
+export async function getRecentSessionRounds(
+  userId: string, category: RoundRecord['category'], uptoDate: string, sessions: number,
+): Promise<RoundRecord[]> {
+  const dates = new Set<string>();
+  return appDb.roundLog
+    .where('[userId+category+date]')
+    .between([userId, category, ''], [userId, category, uptoDate], true, true)
+    .reverse()
+    .until((r) => { dates.add(r.date); return dates.size > sessions; }, false)
+    .toArray();
+}

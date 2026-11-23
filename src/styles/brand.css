@@ -249,3 +249,40 @@
   80%  { transform: scale(0.97); }
   100% { transform: scale(1); }
 }
+
+/*
+ * The popup's lime button (amends 2026-11-23, page 6): a lime face with a pale
+ * highlight across the top, a rim that runs from blue at the top to navy at the
+ * bottom, and a white label outlined in dark teal.
+ */
+.btn-lime {
+  background:
+    linear-gradient(180deg,
+      #E2F9C4 0%,
+      #C4F27A 12%,
+      #B4EE5B 30%,
+      #A6E152 58%,
+      #8CC048 82%,
+      #6E9E40 100%) padding-box,
+    linear-gradient(180deg, #4D8FE6 0%, #1B3FA8 45%, #020F44 100%) border-box;
+  border-width: 4px;
+  color: #FFFFFF;
+  font-weight: 800;
+  /* An outline from eight shadows, since paint-order on HTML text is not
+     safe on every tablet browser we serve. */
+  text-shadow:
+    2.5px 0 0 #145F5D, -2.5px 0 0 #145F5D, 0 2.5px 0 #145F5D, 0 -2.5px 0 #145F5D,
+    1.8px 1.8px 0 #145F5D, -1.8px 1.8px 0 #145F5D, 1.8px -1.8px 0 #145F5D, -1.8px -1.8px 0 #145F5D;
+  box-shadow: 0 8px 12px rgba(4, 14, 80, 0.28);
+}
+
+/* The amends' scorecard accolade: confetti falls in, then the badge pops. */
+@keyframes confetti-in {
+  from { opacity: 0; transform: translateY(-36px) rotate(var(--confetti-turn, 0deg)); }
+  to   { opacity: 1; transform: translateY(0) rotate(var(--confetti-turn, 0deg)); }
+}
+@keyframes accolade-pop {
+  0%   { opacity: 0; transform: skewX(-8deg) scale(0.6); }
+  60%  { opacity: 1; transform: skewX(-8deg) scale(1.1); }
+  100% { opacity: 1; transform: skewX(-8deg) scale(1); }
+}

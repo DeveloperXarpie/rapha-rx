@@ -602,6 +602,9 @@
   "home.panel.memory": "ನಿಮ್ಮ ಸ್ಮರಣೆಯನ್ನು ಹೆಚ್ಚಿಸಿ",
   "home.panel.attention": "ನಿಮ್ಮ ಗಮನವನ್ನು ಬಲಪಡಿಸಿ",
   "home.panel.executive": "ನಿಮ್ಮ ಯೋಜನಾ ಶಕ್ತಿಯನ್ನು ಬಲಪಡಿಸಿ",
+  "home.slot.memory": "ಸ್ಮರಣೆ",
+  "home.slot.attention": "ಗಮನ",
+  "home.slot.executive": "ಯೋಜನೆ",
   "home.locked": "ಮೊದಲು ನೀಡಿದ ಆಟಗಳನ್ನು ಆಡಿ.",
   "home.completed": "ಇಂದು ನೀವು ಇದನ್ನು ಮುಗಿಸಿದ್ದೀರಿ.",
   "scoreCard.unlocked": "{{category}} ಈಗ ತೆರೆದಿದೆ!",
@@ -634,6 +637,16 @@
   "summary.performanceToday": "ಇಂದಿನ ಪ್ರದರ್ಶನ",
   "summary.ofHundred": "100 ರಲ್ಲಿ",
   "summary.sinceLast": "ಕಳೆದ ಬಾರಿಗಿಂತ {{delta}}",
-  "scoreCard.improved": "ನೀವು ಸ್ಥಿರವಾಗಿ ಸುಧಾರಿಸಿದ್ದೀರಿ.",
-  "scoreCard.keepGoing": "ಇದನ್ನು ಬೆಳೆಸಲು ಆಡುತ್ತಿರಿ."
+  "summary.history.title": "ಹಿಂದಿನ ದಾಖಲೆ",
+  "summary.history.subtitle": "ನಿಮ್ಮ ಕೊನೆಯ {{count}} ಅವಧಿಗಳು",
+  "summary.history.today": "ಇಂದು",
+  "summary.history.firstTime": "ನಿಮ್ಮ ದಾಖಲೆ ಇಂದು ಶುರುವಾಗುತ್ತದೆ. ನಾಳೆ ಮತ್ತೆ ಬನ್ನಿ!",
+  "summary.history.notPlayed": "ಆಡಿಲ್ಲ",
+  "scoreCard.outOfFive": "{{band}}/5",
+  "scoreCard.accolade.1": "ಮುಂದುವರಿಸಿ",
+  "scoreCard.accolade.2": "ಉತ್ತಮ ಪ್ರಯತ್ನ",
+  "scoreCard.accolade.3": "ಅದ್ಭುತ ಆಟ",
+  "scoreCard.accolade.4": "ಅತ್ಯುತ್ತಮ ಆಟ",
+  "scoreCard.accolade.5": "ಅಸಾಧಾರಣ",
+  "scoreCard.accolade.6": "ಚಾಂಪಿಯನ್!"
 }

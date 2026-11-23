@@ -2,7 +2,7 @@ import React from 'react';
 import { kitButton } from '../../styles/kitButton';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'green' | 'blue' | 'kit';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'green' | 'blue' | 'kit' | 'lime';
   size?: 'md' | 'lg';
   fullWidth?: boolean;
   /**
@@ -40,7 +40,7 @@ export function Button({
   style,
   ...rest
 }: ButtonProps) {
-  const isBrand = variant === 'green' || variant === 'blue' || variant === 'kit';
+  const isBrand = variant === 'green' || variant === 'blue' || variant === 'kit' || variant === 'lime';
 
   /*
    * `kit` is the board's green - the one painted on `ui-ready.png` - and its class

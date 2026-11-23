@@ -68,6 +68,13 @@ export const DOMAIN_KEY: Record<GameCategory, string> = {
   executive: 'gameIntro.domain.executive',
 };
 
+/** "YOUR MEMORY": the heading of the scorecard and the 10-minute summary. */
+export const YOUR_DOMAIN: Record<GameCategory, { key: string; fallback: string }> = {
+  memory:    { key: 'summary.your.memory',    fallback: 'YOUR MEMORY' },
+  attention: { key: 'summary.your.attention', fallback: 'YOUR FOCUS' },
+  executive: { key: 'summary.your.executive', fallback: 'YOUR PLANNING' },
+};
+
 export interface GameSkills {
   category: GameCategory;
   primary: SkillId;

@@ -602,6 +602,9 @@
   "home.panel.memory": "अपनी याददाश्त बढ़ाएँ",
   "home.panel.attention": "अपना ध्यान मज़बूत करें",
   "home.panel.executive": "अपनी योजना-शक्ति मज़बूत करें",
+  "home.slot.memory": "स्मृति",
+  "home.slot.attention": "ध्यान",
+  "home.slot.executive": "योजना",
   "home.locked": "पहले दिए गए खेल खेलें।",
   "home.completed": "आज आपने यह पूरा कर लिया है।",
   "scoreCard.unlocked": "{{category}} अब खुल गया है!",
@@ -634,6 +637,16 @@
   "summary.performanceToday": "आज का प्रदर्शन",
   "summary.ofHundred": "100 में से",
   "summary.sinceLast": "पिछली बार से {{delta}}",
-  "scoreCard.improved": "आपने लगातार सुधार किया है।",
-  "scoreCard.keepGoing": "इसे आगे बढ़ाने के लिए खेलते रहें।"
+  "summary.history.title": "पिछला रिकॉर्ड",
+  "summary.history.subtitle": "आपके पिछले {{count}} सत्र",
+  "summary.history.today": "आज",
+  "summary.history.firstTime": "आपका रिकॉर्ड आज से शुरू होता है। कल फिर आइए!",
+  "summary.history.notPlayed": "नहीं खेला",
+  "scoreCard.outOfFive": "{{band}}/5",
+  "scoreCard.accolade.1": "चलते रहिए",
+  "scoreCard.accolade.2": "ज़बरदस्त कोशिश",
+  "scoreCard.accolade.3": "बढ़िया खेल",
+  "scoreCard.accolade.4": "उत्कृष्ट खेल",
+  "scoreCard.accolade.5": "असाधारण",
+  "scoreCard.accolade.6": "चैंपियन!"
 }

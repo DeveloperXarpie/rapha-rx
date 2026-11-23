@@ -71,6 +71,47 @@ export const BRAND = {
   introBand:     '#0E2AA8',
 } as const;
 
+/*
+ * The scorecard and 10-minute summary, sampled off the amends mocks
+ * (docs/ Rapha_amends - nov23-2026.pdf, pages 3-5).
+ */
+export const SCORE_UI = {
+  /** The scorecard's panel over the game art. */
+  panel:      '#233C7E',
+  /** A skill card on the scorecard. */
+  card:       '#2C498F',
+  /** The "3/5" disc at the start of a skill bar. */
+  disc:       '#1E3577',
+  pillOff:    '#4E66A2',
+  /** "MEMORY" under the tile, and the summary's subtitle. */
+  label:      '#A9B9E6',
+  /** The accolade badge: yellow word, dark ink, yellow then rust rims. */
+  accolade:     '#FFE14A',
+  accoladeInk:  '#2B1239',
+  accoladeRim:  '#FAD241',
+  accoladeEdge: '#A45228',
+  /** The 10-minute summary's screen, ring cards and ring track. */
+  summaryBg:   '#1A3373',
+  ringCard:    '#223F83',
+  ringTrack:   '#445D9B',
+  headline:    '#F0FDA5',
+  up:          '#77C368',
+  down:        '#EB615A',
+  /** The summary's "HISTORY METRICS" expander (amends p4): lavender face, darker lip. */
+  historyFace: '#93AEF0',
+  historyEdge: '#546FB4',
+  historyInk:  '#23397E',
+} as const;
+
+/* The popup and its button, sampled off page 6 of the same amends. */
+export const POPUP_UI = {
+  rim:    '#D0D8F8',
+  border: '#05218A',
+  faceTop:    '#D5DEFB',
+  faceBottom: '#B4BDFF',
+  text:   '#032C90',
+} as const;
+
 export interface CategoryBrand {
   /** Title word, progress fill, icon accent. */
   accent: string;
