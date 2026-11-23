@@ -99,6 +99,9 @@ IST), goes up one on a clear and down one after two fails in a row (`movement.ts
 level lives on today's `difficultyState` row (`level`, `failStreak`). Bump
 `LADDER_VERSION` whenever a value changes; rounds log it. Station Master and Free Me get
 ladders later; the other games keep the score below.
+Since v1.41.0 (plan 3b part 1) Tiffin's ladder also sets seats (2-4), counter size (3-6), the
+smallest order, the cook band and the respawn gap, and Spot Focus mixes bold, medium and
+subtle differences on one board (`mediumCount`, `subtleCount`).
 
 ### Dynamic difficulty (`src/lib/dynamicDifficulty.ts`)
 Each game has a `DifficultyState` record (score 0.0–1.0) per user per day. `getTodayDifficulty()` seeds from yesterday's peak × 0.8 warmup factor. `adjustDifficulty()` promotes (+0.05 × performance multiplier) or demotes (−0.08) after each round. `GameShell` calls this on every `onLevelComplete`. Game-specific `computePerformanceRatio()` is in `src/components/GameShell.tsx` — add a case there whenever a new game is added.

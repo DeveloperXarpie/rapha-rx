@@ -9,6 +9,7 @@ import { DISH_BY_ID, DISH_DEFS, FACE_COUNT } from './sprites';
 
 // ─── Tuning ───────────────────────────────────────────────────────────────────
 
+/** The most guests the board seats (they already touch at 4); the round's own is `config.seats`. */
 export const SEAT_COUNT = 4;
 export const TOTAL_GUESTS = 8;
 
@@ -50,8 +51,31 @@ export function guestPatience(
 
 /** Seat arrival stagger for the opening four guests. */
 const OPENING_SPAWNS = [0, 1.6, 3.4, 5.2];
+/** Seconds between a seat freeing and its next guest arriving: today's gap, the default. */
 const RESPAWN_MIN = 0.9;
-const RESPAWN_SPREAD = 1.4;
+const RESPAWN_MAX = 2.3;
+
+/**
+ * Which dishes the counter is dealt from (DIFFICULTY_RULES 3.5 `cookBand`, plan 3b). Each
+ * band has at least six dishes, so every counter size can be dealt from it.
+ * - short: quick cooks only (4.5 s or less)
+ * - mid: up to 6 s, the sample's "short + mid"
+ * - all: the whole menu
+ * - long: the whole menu, with dishes of 6 s or more dealt at double weight
+ */
+export type CookBand = 'short' | 'mid' | 'all' | 'long';
+export const COOK_BANDS: CookBand[] = ['short', 'mid', 'all', 'long'];
+const SHORT_COOK_S = 4.5;
+const MID_COOK_S = 6;
+const LONG_COOK_S = 6;
+const LONG_WEIGHT = 2;
+
+/** The dishes a band deals from. */
+export function bandPool(band: CookBand): typeof DISH_DEFS {
+  if (band === 'short') return DISH_DEFS.filter((d) => d.cookSeconds <= SHORT_COOK_S);
+  if (band === 'mid') return DISH_DEFS.filter((d) => d.cookSeconds <= MID_COOK_S);
+  return DISH_DEFS.slice();
+}
 
 /** Walk-on and walk-off animation holds. */
 const ARRIVE_SECONDS = 0.45;
@@ -65,6 +89,16 @@ const NUDGE_SECONDS = 0.45;
  */
 export interface RoundConfig {
   totalGuests: number;
+  /** Guests at the counter at once, 2 to 4. */
+  seats: number;
+  /** Dishes on the counter, 3 to 6. */
+  counterSize: number;
+  /** The smallest order a guest arrives with; the ladder's maximum is passed to `tick`. */
+  minItems: number;
+  cookBand: CookBand;
+  /** Range of the gap, in seconds, before a freed seat takes its next guest. */
+  respawnMin: number;
+  respawnMax: number;
   /** Seconds a finished dish sits READY before it burns. */
   readyWindow: number;
   patienceBase: number;
@@ -73,6 +107,12 @@ export interface RoundConfig {
 
 export const DEFAULT_CONFIG: RoundConfig = {
   totalGuests: TOTAL_GUESTS,
+  seats: SEAT_COUNT,
+  counterSize: 6,
+  minItems: 1,
+  cookBand: 'all',
+  respawnMin: RESPAWN_MIN,
+  respawnMax: RESPAWN_MAX,
   readyWindow: READY_WINDOW,
   patienceBase: PATIENCE_BASE,
   patiencePerItem: PATIENCE_PER_ITEM,
@@ -144,23 +184,28 @@ export interface GameState {
 // ─── Setup ────────────────────────────────────────────────────────────────────
 
 /**
- * The counter holds this many dishes, dealt from the far larger `DISH_DEFS` pool. Dealing
- * rather than fixing the menu is what stops every round looking the same; it is the view's
- * `DISH_COUNT` and the two must agree, so the board is laid out for what the model deals.
+ * The largest counter the tray lays out (a third row of cards does not fit). The round's
+ * own size is `config.counterSize`, and the view lays out what the model deals.
  */
 export const COUNTER_SIZE = 6;
 
 /**
- * Deal the round's counter: `COUNTER_SIZE` distinct dishes drawn from the menu.
+ * Deal the round's counter: `counterSize` distinct dishes drawn from the band's pool.
+ * Dealing rather than fixing the menu is what stops every round looking the same.
  *
  * The dealt set is the whole world for the round - orders are drawn from it too - so a guest
  * can never ask for something the counter cannot make.
  */
-function dealCounter(rng: Rng): DishRuntime[] {
-  const pool = DISH_DEFS.slice();
+function dealCounter(rng: Rng, config: RoundConfig): DishRuntime[] {
+  const pool = bandPool(config.cookBand);
+  const weight = (cook: number) => (config.cookBand === 'long' && cook >= LONG_COOK_S ? LONG_WEIGHT : 1);
   const dealt: DishRuntime[] = [];
-  for (let i = 0; i < COUNTER_SIZE && pool.length > 0; i++) {
-    const [picked] = pool.splice(Math.floor(rng() * pool.length), 1);
+  for (let i = 0; i < config.counterSize && pool.length > 0; i++) {
+    // A weighted draw without replacement; with equal weights it is a plain pick.
+    let r = rng() * pool.reduce((t, d) => t + weight(d.cookSeconds), 0);
+    let at = 0;
+    while (at < pool.length - 1 && r >= weight(pool[at].cookSeconds)) r -= weight(pool[at++].cookSeconds);
+    const [picked] = pool.splice(at, 1);
     dealt.push({ id: picked.id, state: 'idle', since: 0, nudgeUntil: 0 });
   }
   return dealt;
@@ -175,9 +220,9 @@ export function createInitialState(rng: Rng = Math.random, config: RoundConfig =
     config,
     t: 0,
     spawned: 0,
-    seats: Array.from({ length: SEAT_COUNT }, () => null),
-    nextSpawn: OPENING_SPAWNS.slice(0, SEAT_COUNT),
-    dishes: dealCounter(rng),
+    seats: Array.from({ length: config.seats }, () => null),
+    nextSpawn: OPENING_SPAWNS.slice(0, config.seats),
+    dishes: dealCounter(rng, config),
     done: false,
     itemsServed: 0,
     itemsRequested: 0,
@@ -201,7 +246,8 @@ function makeGuest(
   index: number, maxItemsPerGuest: number, counter: DishRuntime[], rng: Rng, mix: GuestMix,
   config: RoundConfig,
 ): Guest {
-  const count = Math.max(1, Math.min(maxItemsPerGuest, 1 + Math.floor(rng() * maxItemsPerGuest)));
+  const min = Math.max(1, Math.min(config.minItems, maxItemsPerGuest));
+  const count = min + Math.floor(rng() * (maxItemsPerGuest - min + 1));
   // Orders come off the dealt counter, not the whole menu, so every item is servable.
   const pool = counter.map((d) => d.id);
   const items: OrderItem[] = [];
@@ -239,7 +285,7 @@ export function tick(
   const nextSpawn = state.nextSpawn.slice();
   let { spawned, itemsRequested, walkouts } = state;
 
-  for (let i = 0; i < SEAT_COUNT; i++) {
+  for (let i = 0; i < seats.length; i++) {
     const current = seats[i];
 
     if (!current) {
@@ -272,7 +318,7 @@ export function tick(
     } else if (g.phaseT > DEPART_SECONDS) {
       // 'happy' and 'out' both hold briefly, then free the seat.
       seats[i] = null;
-      nextSpawn[i] = t + RESPAWN_MIN + rng() * RESPAWN_SPREAD;
+      nextSpawn[i] = t + state.config.respawnMin + rng() * (state.config.respawnMax - state.config.respawnMin);
       continue;
     }
 
@@ -446,7 +492,7 @@ export function spoilProgress(state: GameState, dish: DishRuntime): number {
   return Math.max(0, Math.min(1, (elapsed - (state.config.readyWindow - SPOIL_RAMP)) / SPOIL_RAMP));
 }
 
-/** Guests who have arrived and left, i.e. how many of the round's eight are behind us. */
+/** Guests who have arrived and left, i.e. how many of the round's guests are behind us. */
 export function guestsHandled(state: GameState): number {
   return state.spawned - state.seats.filter(Boolean).length;
 }

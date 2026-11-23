@@ -18,7 +18,7 @@ import {
 } from './geometry';
 import {
   ALL_MIDDLE, cookProgress, createInitialState, guestsHandled, spoilProgress, tapDish, tick,
-  DEFAULT_CONFIG, type GameState, type Guest, type GuestMix,
+  DEFAULT_CONFIG, type CookBand, type GameState, type Guest, type GuestMix,
 } from './model';
 import { serveGuestsOutcome } from '../../../lib/roundOutcome';
 import {
@@ -40,6 +40,13 @@ export interface ServeGuestsParams {
   patienceBaseS: number;
   patiencePerItemS: number;
   readyWindowS: number;
+  /** Plan 3b: seats 2-4, counter 3-6, the smallest order, the cook band, the respawn gap. */
+  seats: number;
+  counterSize: number;
+  minItemsPerGuest: number;
+  cookBand: CookBand;
+  respawnMinS: number;
+  respawnMaxS: number;
 }
 
 const DEFAULT_PARAMS: ServeGuestsParams = {
@@ -49,6 +56,12 @@ const DEFAULT_PARAMS: ServeGuestsParams = {
   patienceBaseS: DEFAULT_CONFIG.patienceBase,
   patiencePerItemS: DEFAULT_CONFIG.patiencePerItem,
   readyWindowS: DEFAULT_CONFIG.readyWindow,
+  seats: DEFAULT_CONFIG.seats,
+  counterSize: DEFAULT_CONFIG.counterSize,
+  minItemsPerGuest: DEFAULT_CONFIG.minItems,
+  cookBand: DEFAULT_CONFIG.cookBand,
+  respawnMinS: DEFAULT_CONFIG.respawnMin,
+  respawnMaxS: DEFAULT_CONFIG.respawnMax,
 };
 
 /** The loop runs at 10Hz: fast enough for the bars to read as smooth, cheap enough to idle. */
@@ -77,6 +90,12 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
     readyWindow: params.readyWindowS,
     patienceBase: params.patienceBaseS,
     patiencePerItem: params.patiencePerItemS,
+    seats: params.seats,
+    counterSize: params.counterSize,
+    minItems: params.minItemsPerGuest,
+    cookBand: params.cookBand,
+    respawnMin: params.respawnMinS,
+    respawnMax: params.respawnMaxS,
   }));
 
   // The counter is dealt once per round and never changes, so this list is stable for the
@@ -207,7 +226,7 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
             }}
           >
             {state.seats.map((guest, seat) => (
-              <SeatView key={seat} seat={seat} guest={guest} t={t} />
+              <SeatView key={seat} seat={seat} seats={state.seats.length} guest={guest} t={t} />
             ))}
 
             {/* The counter tray, drawn over the guests so they read as standing behind it.
@@ -312,7 +331,7 @@ export default function ServeTheGuests({ levelConfig, onLevelComplete, reducedMo
 
 type Translate = ReturnType<typeof useTranslation>['t'];
 
-function SeatView({ seat, guest, t }: { seat: number; guest: Guest | null; t: Translate }) {
+function SeatView({ seat, seats, guest, t }: { seat: number; seats: number; guest: Guest | null; t: Translate }) {
   if (!guest) return null;
 
   const pct = Math.max(0, Math.min(1, guest.left / guest.patience));
@@ -351,7 +370,7 @@ function SeatView({ seat, guest, t }: { seat: number; guest: Guest | null; t: Tr
         aria-label={t('serveGuests.guestOrder', 'Guest waiting for {{order}}', { order: orderLabel })}
         style={{
           position: 'absolute',
-          left: faceCentreX(seat) - face.width / 2,
+          left: faceCentreX(seat, seats) - face.width / 2,
           top: FACE_BOTTOM_Y - FACE_H,
           filter: 'drop-shadow(0 6px 10px rgba(60,40,10,.18))',
           ...face,
@@ -363,7 +382,7 @@ function SeatView({ seat, guest, t }: { seat: number; guest: Guest | null; t: Tr
       <div
         style={{
           position: 'absolute',
-          left: bubbleCentreX(seat) - bubbleW / 2,
+          left: bubbleCentreX(seat, seats) - bubbleW / 2,
           bottom: CANVAS_H - BUBBLE_BOTTOM_Y,
           width: bubbleW,
           zIndex: 5,
@@ -464,7 +483,7 @@ function SeatView({ seat, guest, t }: { seat: number; guest: Guest | null; t: Tr
           style={{
             position: 'absolute',
             // Over the guest's chest, not above their head - the bubble is up there now.
-            left: faceCentreX(seat),
+            left: faceCentreX(seat, seats),
             top: FACE_TOP_Y + 110,
             fontSize: 48, fontWeight: 800, color: '#2f7d32',
             textShadow: '0 2px 0 #fff, 0 4px 8px rgba(0,0,0,.25)',
@@ -553,11 +572,11 @@ function DishCard({
       className={nudging ? 'sg-nudge' : undefined}
       style={{
         position: 'absolute',
-        left: cardX(index),
-        top: cardY(index),
+        left: cardX(index, state.dishes.length),
+        top: cardY(index, state.dishes.length),
         width: CARD_W,
         height: CARD_H,
-        // The cell plate. The tray art draws 4x2 cells and the board deals six in 3x2, so
+        // The cell plate. The tray art draws 4x2 cells and the board deals 3 to 6 in 3 columns, so
         // the frame comes from the sprite and the cells are drawn here.
         background: dish.state === 'burnt' ? COLOURS.cellBurnt : COLOURS.cell,
         border: `2px solid ${COLOURS.cellRim}`,

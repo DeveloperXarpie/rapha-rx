@@ -8,8 +8,9 @@
  * committed. It also meant the round could quietly come up short, promising six
  * differences and building five.
  *
- * This picks the difference-bearing items first, at the tier the engine asked for, and
- * fills the rest of the board around them.
+ * This picks the difference-bearing items first, at the tiers the engine asked for, and
+ * fills the rest of the board around them. A board can mix tiers (plan 3b): the subtle
+ * differences are built first, as twins are the scarcest, then medium, then bold.
  */
 
 import {
@@ -89,9 +90,12 @@ function swapFor(item: SpotItem, tier: Subtlety, usedFamilies: Set<string>): Spo
 const cellOf = (item: SpotItem): SceneCell => ({ id: item.id, labelKey: item.labelKey });
 
 export function generateSpotFocusContent(params: SpotFocusDynamicParams): GeneratedScene {
-  const { gridRows, gridCols, differenceCount, changeSubtlety } = params;
+  const { gridRows, gridCols, differenceCount } = params;
   const total = gridRows * gridCols;
   const wanted = Math.min(differenceCount, total);
+  const subtle = Math.min(params.subtleCount, wanted);
+  const medium = Math.min(params.mediumCount, wanted - subtle);
+  const asked: Record<Subtlety, number> = { subtle, medium, bold: wanted - subtle - medium };
 
   const usedFamilies = new Set<string>();
   const originals: SpotItem[] = [];
@@ -99,13 +103,15 @@ export function generateSpotFocusContent(params: SpotFocusDynamicParams): Genera
   let fallbacksUsed = 0;
 
   // 1. The difference-bearing cells first, so the tier decides which items are eligible
-  //    rather than the other way round. The whole pool is swept at the requested tier
-  //    before dropping to a bolder one, so a single awkward draw never drags the round
-  //    down a tier: only genuinely running out of eligible items does.
-  let tier: Subtlety | null = changeSubtlety;
-  while (tier && swaps.size < wanted) {
+  //    rather than the other way round. The whole pool is swept at each tier before any
+  //    shortfall drops to the next bolder one, so a single awkward draw never drags a
+  //    difference down a tier: only genuinely running out of eligible items does.
+  let carried = 0;
+  for (let tier: Subtlety | null = 'subtle'; tier; tier = BOLDER[tier]) {
+    const target = asked[tier] + carried;
+    let built = 0;
     for (const candidate of shuffle(ITEMS)) {
-      if (swaps.size === wanted) break;
+      if (built === target) break;
       if (usedFamilies.has(candidate.family)) continue;
       if (!eligible(candidate, tier)) continue;
 
@@ -117,9 +123,11 @@ export function generateSpotFocusContent(params: SpotFocusDynamicParams): Genera
       usedFamilies.add(candidate.family);
       // A bold swap brings in an outsider, whose family is now spoken for too.
       usedFamilies.add(replacement.family);
-      if (tier !== changeSubtlety) fallbacksUsed++;
+      built++;
     }
-    tier = BOLDER[tier];
+    // Whatever this tier built beyond its own share came down from a subtler one.
+    fallbacksUsed += Math.max(0, built - asked[tier]);
+    carried = target - built;
   }
 
   // 2. Fill the rest, keeping one family to a board so no object appears twice.

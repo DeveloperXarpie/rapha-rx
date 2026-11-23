@@ -7,7 +7,7 @@ import { LADDER as SERVE_GUESTS } from './serveGuests';
  * from a ladder row instead of interpolating a 0-1 score. Bump the version whenever a
  * value changes; every round logs it (DIFFICULTY_RULES S9).
  */
-export const LADDER_VERSION = '0.1';
+export const LADDER_VERSION = '0.2';
 
 const LADDERS: Record<string, readonly unknown[]> = {
   'market-memory': MARKET_MEMORY,

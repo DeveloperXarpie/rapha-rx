@@ -64,19 +64,29 @@ export const TRAY_INNER_H = TRAY_H - TRAY_BAND * 2;
  * The tray art draws 4x2 cells, but only its frame is used and the cells are drawn from
  * these numbers, so the count is a parameter rather than a property of the art.
  */
-export const DISH_COUNT = COUNTER_SIZE;
 export const CARD_COLS = 3;
-export const CARD_ROWS = Math.ceil(DISH_COUNT / CARD_COLS);
+/*
+ * Cards are sized for the largest counter. A smaller one (the ladder deals 3 to 6, plan 3b)
+ * keeps that card size, centres a part-filled last row, and centres the block in the tray:
+ * stretching the cards would stretch the dish art and the painted buttons.
+ */
+const MAX_ROWS = Math.ceil(COUNTER_SIZE / CARD_COLS);
 
 export const CARD_W = Math.floor(TRAY_INNER_W / CARD_COLS);
-export const CARD_H = Math.floor(TRAY_INNER_H / CARD_ROWS);
+export const CARD_H = Math.floor(TRAY_INNER_H / MAX_ROWS);
 
-export function cardX(index: number): number {
-  return TRAY_INNER_X + (index % CARD_COLS) * CARD_W;
+/** The card's left edge, for card `index` on a counter of `count` dishes. */
+export function cardX(index: number, count: number): number {
+  const rows = Math.ceil(count / CARD_COLS);
+  const row = Math.floor(index / CARD_COLS);
+  const inRow = row < rows - 1 ? CARD_COLS : count - CARD_COLS * (rows - 1);
+  return TRAY_INNER_X + (TRAY_INNER_W - inRow * CARD_W) / 2 + (index % CARD_COLS) * CARD_W;
 }
 
-export function cardY(index: number): number {
-  return TRAY_INNER_Y + Math.floor(index / CARD_COLS) * CARD_H;
+/** The card's top edge, for card `index` on a counter of `count` dishes. */
+export function cardY(index: number, count: number): number {
+  const rows = Math.ceil(count / CARD_COLS);
+  return TRAY_INNER_Y + (TRAY_INNER_H - rows * CARD_H) / 2 + Math.floor(index / CARD_COLS) * CARD_H;
 }
 
 /**
@@ -110,6 +120,11 @@ export const COOK_BAR_H = 22;
 
 // ─── Guests ───────────────────────────────────────────────────────────────────
 
+/**
+ * A seat's width: the board's width shared by the most guests it seats. Fewer seats (the
+ * ladder seats 2 to 4, plan 3b) keep this width and are centred, so two guests stand side by
+ * side at the counter instead of each alone in half the room.
+ */
 export const SEAT_W = CANVAS_W / SEAT_COUNT;
 
 /**
@@ -139,8 +154,8 @@ export const FACE_H = 275;
  */
 export const FACE_BOTTOM_Y = TRAY_Y + 28;
 
-export function faceCentreX(seat: number): number {
-  return seat * SEAT_W + SEAT_W / 2;
+export function faceCentreX(seat: number, seats: number): number {
+  return (CANVAS_W - seats * SEAT_W) / 2 + seat * SEAT_W + SEAT_W / 2;
 }
 
 /** The top of a bust, i.e. the crown of the guest's head. */
@@ -185,8 +200,8 @@ export function patienceBarWidth(itemCount: number): number {
 }
 
 /** Bubbles are centred over the guest they belong to, so the tail points at that head. */
-export function bubbleCentreX(seat: number): number {
-  return faceCentreX(seat);
+export function bubbleCentreX(seat: number, seats: number): number {
+  return faceCentreX(seat, seats);
 }
 
 // ─── HUD ──────────────────────────────────────────────────────────────────────

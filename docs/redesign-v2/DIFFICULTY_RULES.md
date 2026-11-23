@@ -310,6 +310,8 @@ The measure is the share of differences found (S6a).
 
 The previous sample used 4 x 4 at levels 18 and 24, which broke the "no subtle at 4 columns" rule on a phone.
 
+**Built (v1.41.0, plan 3b):** tiers mix on one board, and the ladder holds these samples exactly. Even steps between them made two things harder at once, so all 24 levels are written out in `src/lib/ladders/spotFocus.ts`, each changing one thing. When the board grows (levels 7, 13 and 19) it drops a difference, as allowed above. Level 5 repeats level 6, because the 3 x 3 board has room for only four changes in five steps.
+
 #### Decided [Owner 2026-11-18]
 
 - Phone and tablet (was question 1).
@@ -482,6 +484,13 @@ The measure is the share of dishes served (S6a).
 
 At L30 an Impatient guest with a 3-dish order would get 0.7 x 46 = 32 s, under the 34 s floor, so the floor applies.
 The 18-guest cap leaves room to lengthen service above L30 if the playtest shows the ladder ends too early.
+
+**Built (v1.41.0, plan 3b):** the ladder holds this whole table.
+- Fewer seats keep the 4-seat width and are centred.
+- A smaller counter keeps the card size and centres its rows.
+- Cook bands: `short` is 4.5 s or less (8 dishes); "short + mid" is `mid`, 6 s or less (17); `all` is all 22; `long` deals dishes of 6 s or more at double weight.
+- Not applied: the coupled rule that a longer cook band raises patience, because this table does not follow it either. Check at the playtest.
+- Not tested: "one axis per step", because the table moves several axes between levels. This is unchanged from plan 3a.
 
 #### Decided [Owner 2026-11-18]
 

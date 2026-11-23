@@ -51,7 +51,7 @@ function dish(
 /**
  * The full menu: the south Indian tiffin first, then the north Indian plates and the sweets.
  *
- * Only `DISH_COUNT` of these are dealt onto the counter in any one round - see
+ * Only the round's counter size of these are dealt onto the counter in any one round - see
  * `createInitialState` - so this is a pool to draw from, not a layout. Cook times are set by
  * how much work the dish is, which is what makes ordering between them a decision: a chutney
  * is nearly instant, a tandoori chicken ties the card up for the length of a short order.

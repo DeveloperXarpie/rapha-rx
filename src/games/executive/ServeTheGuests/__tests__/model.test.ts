@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  createInitialState, DEFAULT_CONFIG, guestPatience, tapDish, tick, type GameState, type Guest,
+  bandPool, COOK_BANDS, createInitialState, DEFAULT_CONFIG, guestPatience, tapDish, tick, type GameState, type Guest,
 } from '../model';
+import { DISH_BY_ID } from '../sprites';
 
 /** A fixed counter: index 0 ready, 1 ready, 2 idle, 3 idle. */
 function stateWith(guests: (Guest | null)[], dishStates: ('idle' | 'ready' | 'cooking')[]): GameState {
@@ -121,5 +122,81 @@ describe('round config from the ladder (plan 3a)', () => {
     const s = tick(createInitialState(() => 0.5, { ...DEFAULT_CONFIG, patienceBase: 40, patiencePerItem: 10 }), 0.1, 1, () => 0.5);
     const g = s.seats.find(Boolean)!;
     expect(g.patience).toBe(guestPatience('middle', g.items.length, 40, 10));
+  });
+});
+
+describe('round settings from the ladder (plan 3b)', () => {
+  /** A seeded generator, so a draw-heavy test is repeatable. */
+  function lcg(seed: number) {
+    let s = seed;
+    return () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
+  }
+  const run = (config: Partial<typeof DEFAULT_CONFIG>, maxItems: number, seed = 7, seconds = 400) => {
+    const rng = lcg(seed);
+    let s = createInitialState(rng, { ...DEFAULT_CONFIG, ...config });
+    const seen: GameState[] = [s];
+    for (let i = 0; i < seconds * 10 && !s.done; i++) { s = tick(s, 0.1, maxItems, rng); seen.push(s); }
+    return { first: seen[0], seen };
+  };
+
+  it('seats only as many guests as the level allows', () => {
+    const { first, seen } = run({ seats: 2, totalGuests: 6 }, 1);
+    expect(first.seats).toHaveLength(2);
+    for (const s of seen) expect(s.seats.length).toBe(2);
+    expect(seen[seen.length - 1].spawned).toBe(6);
+  });
+
+  it('deals the counter size the level asks for, all distinct', () => {
+    for (const counterSize of [3, 4, 5, 6]) {
+      const ids = createInitialState(lcg(counterSize), { ...DEFAULT_CONFIG, counterSize }).dishes.map((d) => d.id);
+      expect(ids).toHaveLength(counterSize);
+      expect(new Set(ids).size).toBe(counterSize);
+    }
+  });
+
+  it('keeps every order between the minimum and maximum, and servable', () => {
+    for (let seed = 1; seed < 30; seed++) {
+      const { first, seen } = run({ counterSize: 3, minItems: 2, seats: 3, totalGuests: 6 }, 2, seed, 120);
+      const counter = new Set(first.dishes.map((d) => d.id));
+      for (const g of seen.flatMap((s) => s.seats).filter((g): g is Guest => !!g)) {
+        expect(g.items.length).toBe(2);
+        for (const it of g.items) expect(counter.has(it.dishId)).toBe(true);
+      }
+    }
+  });
+
+  it('deals only short cooks from the short band, and up to 6 s from mid', () => {
+    for (let seed = 1; seed < 40; seed++) {
+      const short = createInitialState(lcg(seed), { ...DEFAULT_CONFIG, cookBand: 'short' });
+      expect(Math.max(...short.dishes.map((d) => DISH_BY_ID[d.id].cookSeconds))).toBeLessThanOrEqual(4.5);
+      const mid = createInitialState(lcg(seed), { ...DEFAULT_CONFIG, cookBand: 'mid' });
+      expect(Math.max(...mid.dishes.map((d) => DISH_BY_ID[d.id].cookSeconds))).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it('leans the long band toward long cooks, still distinct', () => {
+    const longShare = (band: 'all' | 'long') => {
+      let long = 0;
+      for (let seed = 1; seed <= 400; seed++) {
+        const ids = createInitialState(lcg(seed), { ...DEFAULT_CONFIG, cookBand: band }).dishes.map((d) => d.id);
+        expect(new Set(ids).size).toBe(6);
+        long += ids.filter((id) => DISH_BY_ID[id].cookSeconds >= 6).length;
+      }
+      return long / 2400;
+    };
+    expect(longShare('long')).toBeGreaterThan(longShare('all') + 0.1);
+  });
+
+  it('every band has enough dishes for a full counter', () => {
+    for (const band of COOK_BANDS) expect(bandPool(band).length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('waits the level\'s respawn gap before the next guest takes a free seat', () => {
+    const rng = () => 0; // the shortest gap
+    let s = createInitialState(rng, { ...DEFAULT_CONFIG, seats: 2, respawnMin: 3, respawnMax: 5 });
+    s = { ...s, seats: [null, null], nextSpawn: [Infinity, Infinity] };
+    const g = { ...guest('g0', 0, [s.dishes[0].id]), phase: 'out' as const, phaseT: 2 };
+    s = tick({ ...s, seats: [g, null] }, 0.1, 1, rng);
+    expect(s.nextSpawn[0]).toBeCloseTo(s.t + 3);
   });
 });

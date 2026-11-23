@@ -2,21 +2,41 @@ import { describe, it, expect } from 'vitest';
 import { generateSpotFocusContent } from '../spotFocus';
 import { BY_ID } from '../../../games/attention/SpotFocus/items';
 import { getSpotFocusParams, type SpotFocusDynamicParams } from '../../dynamicDifficulty';
+import { LADDER as SPOT_FOCUS_LADDER } from '../../ladders/spotFocus';
 
-const SUBTLETIES = ['bold', 'medium', 'subtle'] as const;
 const GRIDS = [
   { gridRows: 3, gridCols: 3 },
   { gridRows: 3, gridCols: 4 },
 ];
 
-/** Every shape the difficulty engine can actually ask for. */
+/** A board of one tier, the way the 0-1 score asks for it. */
+const oneTier = (differenceCount: number, tier: 'bold' | 'medium' | 'subtle') => ({
+  differenceCount,
+  mediumCount: tier === 'medium' ? differenceCount : 0,
+  subtleCount: tier === 'subtle' ? differenceCount : 0,
+});
+
+/** Every shape the difficulty engine can actually ask for: the 0-1 score's and every ladder level. */
 function allParams(): SpotFocusDynamicParams[] {
   const out: SpotFocusDynamicParams[] = [];
   for (const grid of GRIDS)
-    for (const changeSubtlety of SUBTLETIES)
+    for (const tier of ['bold', 'medium', 'subtle'] as const)
       for (let differenceCount = 2; differenceCount <= 7; differenceCount++)
-        out.push({ ...grid, differenceCount, changeSubtlety });
-  return out;
+        out.push({ ...grid, ...oneTier(differenceCount, tier) });
+  return [...out, ...SPOT_FOCUS_LADDER];
+}
+
+/** Each difference's tier, read back off the scene. */
+function tiersOf(scene: ReturnType<typeof generateSpotFocusContent>) {
+  const tiers = { bold: 0, medium: 0, subtle: 0 };
+  scene.modifiedRows.forEach((row, r) => row.forEach((cell, c) => {
+    if (!cell.isDifference) return;
+    const before = BY_ID.get(scene.originalRows[r][c].id)!;
+    if (before.twin === cell.id) tiers.subtle++;
+    else if (BY_ID.get(cell.id)!.family === before.family) tiers.medium++;
+    else tiers.bold++;
+  }));
+  return tiers;
 }
 
 describe('generateSpotFocusContent', () => {
@@ -75,7 +95,7 @@ describe('generateSpotFocusContent', () => {
 
   it('swaps for the twin when subtle is asked for', () => {
     const scene = generateSpotFocusContent({
-      gridRows: 3, gridCols: 4, differenceCount: 4, changeSubtlety: 'subtle',
+      gridRows: 3, gridCols: 4, ...oneTier(4, 'subtle'),
     });
     scene.modifiedRows.forEach((row, r) =>
       row.forEach((cell, c) => {
@@ -87,7 +107,7 @@ describe('generateSpotFocusContent', () => {
 
   it('swaps within the family, but not for the twin, when medium is asked for', () => {
     const scene = generateSpotFocusContent({
-      gridRows: 3, gridCols: 4, differenceCount: 4, changeSubtlety: 'medium',
+      gridRows: 3, gridCols: 4, ...oneTier(4, 'medium'),
     });
     scene.modifiedRows.forEach((row, r) =>
       row.forEach((cell, c) => {
@@ -101,7 +121,7 @@ describe('generateSpotFocusContent', () => {
 
   it('swaps across families when bold is asked for', () => {
     const scene = generateSpotFocusContent({
-      gridRows: 3, gridCols: 4, differenceCount: 4, changeSubtlety: 'bold',
+      gridRows: 3, gridCols: 4, ...oneTier(4, 'bold'),
     });
     scene.modifiedRows.forEach((row, r) =>
       row.forEach((cell, c) => {
@@ -110,6 +130,27 @@ describe('generateSpotFocusContent', () => {
         expect(BY_ID.get(cell.id)!.family).not.toBe(before.family);
       }),
     );
+  });
+
+  it('mixes tiers on one board as asked (plan 3b)', () => {
+    for (let round = 0; round < 40; round++) {
+      const scene = generateSpotFocusContent({ gridRows: 5, gridCols: 3, differenceCount: 5, mediumCount: 2, subtleCount: 2 });
+      expect(tiersOf(scene)).toEqual({ bold: 1, medium: 2, subtle: 2 });
+    }
+  });
+
+  it('builds every ladder level at its exact tiers, round after round (plan 3b)', () => {
+    SPOT_FOCUS_LADDER.forEach((params, i) => {
+      for (let round = 0; round < 30; round++) {
+        const scene = generateSpotFocusContent(params);
+        expect(scene.fallbacksUsed, `level ${i + 1}`).toBe(0);
+        expect(tiersOf(scene), `level ${i + 1}`).toEqual({
+          bold: params.differenceCount - params.mediumCount - params.subtleCount,
+          medium: params.mediumCount,
+          subtle: params.subtleCount,
+        });
+      }
+    });
   });
 
   it('carries a label key through to every cell', () => {

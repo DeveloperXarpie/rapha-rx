@@ -163,7 +163,7 @@ Fixes the October docs unblocked, none done yet:
   Plan: `docs/superpowers/plans/2026-11-18-redesign-v2-session-engine-home.md` (also lists the later plans and what each waits on).
 - **Plan 2, game changes (Shopping List, Spot Focus, Tiffin Time)**: implemented in v1.37.0; awaiting the owner's smoke test.
   Plan: `docs/superpowers/plans/2026-11-18-redesign-v2-game-changes.md`.
-- **Plan 3a, difficulty ladders (Shopping List, Spot Focus, Tiffin Time)**: implemented in v1.38.0; anchors are the rules doc's samples, provisional. Plan 3b: the spreadsheet importer and the layout-dependent knobs.
+- **Plan 3a, difficulty ladders (Shopping List, Spot Focus, Tiffin Time)**: implemented in v1.38.0; anchors are the rules doc's samples, provisional. Plan 3b part 1 (v1.41.0): Tiffin seats, counter, smallest order, cook bands and respawn gap; mixed Spot Focus tiers. Still to come: the spreadsheet importer and the Shopping List knobs.
   Plan: `docs/superpowers/plans/2026-11-18-redesign-v2-ladders.md`.
 - **Plan 4, scoring**: implemented in v1.39.0: round log, skill scores, the Mock 2 scorecard and the Mock 3 10-minute summary.
   Plan: `docs/superpowers/plans/2026-11-19-redesign-v2-scoring.md`.

@@ -65,7 +65,8 @@ export default function SpotFocus({ levelConfig, onLevelComplete, generatedConte
         gridRows: 3,
         gridCols: 3,
         differenceCount: 2,
-        changeSubtlety: 'bold',
+        mediumCount: 0,
+        subtleCount: 0,
       }),
     [generatedContent],
   );

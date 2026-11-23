@@ -101,7 +101,8 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 | 2 | Game changes: Shopping List, Spot Focus, Tiffin Time graded clear / hold / fail with Replay; Shopping List one hint, half score when hinted, second trip for Retention; Spot Focus "I can't find it" and find timing; Tiffin guest types, numbered dishes, decision logging, no points, "Tiffin" spelling | v1.37.0, `c6613ed` | Pushed 2026-11-19; Preview only, not promoted |
 | 3a | Difficulty ladders for the same three games: daily restart at level 1, up on a clear, down after two fails; anchors from the rules doc's samples; Tiffin round settings per level | v1.38.0, `d809334` | Pushed 2026-11-19; Preview only, not promoted |
 | 4 | Scoring: round log (Dexie v4), skill scores per FINAL_SPEC 7.1 (measure only), Mock 2 scorecard (band words and bars, no numbers), Mock 3 10-minute summary (rings, change since last session, ten-band headline); scorecard, summary, Home | v1.39.0, `e9c8f14` | Pushed 2026-11-19; Preview only, not promoted |
-| Amends | The amends of 2026-11-23 (D25): scorecard "YOUR MEMORY", "n/5" discs, six-word accolade over confetti; summary restyled flat navy with the mock's colours; Home's empty slots and small-caps captions; one lavender popup with a lime button for Home and the in-game exit; History Metrics expander (last 7 sessions per skill) | v1.40.0 | Committed 2026-11-23; smoke test outstanding |
+| Amends | The amends of 2026-11-23 (D25): scorecard "YOUR MEMORY", "n/5" discs, six-word accolade over confetti; summary restyled flat navy with the mock's colours; Home's empty slots and small-caps captions; one lavender popup with a lime button for Home and the in-game exit; History Metrics expander (last 7 sessions per skill) | v1.40.0, `bfd81a0` | Committed 2026-11-23; smoke test outstanding |
+| 3b (part 1) | Ladder settings that needed layout work: Tiffin seats 2-4 (centred), counter 3-6 (centred rows), smallest order, cook bands, respawn gap; Spot Focus bold / medium / subtle mixed on one board. Both ladders now hold the rules doc's samples in full; Spot Focus's 24 levels written out so each step changes one thing. `LADDER_VERSION` 0.2. Plan: `docs/superpowers/plans/2026-11-23-redesign-v2-ladders-3b.md` | v1.41.0 | Built 2026-11-23; smoke test outstanding |
 
 **Timer:** `CATEGORY_SESSION_SECONDS` was 30 s for owner testing in v1.36 to v1.39; **do not promote those builds to Production**. v1.40.0 restores 600 s.
 
@@ -123,6 +124,6 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 
 ## 4. Next steps
 
-1. Plan 3b: the spreadsheet importer and the layout-dependent ladder knobs (Tiffin seats and counter, mixed Spot Focus tiers, Shopping List crates and closeness).
+1. Plan 3b, rest: the spreadsheet importer, once someone edits the sheet; Shopping List crate count (needs empty-slot art), twin closeness (needs a closeness tag per item) and a study timer (no sample values yet).
 3. The 30 s timer is reverted in v1.40.0; push and promote once the owner has smoke-tested it.
 4. Later: Station Master (after art), Free Me (last), Baggage Sort (design), research data.

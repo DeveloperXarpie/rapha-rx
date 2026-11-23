@@ -127,17 +127,26 @@ export interface SpotFocusDynamicParams {
   gridCols: number;
   gridRows: number;
   differenceCount: number;
-  changeSubtlety: 'bold' | 'medium' | 'subtle';
+  /**
+   * How many of the differences are medium and how many subtle; the rest are bold
+   * (DIFFICULTY_RULES 3.3, mixed tiers since plan 3b).
+   */
+  mediumCount: number;
+  subtleCount: number;
 }
 
 export function getSpotFocusParams(score: number): SpotFocusDynamicParams {
   const differenceCount = lerpInt(2, 7, score);
   const gridCols = score < 0.4 ? 3 : 4;
   const gridRows = 3;
-  const changeSubtlety: 'bold' | 'medium' | 'subtle' =
-    score < 0.3 ? 'bold' : score < 0.7 ? 'medium' : 'subtle';
+  // One tier per board, as before the ladder.
+  const tier = score < 0.3 ? 'bold' : score < 0.7 ? 'medium' : 'subtle';
 
-  return { gridCols, gridRows, differenceCount, changeSubtlety };
+  return {
+    gridCols, gridRows, differenceCount,
+    mediumCount: tier === 'medium' ? differenceCount : 0,
+    subtleCount: tier === 'subtle' ? differenceCount : 0,
+  };
 }
 
 export interface MorningRoutineDynamicParams {
@@ -314,10 +323,11 @@ export function getTrainYardParams(score: number): TrainYardDynamicParams {
 
 export interface ServeGuestsDynamicParams {
   /**
-   * Largest order a guest can arrive with; each guest draws 1..this many distinct dishes.
-   * Steps rather than lerps.
+   * Largest order a guest can arrive with; each guest draws `minItemsPerGuest`..this many
+   * distinct dishes. Steps rather than lerps.
    */
   maxItemsPerGuest: number;
+  minItemsPerGuest: number;
   /**
    * Shares of Impatient and Patient guests (FINAL_SPEC D18); the rest are Middle. The
    * DIFFICULTY_RULES 3.5 sample mix mapped onto this 0-1 score until plan 3's ladder.
@@ -328,6 +338,14 @@ export interface ServeGuestsDynamicParams {
   patienceBaseS: number;
   patiencePerItemS: number;
   readyWindowS: number;
+  /** Plan 3b: guests at once (2-4) and dishes on the counter (3-6). */
+  seats: number;
+  counterSize: number;
+  /** Which dishes the counter is dealt from; `CookBand` in the game's model. */
+  cookBand: 'short' | 'mid' | 'all' | 'long';
+  /** The gap, in seconds, before a freed seat takes its next guest. */
+  respawnMinS: number;
+  respawnMaxS: number;
 }
 
 export function getServeGuestsParams(score: number): ServeGuestsDynamicParams {
@@ -340,6 +358,13 @@ export function getServeGuestsParams(score: number): ServeGuestsDynamicParams {
     patienceBaseS: 26,
     patiencePerItemS: 9,
     readyWindowS: 11,
+    // Today's board, for the non-ladder callers (plan 3b).
+    minItemsPerGuest: 1,
+    seats: 4,
+    counterSize: 6,
+    cookBand: 'all',
+    respawnMinS: 0.9,
+    respawnMaxS: 2.3,
   };
 }
 
