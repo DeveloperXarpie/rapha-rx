@@ -60,7 +60,7 @@ All paths are relative to the repo root.
 |---|---|---|
 | `docs/redesign-v2/FINAL_SPEC.md` | The spec. Holds only confirmed decisions (D1-D24), each tagged with its source. Conflicts and open questions are in section 13. | Draft, partly _TBD_ |
 | `docs/redesign-v2/DIFFICULTY_RULES.md` | How the level ladders work: shared rules S1-S9, shared decisions X1-X6, per-game parameters, curation rules, clear and fail rules, measurement gaps. | Draft; owner answers of 2026-11-18 folded in, decision log in section 6 |
-| `docs/redesign-v2/DIFFICULTY_LADDERS.xlsx` | The level sheet, one tab per game. Yellow cells are input. The owner fills the anchor levels, and Claude fills the levels in between. | Waiting on anchor levels |
+| `docs/redesign-v2/DIFFICULTY_LADDERS.xlsx` | The level sheet, one tab per game. Yellow cells are input. The owner sets anchor levels (Source `owner`); the levels in between are filled. Since v1.42.0 the app reads it: `npm run ladders:import`, and `npm run ladders:export` rebuilds the ladder tabs. | Holds Claude's sample anchors; waiting on the owner's |
 | `docs/redesign-v2/research/2026-11-11_difficulty-studies.md` | Six code studies, one per game, with file and line references. The engineering detail behind the rules doc. | Reference |
 | `docs/redesign-v2/research/2026-11-12_difficulty-design-notes.md` | A game-designer rewrite of the studies: what the player feels at each step. Written for presenting in a meeting. | Reference |
 
@@ -152,8 +152,7 @@ Fixes the October docs unblocked, none done yet:
   3. The only copy of the recent history is a feature branch, so deleting it would be costly.
 - Proposed housekeeping, not yet approved:
   - Merge `feat/app-flow-redesign` into `main` before v2 coding starts, then cut `feat/redesign-v2` (the branch FINAL_SPEC names).
-  - Move the xlsx build script into the repo.
-    It was kept in `%TEMP%\claude-ladders\build.py` and may be gone; the workbook can be rebuilt from the rules doc.
+  - ~~Move the xlsx build script into the repo.~~ Done in v1.42.0: `scripts/ladders-sheet.ts` rebuilds the three ladder tabs; the other tabs are kept as they are.
   - Mark the research questions v2 answers in `docs/2026-10-12_open-questions-for-research.md`.
   - Add an npm script for `screenshot-games.mjs`.
 

@@ -55,6 +55,14 @@ The redesign replaces this with a **curated level ladder** per game:
 4. Anchor levels are never changed by the fill.
    If anchors make a rule impossible to meet (for example, two anchors too far apart for the maximum step size), the gap is flagged for the owner.
 
+**How this runs (since v1.42.0):** the sheet's three ladder tabs (Shopping List, Spot Focus, Tiffin Time) are the source of the app's anchors.
+- `npm run ladders:import` reads the sheet and writes `src/lib/ladders/anchors.generated.ts`.
+  - It refuses, naming each problem, when a cell cannot be read, level 1 or the last level is not an anchor, or a filled row was changed without setting its Source to `owner`.
+  - It then runs the ladder tests, which are steps 3 and 4 above, and refreshes the sheet's filled rows.
+- `npm run ladders:export` rebuilds those tabs from the app.
+- A row's Source is `owner`, `claude` (Claude's anchor) or `filled`.
+- The design is in `docs/superpowers/plans/2026-11-23-redesign-v2-ladder-sheet-importer.md`.
+
 ## 2. Shared rules (all games)
 
 These apply to every game unless the game's own section overrides them.

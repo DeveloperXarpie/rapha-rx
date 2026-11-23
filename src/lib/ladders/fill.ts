@@ -9,9 +9,15 @@
 
 export type FieldSpec = { kind: 'step'; step: number } | { kind: 'switch' };
 
+/** Who set an anchor: the owner, or Claude (the rules doc's samples and any extra anchor). */
+export type AnchorSource = 'owner' | 'claude';
+
 export interface Anchor<T> {
   level: number;
   values: T;
+  /** Carried to and from the ladder sheet; the fill ignores both. */
+  source?: AnchorSource;
+  note?: string;
 }
 
 /** Rounds to a multiple of `step` without float noise (0.05 x 6 is 0.3, not 0.30000000000000004). */

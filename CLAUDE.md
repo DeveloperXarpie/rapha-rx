@@ -12,6 +12,8 @@ npm run dev       # start dev server (localhost:5173)
 npm run build     # production build (outputs to dist/)
 npm run lint      # ESLint
 npm run preview   # preview the production build locally
+npm run ladders:import  # difficulty ladder sheet -> src/lib/ladders/anchors.generated.ts
+npm run ladders:export  # rebuild the sheet's ladder tabs from the app
 ```
 
 `npm test` runs the vitest suite (`vitest run`). It uses the **node** environment
@@ -102,6 +104,10 @@ ladders later; the other games keep the score below.
 Since v1.41.0 (plan 3b part 1) Tiffin's ladder also sets seats (2-4), counter size (3-6), the
 smallest order, the cook band and the respawn gap, and Spot Focus mixes bold, medium and
 subtle differences on one board (`mediumCount`, `subtleCount`).
+Since v1.42.0 the anchors come from `docs/redesign-v2/DIFFICULTY_LADDERS.xlsx` through
+`npm run ladders:import`, which writes `anchors.generated.ts`; never edit that file by hand.
+The sheet layout and the import rules are in `src/lib/ladders/sheet.ts` (tested); close the
+workbook in Excel before running either script.
 
 ### Dynamic difficulty (`src/lib/dynamicDifficulty.ts`)
 Each game has a `DifficultyState` record (score 0.0–1.0) per user per day. `getTodayDifficulty()` seeds from yesterday's peak × 0.8 warmup factor. `adjustDifficulty()` promotes (+0.05 × performance multiplier) or demotes (−0.08) after each round. `GameShell` calls this on every `onLevelComplete`. Game-specific `computePerformanceRatio()` is in `src/components/GameShell.tsx` — add a case there whenever a new game is added.

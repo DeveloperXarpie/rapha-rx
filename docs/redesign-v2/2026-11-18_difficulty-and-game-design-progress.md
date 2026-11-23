@@ -102,7 +102,10 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 | 3a | Difficulty ladders for the same three games: daily restart at level 1, up on a clear, down after two fails; anchors from the rules doc's samples; Tiffin round settings per level | v1.38.0, `d809334` | Pushed 2026-11-19; Preview only, not promoted |
 | 4 | Scoring: round log (Dexie v4), skill scores per FINAL_SPEC 7.1 (measure only), Mock 2 scorecard (band words and bars, no numbers), Mock 3 10-minute summary (rings, change since last session, ten-band headline); scorecard, summary, Home | v1.39.0, `e9c8f14` | Pushed 2026-11-19; Preview only, not promoted |
 | Amends | The amends of 2026-11-23 (D25): scorecard "YOUR MEMORY", "n/5" discs, six-word accolade over confetti; summary restyled flat navy with the mock's colours; Home's empty slots and small-caps captions; one lavender popup with a lime button for Home and the in-game exit; History Metrics expander (last 7 sessions per skill) | v1.40.0, `bfd81a0` | Committed 2026-11-23; smoke test outstanding |
-| 3b (part 1) | Ladder settings that needed layout work: Tiffin seats 2-4 (centred), counter 3-6 (centred rows), smallest order, cook bands, respawn gap; Spot Focus bold / medium / subtle mixed on one board. Both ladders now hold the rules doc's samples in full; Spot Focus's 24 levels written out so each step changes one thing. `LADDER_VERSION` 0.2. Plan: `docs/superpowers/plans/2026-11-23-redesign-v2-ladders-3b.md` | v1.41.0 | Built 2026-11-23; smoke test outstanding |
+| 3b (part 1) | Ladder settings that needed layout work: Tiffin seats 2-4 (centred), counter 3-6 (centred rows), smallest order, cook bands, respawn gap; Spot Focus bold / medium / subtle mixed on one board. Both ladders now hold the rules doc's samples in full; Spot Focus's 24 levels written out so each step changes one thing. `LADDER_VERSION` 0.2. Plan: `docs/superpowers/plans/2026-11-23-redesign-v2-ladders-3b.md` | v1.41.0, `599dbf5` | Committed 2026-11-23; smoke test outstanding |
+| 3b (part 2) | Ladder sheet importer: `npm run ladders:import` reads `DIFFICULTY_LADDERS.xlsx` into `src/lib/ladders/anchors.generated.ts` and checks every rule; `npm run ladders:export` rebuilds the three ladder tabs with today's columns (other tabs untouched). Source per row: owner / claude / filled. Plan: `docs/superpowers/plans/2026-11-23-redesign-v2-ladder-sheet-importer.md` | v1.42.0 | Committed 2026-11-23; no ladder value changed |
+
+**Verification:** everything built on 2026-11-23 (v1.40.0 to v1.42.0) is listed for the user's check in `docs/redesign-v2/2026-11-23_verification-list.md`. None of it has been played in the app yet; feedback is expected on 2026-11-24.
 
 **Timer:** `CATEGORY_SESSION_SECONDS` was 30 s for owner testing in v1.36 to v1.39; **do not promote those builds to Production**. v1.40.0 restores 600 s.
 
@@ -121,9 +124,14 @@ All on `feat/app-flow-redesign`. Every plan ran inline with TDD, a plan review b
 - `game_started` was firing every second through a dependency bug (fixed).
 - One-aisle Shopping List rounds could draw decoys from a second aisle after a refactor (caught by a new test, fixed).
 - Without its middle outcome, every in-between round would have counted as a clear (fixed: clear / hold / fail).
+- 2026-11-23: after the amends, the "Strengthen Your PLANNING" heading ran into the lock on a 360 px phone. Fixed: the lock now sits inline before the heading.
+- 2026-11-23: the ladder importer first treated untouched in-between rows near a new anchor as hand edits. Fixed before commit: filled rows are judged against the last import, not the new fill.
+- 2026-11-23: even steps between the Spot Focus samples made two things harder at once. Fixed: all 24 levels are written out, each changing one thing.
 
 ## 4. Next steps
 
-1. Plan 3b, rest: the spreadsheet importer, once someone edits the sheet; Shopping List crate count (needs empty-slot art), twin closeness (needs a closeness tag per item) and a study timer (no sample values yet).
-3. The 30 s timer is reverted in v1.40.0; push and promote once the owner has smoke-tested it.
-4. Later: Station Master (after art), Free Me (last), Baggage Sort (design), research data.
+1. The user goes through `docs/redesign-v2/2026-11-23_verification-list.md` (v1.40.0 to v1.42.0) and comes back with feedback.
+2. Then push for a Vercel Preview, smoke-test it and promote. v1.40.0 is the first build safe to promote: v1.36 to v1.39 have the 30 s timer.
+3. Plan 3b, rest: Shopping List crate count (needs empty-slot art), twin closeness (needs a closeness tag per item) and a study timer (no sample values yet). The owner can now set anchors in the sheet.
+4. Owner decisions: weekly stars (C14), Garden Keeper on Home (D15), the accolade ranges, the History Metrics bar height.
+5. Later: Station Master (after art), Free Me (last), Baggage Sort (design), research data.
